@@ -146,7 +146,7 @@ class DecoupledRealGCDTests4 extends OrderedDecoupledHWIOTester {
 
 class DecoupledRealGCDTester extends ChiselFlatSpec {
   "RealGCD using decoupledIO input interface and validIO output interface" should "return good values" in {
-    assert( execute { new DecoupledRealGCDTests4 } )
+    assertTesterPasses { new DecoupledRealGCDTests4 }
   }
 }
 

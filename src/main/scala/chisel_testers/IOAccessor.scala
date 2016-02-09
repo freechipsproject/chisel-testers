@@ -12,12 +12,14 @@ import scala.util.matching.Regex
  * used for building testing harnesses
  */
 class IOAccessor(val device_io: Bundle, verbose: Boolean = true) {
-  val dut_inputs  = device_io.flatten.filter( port => port.dir == INPUT)
-  val dut_outputs = device_io.flatten.filter( port => port.dir == OUTPUT)
   val ports_referenced = new mutable.HashSet[Data]
 
   val referenced_inputs          = new mutable.HashSet[Data]()
   val referenced_outputs         = new mutable.HashSet[Data]()
+  val dut_inputs                 = new mutable.HashSet[Data]()
+  val dut_outputs                = new mutable.HashSet[Data]()
+//  val dut_inputs  = device_io.flatten.filter( port => port.dir == INPUT)
+//  val dut_outputs = device_io.flatten.filter( port => port.dir == OUTPUT)
 
   val name_to_decoupled_port = new mutable.HashMap[String, DecoupledIO[Data]]()
   val name_to_valid_port     = new mutable.HashMap[String, ValidIO[Data]]()
@@ -35,10 +37,19 @@ class IOAccessor(val device_io: Bundle, verbose: Boolean = true) {
       }
     }
 
+    def add_to_ports_by_direction(port: Data): Unit = {
+      port.dir match {
+        case INPUT => dut_inputs += port
+        case OUTPUT => dut_outputs += port
+        case _ =>
+      }
+    }
+
     def parseBundle(b: Bundle, name: String = ""): Unit = {
       for ((n, e) <- b.elements) {
         val new_name = name + (if(name.length > 0 ) "." else "" ) + n
         port_to_name_accumulator(e) = new_name
+
 
         e match {
           case bb: Bundle     => parseBundle(bb, new_name)

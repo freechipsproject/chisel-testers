@@ -3,6 +3,7 @@
 package examples
 
 import Chisel._
+import Chisel.testers.TesterDriver
 import chisel_testers._
 
 class Adder(val w: Int) extends Module {
@@ -65,13 +66,13 @@ class AdderExerciser extends Exerciser {
 
 class AdderGo extends ChiselFlatSpec {
   "adder" should "add things properly" in {
-    assert( execute { new AdderExerciser } )
+    assertTesterPasses { new AdderExerciser }
   }
 }
 
 class AdderTester extends ChiselFlatSpec {
   "Adder" should "compile and run without incident" in {
-    assert( execute { new AdderTests } )
+    assertTesterPasses { new AdderTests }
   }
 }
 

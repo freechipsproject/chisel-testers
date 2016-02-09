@@ -58,7 +58,7 @@ class GCDUnitTester extends SteppedHWIOTester {
 
 class GCDTester extends ChiselFlatSpec {
   "a" should "b" in {
-    assert( execute { new GCDUnitTester } )
+    assertTesterPasses { new GCDUnitTester }
   }
 }
 

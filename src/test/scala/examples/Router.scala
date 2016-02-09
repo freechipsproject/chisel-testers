@@ -57,11 +57,12 @@ class Router extends Module {
     }
   }
 
-  io.read_routing_table_request.init()
-  io.load_routing_table_request.init()
-  io.read_routing_table_response.init()
-  io.in.init()
-  io.outs.foreach { out => out.init() }
+  // TODO: either re-institute init or manually implement decoupled init
+//  io.read_routing_table_request.init()
+//  io.load_routing_table_request.init()
+//  io.read_routing_table_response.init()
+//  io.in.init()
+//  io.outs.foreach { out => out.init() }
 
   when(io.read_routing_table_request.valid && io.read_routing_table_response.ready) {
     io.read_routing_table_response.enq(tbl(
@@ -150,8 +151,8 @@ class RouterUnitTester(number_of_packets_to_send: Int) extends OrderedDecoupledH
 class RouterUnitTesterSpec extends ChiselFlatSpec {
   val number_of_packets = 20
   "a router" should "can have it's rout table loaded and changed and route a bunch of packets" in {
-    assert(execute {
+    assertTesterPasses {
       new RouterUnitTester(number_of_packets)
-    })
+    }
   }
 }

@@ -77,8 +77,8 @@ class DynamicMemorySearchTester extends ChiselFlatSpec {
   val num_elements =  8
   val width        =  4
   "a dynamic memory search" should "be able to find things that were put in memory" in {
-    assert(execute {
+    assertTesterPasses {
       new DynamicMemorySearchTests(num_elements, width)
-    })
+    }
   }
 }
