@@ -1,178 +1,571 @@
-[info] Updating {file:/Users/chick/Aspire/IdeaProjects/chisel-testers/}chisel-testers...
-[debug] :: resolving dependencies :: default#chisel-testers_2.11;1.0
-[debug] 	confs: [compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool]
-[debug] 	validate = true
-[debug] 	refresh = false
-[debug] resolving dependencies for configuration 'compile'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)]
-[info] Resolving org.scala-lang#scala-library;2.11.7 ...
-[debug] sbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@d8799dc
-[debug] sbt-chain: module revision found in cache: org.scala-lang#scala-library;2.11.7
-[debug] 	found org.scala-lang#scala-library;2.11.7 in sbt-chain
-[debug] 	[2.11.7] org.scala-lang#scala-library;2.11.7
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master]
-[debug] resolving dependencies for configuration 'runtime'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [runtime]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master]
-[debug] resolving dependencies for configuration 'test'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [test]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [runtime]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master]
-[debug] resolving dependencies for configuration 'provided'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [provided]
-[debug] resolving dependencies for configuration 'optional'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [optional]
-[debug] resolving dependencies for configuration 'compile-internal'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [compile-internal]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [optional]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [provided]
-[debug] resolving dependencies for configuration 'runtime-internal'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [runtime-internal]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [runtime]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [optional]
-[debug] resolving dependencies for configuration 'test-internal'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [test-internal]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [test]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [runtime]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [optional]
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [provided]
-[debug] resolving dependencies for configuration 'plugin'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [plugin]
-[debug] resolving dependencies for configuration 'sources'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [sources]
-[debug] resolving dependencies for configuration 'docs'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [docs]
-[debug] resolving dependencies for configuration 'pom'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [pom]
-[debug] resolving dependencies for configuration 'scala-tool'
-[debug] == resolving dependencies for default#chisel-testers_2.11;1.0 [scala-tool]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->default]
-[info] Resolving org.scala-lang#scala-compiler;2.11.7 ...
-[debug] sbt-chain: Checking cache for: dependency: org.scala-lang#scala-compiler;2.11.7 {scala-tool=[default, optional(default)]}
-[debug] sbt-chain: module revision found in cache: org.scala-lang#scala-compiler;2.11.7
-[debug] 	found org.scala-lang#scala-compiler;2.11.7 in sbt-chain
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->master(compile)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->default]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->runtime]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->master]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->optional(default)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->master(compile)]
-[info] Resolving org.scala-lang#scala-reflect;2.11.7 ...
-[debug] sbt-chain: Checking cache for: dependency: org.scala-lang#scala-reflect;2.11.7 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}
-[debug] sbt-chain: module revision found in cache: org.scala-lang#scala-reflect;2.11.7
-[debug] 	found org.scala-lang#scala-reflect;2.11.7 in sbt-chain
-[debug] 	[2.11.7] org.scala-lang#scala-reflect;2.11.7
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->master(compile)]
-[debug] == resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->compile]
-[debug] == resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->master(compile)]
-[info] Resolving org.scala-lang.modules#scala-xml_2.11;1.0.4 ...
-[debug] sbt-chain: Checking cache for: dependency: org.scala-lang.modules#scala-xml_2.11;1.0.4 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}
-[debug] sbt-chain: module revision found in cache: org.scala-lang.modules#scala-xml_2.11;1.0.4
-[debug] 	found org.scala-lang.modules#scala-xml_2.11;1.0.4 in sbt-chain
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.4 [compile->master(compile)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.4 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->compile]
-[debug] == resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.4 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->master(compile)]
-[info] Resolving org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 ...
-[debug] sbt-chain: Checking cache for: dependency: org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}
-[debug] sbt-chain: module revision found in cache: org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4
-[debug] 	found org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 in sbt-chain
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->compile]
-[debug] == resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [runtime->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [runtime->compile]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [runtime->runtime(*)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [runtime->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->master]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->optional(default)]
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->jline#jline;2.12.1 [optional->master(compile)]
-[info] Resolving jline#jline;2.12.1 ...
-[debug] sbt-chain: Checking cache for: dependency: jline#jline;2.12.1 {optional=[compile(*), master(compile)]}
-[debug] sbt-chain: module revision found in cache: jline#jline;2.12.1
-[debug] 	found jline#jline;2.12.1 in sbt-chain
-[debug] == resolving dependencies org.scala-lang#scala-compiler;2.11.7->jline#jline;2.12.1 [optional->compile(*)]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->default]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->runtime]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->compile]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->master]
-[debug] == resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->optional(default)]
-[debug] 	resolved ivy file produced in cache
-[debug] :: downloading artifacts ::
-[debug] 	[NOT REQUIRED] org.scala-lang#scala-library;2.11.7!scala-library.jar
-[debug] 	[NOT REQUIRED] org.scala-lang#scala-compiler;2.11.7!scala-compiler.jar
-[debug] 	[NOT REQUIRED] org.scala-lang#scala-reflect;2.11.7!scala-reflect.jar
-[debug] 	[NOT REQUIRED] org.scala-lang.modules#scala-xml_2.11;1.0.4!scala-xml_2.11.jar(bundle)
-[debug] 	[NOT REQUIRED] org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4!scala-parser-combinators_2.11.jar(bundle)
-[debug] 	[NOT REQUIRED] jline#jline;2.12.1!jline.jar
-[debug] :: resolution report :: resolve 62ms :: artifacts dl 1ms
-[debug] 	report for default#chisel-testers_2.11;1.0 compile produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-compile.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 runtime produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-runtime.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 test produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-test.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 provided produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-provided.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 optional produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-optional.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 compile-internal produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-compile-internal.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 runtime-internal produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-runtime-internal.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 test-internal produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-test-internal.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 plugin produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-plugin.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 sources produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-sources.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 docs produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-docs.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 pom produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-pom.xml
-[debug] 	report for default#chisel-testers_2.11;1.0 scala-tool produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-scala-tool.xml
-[debug] 	resolve done (62ms resolve - 1ms download)
-[info] Done updating.
+[0m[[0minfo[0m] [0mUpdating {file:/Users/chick/Aspire/IdeaProjects/chisel-testers/}chisel-testers...[0m
+[0m[[0mdebug[0m] [0m:: resolving dependencies :: default#chisel-testers_2.11;1.0[0m
+[0m[[0mdebug[0m] [0m	confs: [compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool][0m
+[0m[[0mdebug[0m] [0m	validate = true[0m
+[0m[[0mdebug[0m] [0m	refresh = false[0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'compile'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang#scala-library;2.11.7 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@199d8e48[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang#scala-library;2.11.7[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang#scala-library;2.11.7 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m	[2.11.7] org.scala-lang#scala-library;2.11.7[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->edu.berkeley.cs#chisel_2.11;3.0 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving edu.berkeley.cs#chisel_2.11;3.0 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: edu.berkeley.cs#chisel_2.11;3.0 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: edu.berkeley.cs#chisel_2.11;3.0[0m
+[0m[[0mdebug[0m] [0m	found edu.berkeley.cs#chisel_2.11;3.0 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang#scala-reflect;2.11.6 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-reflect;2.11.6 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang#scala-reflect;2.11.6[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang#scala-reflect;2.11.6 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m	[2.11.6] org.scala-lang#scala-reflect;2.11.6[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scalatest#scalatest_2.11;2.2.4 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scalatest#scalatest_2.11;2.2.4 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scalatest#scalatest_2.11;2.2.4[0m
+[0m[[0mdebug[0m] [0m	found org.scalatest#scalatest_2.11;2.2.4 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->master(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.modules#scala-xml_2.11;1.0.2 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.modules#scala-xml_2.11;1.0.2 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang.modules#scala-xml_2.11;1.0.2[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.modules#scala-xml_2.11;1.0.2 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scalacheck#scalacheck_2.11;1.12.4 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scalacheck#scalacheck_2.11;1.12.4 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scalacheck#scalacheck_2.11;1.12.4[0m
+[0m[[0mdebug[0m] [0m	found org.scalacheck#scalacheck_2.11;1.12.4 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->master(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-sbt#test-interface;1.0 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-sbt#test-interface;1.0 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-sbt#test-interface;1.0[0m
+[0m[[0mdebug[0m] [0m	found org.scala-sbt#test-interface;1.0 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->master][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'runtime'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->edu.berkeley.cs#chisel_2.11;3.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->master][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'test'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [test][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->edu.berkeley.cs#chisel_2.11;3.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->master][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'provided'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [provided][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'optional'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [optional][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'compile-internal'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [compile-internal][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->edu.berkeley.cs#chisel_2.11;3.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [optional][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [provided][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'runtime-internal'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [runtime-internal][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->edu.berkeley.cs#chisel_2.11;3.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [optional][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'test-internal'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [test-internal][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [test][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->edu.berkeley.cs#chisel_2.11;3.0 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.6->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies edu.berkeley.cs#chisel_2.11;3.0->org.scala-lang#scala-reflect;2.11.6 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang#scala-reflect;2.11.6 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalatest#scalatest_2.11;2.2.4->org.scala-lang.modules#scala-xml_2.11;1.0.2 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.2->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalatest#scalatest_2.11;2.2.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scalacheck#scalacheck_2.11;1.12.4->org.scala-sbt#test-interface;1.0 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scalacheck#scalacheck_2.11;1.12.4 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [optional][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [provided][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'plugin'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [plugin][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'sources'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [sources][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'docs'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [docs][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'pom'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [pom][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'scala-tool'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for default#chisel-testers_2.11;1.0 [scala-tool][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->default][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang#scala-compiler;2.11.7 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-compiler;2.11.7 {scala-tool=[default, optional(default)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang#scala-compiler;2.11.7[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang#scala-compiler;2.11.7 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->default][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->optional(default)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->master(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang#scala-reflect;2.11.7 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-reflect;2.11.7 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang#scala-reflect;2.11.7[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang#scala-reflect;2.11.7 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m	[2.11.7] org.scala-lang#scala-reflect;2.11.7[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->master(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.modules#scala-xml_2.11;1.0.4 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.modules#scala-xml_2.11;1.0.4 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang.modules#scala-xml_2.11;1.0.4[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.modules#scala-xml_2.11;1.0.4 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.4 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->master(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 {compile=[compile(*), master(compile)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.6 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->master(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.6 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.6 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-library;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang#scala-reflect;2.11.7 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-xml_2.11;1.0.4 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-compiler;2.11.7 [scala-tool->optional(default)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->jline#jline;2.12.1 [optional->master(compile)][0m
+[0m[[0minfo[0m] [0mResolving jline#jline;2.12.1 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: jline#jline;2.12.1 {optional=[compile(*), master(compile)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: jline#jline;2.12.1[0m
+[0m[[0mdebug[0m] [0m	found jline#jline;2.12.1 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.7->jline#jline;2.12.1 [optional->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->default][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies default#chisel-testers_2.11;1.0->org.scala-lang#scala-library;2.11.7 [scala-tool->optional(default)][0m
+[0m[[0mdebug[0m] [0m	resolved ivy file produced in cache[0m
+[0m[[0mdebug[0m] [0m:: downloading artifacts ::[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-library;2.11.7!scala-library.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] edu.berkeley.cs#chisel_2.11;3.0!chisel_2.11.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scalatest#scalatest_2.11;2.2.4!scalatest_2.11.jar(bundle)[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scalacheck#scalacheck_2.11;1.12.4!scalacheck_2.11.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-reflect;2.11.6!scala-reflect.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.modules#scala-xml_2.11;1.0.2!scala-xml_2.11.jar(bundle)[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-sbt#test-interface;1.0!test-interface.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-compiler;2.11.7!scala-compiler.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-reflect;2.11.7!scala-reflect.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.modules#scala-xml_2.11;1.0.4!scala-xml_2.11.jar(bundle)[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.modules#scala-parser-combinators_2.11;1.0.4!scala-parser-combinators_2.11.jar(bundle)[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] jline#jline;2.12.1!jline.jar[0m
+[0m[[0mdebug[0m] [0m:: resolution report :: resolve 318ms :: artifacts dl 13ms[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 compile produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-compile.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 runtime produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-runtime.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 test produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-test.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 provided produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-provided.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 optional produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-optional.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 compile-internal produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-compile-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 runtime-internal produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-runtime-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 test-internal produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-test-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 plugin produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-plugin.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 sources produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-sources.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 docs produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-docs.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 pom produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-pom.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#chisel-testers_2.11;1.0 scala-tool produced in /Users/chick/Aspire/IdeaProjects/chisel-testers/target/resolution-cache/reports/default-chisel-testers_2.11-scala-tool.xml[0m
+[0m[[0mdebug[0m] [0m	resolve done (318ms resolve - 13ms download)[0m
+[0m[[0minfo[0m] [0mDone updating.[0m

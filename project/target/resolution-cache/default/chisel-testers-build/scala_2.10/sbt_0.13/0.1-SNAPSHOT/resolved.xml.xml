@@ -4,7 +4,7 @@
 		module="chisel-testers-build"
 		revision="0.1-SNAPSHOT"
 		status="integration"
-		publication="20160208224356"
+		publication="20160209102302"
 		e:sbtVersion="0.13" e:scalaVersion="2.10"
 	>
 		<description>

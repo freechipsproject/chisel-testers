@@ -68,15 +68,12 @@ Session.vim
 .netrwhist
 *~
 ### Scala template
-*.class
 *.log
 
 # sbt specific
 .cache
-.history
 .lib/
 dist/*
-target/
 lib_managed/
 src_managed/
 project/boot/
@@ -88,36 +85,16 @@ project/plugins/project/
 ### C++ template
 # Compiled Object files
 *.slo
-*.lo
-*.o
-*.obj
-
 # Precompiled Headers
-*.gch
-*.pch
-
 # Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
 # Fortran module files
 *.mod
 
 # Compiled Static libraries
 *.lai
-*.la
-*.a
-*.lib
-
 # Executables
-*.exe
-*.out
-*.app
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
-
-*.iml
 
 ## Directory-based project format:
 .idea/
@@ -163,7 +140,6 @@ crashlytics.properties
 crashlytics-build.properties
 ### Emacs template
 # -*- mode: gitignore; -*-
-*~
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
