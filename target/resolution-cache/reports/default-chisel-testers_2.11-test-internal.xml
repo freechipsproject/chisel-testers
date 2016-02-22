@@ -7,14 +7,14 @@
 		revision="1.0"
 		conf="test-internal"
 		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool"
-		date="20160209182443"/>
+		date="20160209200914"/>
 	<dependencies>
 		<module organisation="edu.berkeley.cs" name="chisel_2.11">
 			<revision name="3.0" status="release" pubdate="20151124180030" resolver="sbt-chain" artresolver="sbt-chain" downloaded="false" searched="false" default="false" conf="compile, default(compile)" position="1">
 				<metadata-artifact status="no" details="" size="1886" time="0" location="/Users/chick/.ivy2/cache/edu.berkeley.cs/chisel_2.11/ivy-3.0.xml" searched="false" origin-is-local="true" origin-location="/Users/chick/.ivy2/local/edu.berkeley.cs/chisel_2.11/3.0/ivys/ivy.xml"/>
 				<caller organisation="default" name="chisel-testers_2.11" conf="test, compile, provided, test-internal, runtime, optional" rev="3.0" rev-constraint-default="3.0" rev-constraint-dynamic="3.0" callerrev="1.0"/>
 				<artifacts>
-					<artifact name="chisel_2.11" type="jar" ext="jar" status="no" details="" size="705914" time="0" location="/Users/chick/.ivy2/local/edu.berkeley.cs/chisel_2.11/3.0/jars/chisel_2.11.jar">
+					<artifact name="chisel_2.11" type="jar" ext="jar" status="no" details="" size="557960" time="0" location="/Users/chick/.ivy2/local/edu.berkeley.cs/chisel_2.11/3.0/jars/chisel_2.11.jar">
 						<origin-location is-local="true" location="/Users/chick/.ivy2/local/edu.berkeley.cs/chisel_2.11/3.0/jars/chisel_2.11.jar"/>
 					</artifact>
 				</artifacts>

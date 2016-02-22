@@ -9,10 +9,10 @@
 		extra-sbtVersion="0.13"
 		conf="compile-internal"
 		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool"
-		date="20160209102302"/>
+		date="20160209200913"/>
 	<dependencies>
 		<module organisation="org.scala-sbt" name="global-plugins">
-			<revision name="0.0" status="integration" pubdate="20160209102256" resolver="inter-project" artresolver="inter-project" extra-scalaVersion="2.10" extra-sbtVersion="0.13" downloaded="false" searched="false" default="false" conf="compile, default(compile)" position="0">
+			<revision name="0.0" status="integration" pubdate="20160209200911" resolver="inter-project" artresolver="inter-project" extra-scalaVersion="2.10" extra-sbtVersion="0.13" downloaded="false" searched="false" default="false" conf="compile, default(compile)" position="0">
 				<metadata-artifact status="failed" details="" size="0" time="0" searched="false"/>
 				<caller organisation="default" name="chisel-testers-build" conf="compile-internal, compile, provided, optional" rev="0.0" rev-constraint-default="0.0" rev-constraint-dynamic="0.0" callerrev="0.1-SNAPSHOT" extra-scalaVersion="2.10" extra-sbtVersion="0.13"/>
 				<artifacts>
@@ -115,11 +115,11 @@
 				<metadata-artifact status="no" details="" size="1841" time="0" location="/Users/chick/.ivy2/cache/org.scala-sbt/compiler-interface/ivy-0.13.8.xml" searched="false" origin-is-local="false" origin-location="http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/compiler-interface/0.13.8/ivys/ivy.xml"/>
 				<caller organisation="org.scala-sbt" name="sbt" conf="compile" rev="0.13.8" rev-constraint-default="0.13.8" rev-constraint-dynamic="0.13.8" callerrev="0.13.8"/>
 				<artifacts>
-					<artifact name="compiler-interface-bin" type="jar" ext="jar" extra-component="compiler-interface-bin_2.10.4" status="no" details="" size="241943" time="0" location="/Users/chick/.ivy2/cache/org.scala-sbt/compiler-interface/jars/compiler-interface-bin-0.13.8.jar">
-						<origin-location is-local="false" location="http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/compiler-interface/0.13.8/jars/compiler-interface-bin.jar"/>
-					</artifact>
 					<artifact name="compiler-interface-src" type="jar" ext="jar" extra-component="compiler-interface-src" status="no" details="" size="30391" time="0" location="/Users/chick/.ivy2/cache/org.scala-sbt/compiler-interface/jars/compiler-interface-src-0.13.8.jar">
 						<origin-location is-local="false" location="http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/compiler-interface/0.13.8/jars/compiler-interface-src.jar"/>
+					</artifact>
+					<artifact name="compiler-interface-bin" type="jar" ext="jar" extra-component="compiler-interface-bin_2.10.4" status="no" details="" size="241943" time="0" location="/Users/chick/.ivy2/cache/org.scala-sbt/compiler-interface/jars/compiler-interface-bin-0.13.8.jar">
+						<origin-location is-local="false" location="http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/compiler-interface/0.13.8/jars/compiler-interface-bin.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
