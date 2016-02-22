@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6dcf6335-b0d5-4f3d-a6e0-ba07be9097c3" name="Default" comment="">
+    <list default="true" id="6dcf6335-b0d5-4f3d-a6e0-ba07be9097c3" name="Default" comment="get rid of file in build directories">
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
     </list>
     <ignored path="chisel-testers.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -101,8 +102,8 @@
           <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/.gitignore">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.5992823">
-                  <caret line="83" column="10" selection-start-line="83" selection-start-column="10" selection-end-line="83" selection-end-column="10" />
+                <state vertical-scroll-proportion="0.40191388">
+                  <caret line="72" column="14" selection-start-line="72" selection-start-column="14" selection-end-line="72" selection-end-column="14" />
                   <folding />
                 </state>
               </provider>
@@ -997,7 +998,7 @@
       <updated>1455000225244</updated>
       <workItem from="1455000226439" duration="17705000" />
       <workItem from="1456113963731" duration="3977000" />
-      <workItem from="1456179676285" duration="210000" />
+      <workItem from="1456179676285" duration="293000" />
     </task>
     <task id="LOCAL-00001" summary="initial project setup">
       <created>1455000750223</created>
@@ -1053,7 +1054,13 @@
       <option name="project" value="LOCAL" />
       <updated>1456179883281</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="get rid of file in build directories">
+      <created>1456179900688</created>
+      <option name="number" value="00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1456179900688</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1089,7 +1096,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="21892000" />
+    <option name="totallyTimeSpent" value="21975000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="2560" height="1413" extended-state="6" />
@@ -1450,8 +1457,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5992823">
-          <caret line="83" column="10" selection-start-line="83" selection-start-column="10" selection-end-line="83" selection-end-column="10" />
+        <state vertical-scroll-proportion="0.40191388">
+          <caret line="72" column="14" selection-start-line="72" selection-start-column="14" selection-end-line="72" selection-end-column="14" />
           <folding />
         </state>
       </provider>

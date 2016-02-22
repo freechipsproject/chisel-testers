@@ -98,6 +98,7 @@ project/plugins/project/
 
 ## Directory-based project format:
 /.idea
+.idea/workspace.xml
 /target
 /project
 .idea/
