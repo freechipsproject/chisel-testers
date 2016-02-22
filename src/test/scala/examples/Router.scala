@@ -55,6 +55,16 @@ class Router extends Module {
     tbl.indices.foreach { index =>
       tbl(index) := UInt(0, width = Router.addressWidth)
     }
+//    io.read_routing_table_request.ready := Bool(true)
+//    io.load_routing_table_request.ready  := Bool(true)
+//    io.read_routing_table_response.ready := Bool(true)
+//    io.in.ready := Bool(true)
+//    io.outs.foreach { out => out.init() }
+//    io.read_routing_table_request.init()
+//    io.load_routing_table_request.init()
+    io.read_routing_table_response.init()
+//    io.in.init()
+//    io.outs.foreach { out => out.init() }
   }
 
   // TODO: either re-institute init or manually implement decoupled init

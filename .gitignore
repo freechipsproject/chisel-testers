@@ -97,6 +97,9 @@ project/plugins/project/
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
 
 ## Directory-based project format:
+/.idea
+/target
+/project
 .idea/
 # if you remove the above rule, at least ignore the following:
 
