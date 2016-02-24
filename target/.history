@@ -1,3 +1,0 @@
-clean 
-test
-test-only examples.RouterUnitTesterSpec
