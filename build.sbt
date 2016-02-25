@@ -1,6 +1,6 @@
-name := "chisel-testers"
-
+organization := "edu.berkeley.cs"
 version := "1.0"
+name := "chisel_testers"
 
 scalaVersion := "2.11.7"
 
@@ -23,8 +23,8 @@ pomExtra := <url>http://chisel.eecs.berkeley.edu/</url>
   </license>
 </licenses>
 <scm>
-  <url>https://github.com/ucb-bar/chisel3.git</url>
-  <connection>scm:git:github.com/ucb-bar/chisel3.git</connection>
+  <url>https://github.com/ucb-bar/chisel-testers.git</url>
+  <connection>scm:git:github.com/ucb-bar/chisel-testers.git</connection>
 </scm>
 <developers>
   <developer>
@@ -36,17 +36,17 @@ pomExtra := <url>http://chisel.eecs.berkeley.edu/</url>
 
 
 publishTo <<= version { v: String =>
-val nexus = "https://oss.sonatype.org/"
-if (v.trim.endsWith("SNAPSHOT")) {
-  Some("snapshots" at nexus + "content/repositories/snapshots")
-}
-else {
-  Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
+  val nexus = "https://oss.sonatype.org/"
+  if (v.trim.endsWith("SNAPSHOT")) {
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  }
+  else {
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  }
 }
 
 
 resolvers ++= Seq(
-"Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-"Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
+  "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+  "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
 )
