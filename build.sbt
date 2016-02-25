@@ -1,6 +1,6 @@
 organization := "edu.berkeley.cs"
 version := "1.0"
-name := "chisel_testers"
+name := "Chisel.hwiotesters"
 
 scalaVersion := "2.11.7"
 

@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import chisel_testers._
+import Chisel.hwiotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 class SmallOdds3(filter_width: Int) extends Module {
 

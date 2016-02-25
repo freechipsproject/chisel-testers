@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import chisel_testers._
+import Chisel.hwiotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 /**
   * Implements an adder that used decoupledIO for both input and output

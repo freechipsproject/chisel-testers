@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import chisel_testers.SteppedHWIOTester
+import Chisel.hwiotesters.SteppedHWIOTester
 
 class VecShiftRegister extends Module {
   val io = new Bundle {

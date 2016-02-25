@@ -3,8 +3,8 @@
 package examples
 
 import Chisel._
+import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
 import Chisel.testers.TesterDriver
-import chisel_testers._
 
 class Adder(val w: Int) extends Module {
   val io = new Bundle {
@@ -27,6 +27,8 @@ class AdderTests extends SteppedHWIOTester {
     poke(c.io.in0, in0)
     poke(c.io.in1, in1)
     expect(c.io.out, (in0 + in1) & ((1 << c.w) - 1))
+
+    logPrintfDebug("in0 %d in1 %d result %d\n", c.io.in0, c.io.in1, c.io.out)
     step(1)
   }
 }

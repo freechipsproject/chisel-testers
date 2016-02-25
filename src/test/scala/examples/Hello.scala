@@ -3,8 +3,8 @@
 package examples
 
 import Chisel._
+import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec}
 import Chisel.testers.TesterDriver
-import chisel_testers._
 
 class Hello extends Module {
   val io = new Bundle {

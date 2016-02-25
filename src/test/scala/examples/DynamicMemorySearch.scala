@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import chisel_testers._
+import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec}
 
 class DynamicMemorySearch(val n: Int, val w: Int) extends Module {
   val io = new Bundle {

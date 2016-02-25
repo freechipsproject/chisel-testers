@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import chisel_testers._
+import Chisel.hwiotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object Router {
   val addressWidth    = 32
@@ -62,7 +62,8 @@ class Router extends Module {
 //    io.outs.foreach { out => out.init() }
 //    io.read_routing_table_request.init()
 //    io.load_routing_table_request.init()
-    io.read_routing_table_response.init()
+    //TODO: put this back when fix-dequio is accepted
+    //io.read_routing_table_response.init()
 //    io.in.init()
 //    io.outs.foreach { out => out.init() }
   }

@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package chisel_testers
+package Chisel.hwiotesters
 
 import Chisel._
 

@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import chisel_testers._
+import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec}
 
 class GCD extends Module {
   val io = new Bundle {

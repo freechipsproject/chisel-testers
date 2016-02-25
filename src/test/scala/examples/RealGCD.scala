@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import chisel_testers._
+import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object GCDCalculator {
   def computeGcdResultsAndCycles(a: Int, b: Int, depth: Int = 1): (Int, Int) = {

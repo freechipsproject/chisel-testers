@@ -1,8 +1,7 @@
 // See LICENSE for license details.
 
-package chisel_testers
+package Chisel.hwiotesters
 
-import java.io.File
 import org.scalatest._
 import org.scalatest.prop._
 import org.scalacheck._
