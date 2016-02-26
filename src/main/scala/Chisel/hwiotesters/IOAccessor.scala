@@ -14,12 +14,8 @@ import scala.util.matching.Regex
 class IOAccessor(val device_io: Bundle, verbose: Boolean = true) {
   val ports_referenced = new mutable.HashSet[Data]
 
-  val referenced_inputs          = new mutable.HashSet[Data]()
-  val referenced_outputs         = new mutable.HashSet[Data]()
   val dut_inputs                 = new mutable.HashSet[Data]()
   val dut_outputs                = new mutable.HashSet[Data]()
-//  val dut_inputs  = device_io.flatten.filter( port => port.dir == INPUT)
-//  val dut_outputs = device_io.flatten.filter( port => port.dir == OUTPUT)
 
   val name_to_decoupled_port = new mutable.HashMap[String, DecoupledIO[Data]]()
   val name_to_valid_port     = new mutable.HashMap[String, ValidIO[Data]]()
@@ -46,10 +42,10 @@ class IOAccessor(val device_io: Bundle, verbose: Boolean = true) {
     }
 
     def parseBundle(b: Bundle, name: String = ""): Unit = {
-      for ((n, e) <- b.elements) {
+      for ((n, e) <- b.namedElts) {
         val new_name = name + (if(name.length > 0 ) "." else "" ) + n
         port_to_name_accumulator(e) = new_name
-
+        add_to_ports_by_direction(e)
 
         e match {
           case bb: Bundle     => parseBundle(bb, new_name)
@@ -65,6 +61,7 @@ class IOAccessor(val device_io: Bundle, verbose: Boolean = true) {
       for ((e, i) <- b.zipWithIndex) {
         val new_name = name + s"($i)"
         port_to_name_accumulator(e) = new_name
+        add_to_ports_by_direction(e)
 
         e match {
           case bb: Bundle     => parseBundle(bb, new_name)

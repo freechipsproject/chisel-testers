@@ -158,7 +158,6 @@ abstract class OrderedDecoupledHWIOTester extends HWIOTester {
       )
 
       control_port_to_input_values(parent_port) += new TestingEvent(pokes.toMap, event_number)
-      io_info.referenced_inputs ++= pokes.map(_._1)
       io_info.ports_referenced ++= pokes.map(_._1)
     }
     logScalaDebug(
@@ -176,12 +175,10 @@ abstract class OrderedDecoupledHWIOTester extends HWIOTester {
       ) match {
         case Left(parent_port) =>
           decoupled_control_port_to_output_values(parent_port) += new TestingEvent(expects.toMap, event_number)
-          io_info.referenced_outputs ++= expects.map(_._1)
           io_info.ports_referenced ++= expects.map(_._1)
 
         case Right(parent_port) =>
           valid_control_port_to_output_values(parent_port) += new TestingEvent(expects.toMap, event_number)
-          io_info.referenced_outputs ++= expects.map(_._1)
           io_info.ports_referenced ++= expects.map(_._1)
 
       }
