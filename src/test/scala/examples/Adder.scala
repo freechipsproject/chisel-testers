@@ -12,7 +12,7 @@ class Adder(val w: Int) extends Module {
     val in1 = UInt(INPUT,  w)
     val out = UInt(OUTPUT, w)
   }
-  printf("in0 %d in1 %d result %d\n", io.in0, io.in1, io.out)
+// printf("in0 %d in1 %d result %d\n", io.in0, io.in1, io.out)
   io.out := io.in0 + io.in1
 }
 
@@ -77,11 +77,3 @@ class AdderTester extends ChiselFlatSpec {
     assertTesterPasses { new AdderTests }
   }
 }
-
-object Adder {
-  def main(args: Array[String]) {
-    TesterDriver.execute { () => new AdderTests }
-  }
-}
-
-

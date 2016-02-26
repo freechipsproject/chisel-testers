@@ -143,7 +143,9 @@ abstract class SteppedHWIOTester extends HWIOTester {
           output_port.toBits(),
           output_values(counter.value).toBits()
         )
-        assert(Bool(false), "Failed test")
+        // TODO: Use the following line instead of the unadorned assert when firrtl parsing error issue #111 is fixed
+        // assert(Bool(false), "Failed test")
+        assert(Bool(false))
         stop()
       }
     }
