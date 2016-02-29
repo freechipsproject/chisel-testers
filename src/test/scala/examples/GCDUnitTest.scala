@@ -6,15 +6,16 @@ import Chisel._
 import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec}
 
 class GCD extends Module {
+  val int_width = 16
   val io = new Bundle {
-    val a  = UInt(INPUT,  16)
-    val b  = UInt(INPUT,  16)
+    val a  = UInt(INPUT,  width = int_width)
+    val b  = UInt(INPUT,  width = int_width)
     val e  = Bool(INPUT)
-    val z  = UInt(OUTPUT, 16)
+    val z  = UInt(OUTPUT, width = int_width)
     val v  = Bool(OUTPUT)
   }
-  val x  = Reg(UInt())
-  val y  = Reg(UInt())
+  val x  = Reg(UInt(width = int_width))
+  val y  = Reg(UInt(width = int_width))
   when   (x > y) { x := x - y }
   unless (x > y) { y := y - x }
   when (io.e) { x := io.a; y := io.b }

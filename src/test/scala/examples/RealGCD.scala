@@ -5,6 +5,10 @@ package examples
 import Chisel._
 import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
+object RealGCD {
+  val num_width = 16
+}
+
 object GCDCalculator {
   def computeGcdResultsAndCycles(a: Int, b: Int, depth: Int = 1): (Int, Int) = {
     if(b == 0) {
@@ -17,21 +21,21 @@ object GCDCalculator {
 }
 
 class RealGCDInput extends Bundle {
-  val a = Bits(width = 16)
-  val b = Bits(width = 16)
+  val a = Bits(width = RealGCD.num_width)
+  val b = Bits(width = RealGCD.num_width)
 }
 
 class RealGCD extends Module {
   val io  = new Bundle {
     val in  = Decoupled(new RealGCDInput()).flip()
-    val out = Valid(UInt(width = 16))
+    val out = Valid(UInt(width = RealGCD.num_width))
   }
 
-  val x = Reg(UInt())
-  val y = Reg(UInt())
+  val x = Reg(UInt(width = RealGCD.num_width))
+  val y = Reg(UInt(width = RealGCD.num_width))
   val p = Reg(init=Bool(false))
 
-  val ti = Reg(init=UInt(0, width = 16))
+  val ti = Reg(init=UInt(0, width = RealGCD.num_width))
   ti := ti + UInt(1)
 
   io.in.ready := !p
