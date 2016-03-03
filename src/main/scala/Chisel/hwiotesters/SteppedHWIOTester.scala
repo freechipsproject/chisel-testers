@@ -167,8 +167,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
     val done           = Reg(init = Bool(false))
 
     when(!done) {
-      io_info.dut_inputs.foreach { port => createVectorsForInput(port, pc) }
-      io_info.dut_outputs.foreach { port => createVectorsAndTestsForOutput(port, pc) }
+      io_info.dut_inputs.filter(io_info.ports_referenced.contains).foreach { port => createVectorsForInput(port, pc) }
+      io_info.dut_outputs.filter(io_info.ports_referenced.contains).foreach { port => createVectorsAndTestsForOutput(port, pc) }
 
       when(pc.inc()) {
         printf(s"Stopping, end of tests, ${test_actions.length} steps\n")
