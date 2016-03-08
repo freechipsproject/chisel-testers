@@ -27,3 +27,9 @@ order and at a fixed cycle
 
 Tests a circuit that uses decoupled flow control for its inputs and outputs.  Tests values are applied in order 
 mediated by the ready/valid controls.  The implementer does not have to manage this flow control.
+
+How to build a test
+-------------------
+
+The SteppedHWIOTester and the OrderedDecoupledHWIOTester make it easy to construct a circuit, a chisel Module, by specifying what 
+goes into the module's inputs and what is expected to come out of the module's outputs.
