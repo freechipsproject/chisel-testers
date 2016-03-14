@@ -62,7 +62,7 @@ class Adder(val w: Int) extends Module {
 The testing is done by creating a subclass of the SteppedHWIOTester.  We will show the complete test
 and then discuss the components individually.
 #### Example
-```scala, linenumbers
+```scala
 class AdderTests extends SteppedHWIOTester {
   val device_under_test = Module( new Adder(10) )
   val c = device_under_test
