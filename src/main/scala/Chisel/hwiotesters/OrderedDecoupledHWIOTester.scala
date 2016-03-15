@@ -429,7 +429,7 @@ abstract class OrderedDecoupledHWIOTester extends HWIOTester {
 }
 
 object OrderedDecoupledHWIOTester {
-  val default_max_tick_count = 1000
+  val default_max_tick_count = 10000
   var max_tick_count         = default_max_tick_count
 }
 

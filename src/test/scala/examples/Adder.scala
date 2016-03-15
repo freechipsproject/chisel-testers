@@ -4,7 +4,6 @@ package examples
 
 import Chisel._
 import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
-import Chisel.testers.TesterDriver
 
 class Adder(val w: Int) extends Module {
   val io = new Bundle {

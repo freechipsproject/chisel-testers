@@ -41,7 +41,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
   case class Step(input_map: mutable.HashMap[Data,Int], output_map: mutable.HashMap[Data,Int])
 
   // Scala stuff
-  val test_actions = new ArrayBuffer[Step]()
+  private val test_actions = new ArrayBuffer[Step]()
   step(1) // gives us a slot to put in our input and outputs from beginning
 
   def poke(io_port: Data, value: Int): Unit = {
@@ -108,7 +108,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
     }
   }
 
-  def createVectorsForInput(input_port: Data, counter: Counter): Unit = {
+  private def createVectorsForInput(input_port: Data, counter: Counter): Unit = {
     var default_value = 0
     val input_values = Vec(
       test_actions.map { step =>
@@ -119,7 +119,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
     input_port := input_values(counter.value)
   }
 
-  def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
+  private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
     val output_values = Vec(
       test_actions.map { step =>
         output_port.fromBits(UInt(step.output_map.getOrElse(output_port, 0)))

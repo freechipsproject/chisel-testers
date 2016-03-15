@@ -25,15 +25,14 @@ class SmallOdds4(filter_width: Int) extends Module {
 
   def buildFilter(): Unit = {
     val smalls = Module(new Filter(_ < UInt(10)))
-//    val q      = Module(new Queue(UInt(width = filter_width), entries = 1))
-//    val odds   = Module(new Filter((x: UInt) => (x & UInt(1)) === UInt(1)))
+    val q      = Module(new Queue(UInt(width = filter_width), entries = 1))
+    val odds   = Module(new Filter((x: UInt) => (x & UInt(1)) === UInt(1)))
 
     io.in.ready  := smalls.io.in.ready
-//TODO: Uncomment this when bulk connect is working again
-//    smalls.io.in <> io.in
-//    q.io.enq     <> smalls.io.out
-//    odds.io.in   <> q.io.deq
-//    io.out       <> odds.io.out
+    smalls.io.in <> io.in
+    q.io.enq     <> smalls.io.out
+    odds.io.in   <> q.io.deq
+    io.out       <> odds.io.out
   }
 
   buildFilter()
@@ -42,15 +41,16 @@ class SmallOdds4(filter_width: Int) extends Module {
 class SmallOdds4Tester(width: Int) extends OrderedDecoupledHWIOTester {
   val device_under_test = Module(new SmallOdds4(filter_width = width))
 
-//TODO: Uncomment this when bulk connect is working again
-//    for (i <- 0 to 30) {
-//      val num = rnd.nextInt(20)
-//      logScalaDebug(s"random value $i $num")
-//      inputEvent(device_under_test.io.in.bits -> num)
-//      if (num % 2 == 1 && num < 10) {
-//        outputEvent(device_under_test.io.out.bits -> num)
-//      }
-//    }
+  OrderedDecoupledHWIOTester.max_tick_count = 4000
+
+  for (i <- 0 to 30) {
+    val num = rnd.nextInt(20)
+    logScalaDebug(s"random value $i $num")
+    inputEvent(device_under_test.io.in.bits -> num)
+    if (num % 2 == 1 && num < 10) {
+      outputEvent(device_under_test.io.out.bits -> num)
+    }
+  }
 }
 
 class SmallOdds4TesterSpec extends ChiselFlatSpec {
