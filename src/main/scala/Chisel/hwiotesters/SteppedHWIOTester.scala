@@ -38,7 +38,8 @@ import scala.collection.mutable.ArrayBuffer
   * }}}
   */
 abstract class SteppedHWIOTester extends HWIOTester {
-  case class Step(input_map: mutable.HashMap[Data,Int], output_map: mutable.HashMap[Data,Int])
+  type TesterMap = mutable.HashMap[Data,Bits]
+  case class Step(input_map: TesterMap, output_map: TesterMap)
 
   // Scala stuff
   private val test_actions = new ArrayBuffer[Step]()
@@ -49,7 +50,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
     require(!test_actions.last.input_map.contains(io_port),
       s"second poke to $io_port without step\nkeys ${test_actions.last.input_map.keys.mkString(",")}")
 
-    test_actions.last.input_map(io_port) = value
+    test_actions.last.input_map(io_port) = Bits(value)
   }
 //  def poke(io_port: Data, bool_value: Boolean) = poke(io_port, if(bool_value) 1 else 0)
 
@@ -57,13 +58,19 @@ abstract class SteppedHWIOTester extends HWIOTester {
     require(io_port.dir == OUTPUT, s"expect error: $io_port not an output")
     require(!test_actions.last.output_map.contains(io_port), s"second expect to $io_port without step")
 
-    test_actions.last.output_map(io_port) = value
+    val bit_value = Bits(value)
+//    println(s"expect port $io_port $bit_value")
+    test_actions.last.output_map(io_port) = bit_value
+//    println(
+//      test_actions.last.output_map.keys.map { k =>
+//        val v = test_actions.last.output_map(k)
+//        s"$k -> ${} $v  ${v.litValue()}"}.mkString("   ", "\n   ", ""))
   }
   def expect(io_port: Data, bool_value: Boolean): Unit = expect(io_port, if(bool_value) 1 else 0)
 
   def step(number_of_cycles: Int): Unit = {
     test_actions ++= Array.fill(number_of_cycles) {
-      new Step(new mutable.HashMap[Data, Int](), new mutable.HashMap[Data, Int]())
+      new Step(new TesterMap(), new TesterMap())
     }
   }
 
@@ -74,6 +81,9 @@ abstract class SteppedHWIOTester extends HWIOTester {
     val default_table_width = 80
 
     if(io_info.ports_referenced.nonEmpty) {
+      val ordered_inputs = io_info.dut_inputs.toList
+      val ordered_outputs = io_info.dut_outputs.toList
+
       val max_col_width = io_info.ports_referenced.map { port =>
         Array(name(port).length, port.getWidth / 4).max // width/4 is how wide value might be in hex
       }.max + 2
@@ -84,22 +94,22 @@ abstract class SteppedHWIOTester extends HWIOTester {
       println("UnitTester state table")
       println(
         "%6s".format("step") +
-          io_info.dut_inputs.map { dut_input => string_col_template.format(name(dut_input)) }.mkString +
-          io_info.dut_outputs.map { dut_output => string_col_template.format(name(dut_output)) }.mkString
+          ordered_inputs.map { dut_input => string_col_template.format(name(dut_input)) }.mkString +
+          ordered_outputs.map { dut_output => string_col_template.format(name(dut_output)) }.mkString
       )
       println("-" * default_table_width)
       /**
         * prints out a table form of input and expected outputs
         */
-      def val_str(hash: mutable.HashMap[Data, Int], key: Data): String = {
-        if (hash.contains(key)) "%d".format(hash(key)) else "-"
+      def val_str(hash: TesterMap, key: Data): String = {
+        if (hash.contains(key)) "%s".format(hash(key).litValue()) else "-"
       }
       test_actions.zipWithIndex.foreach { case (step, step_number) =>
         print("%6d".format(step_number))
-        for (port <- io_info.dut_inputs) {
+        for (port <- ordered_inputs) {
           print(string_col_template.format(val_str(step.input_map, port)))
         }
-        for (port <- io_info.dut_outputs) {
+        for (port <- ordered_outputs) {
           print(string_col_template.format(val_str(step.output_map, port)))
         }
         println()
@@ -109,11 +119,11 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 
   private def createVectorsForInput(input_port: Data, counter: Counter): Unit = {
-    var default_value = 0
+    var default_value = Bits(0)
     val input_values = Vec(
       test_actions.map { step =>
-        default_value = step.input_map.getOrElse(input_port, default_value)
-        UInt(default_value, input_port.width)
+        default_value = step.input_map.getOrElse(input_port, default_value).asUInt()
+        default_value
       }
     )
     input_port := input_values(counter.value)
@@ -122,7 +132,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
   private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
     val output_values = Vec(
       test_actions.map { step =>
-        output_port.fromBits(UInt(step.output_map.getOrElse(output_port, 0)))
+        output_port.fromBits(step.output_map.getOrElse(output_port, Bits(0)))
       }
     )
     val ok_to_test_output_values = Vec(
