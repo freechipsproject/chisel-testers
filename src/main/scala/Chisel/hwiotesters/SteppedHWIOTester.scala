@@ -46,21 +46,27 @@ abstract class SteppedHWIOTester extends HWIOTester {
   step(1) // gives us a slot to put in our input and outputs from beginning
 
   def poke(io_port: Data, value: Int): Unit = {
-    require(io_port.dir == INPUT, s"poke error: $io_port not an input")
+    poke(io_port, Bits(value))
+  }
+
+  def poke(io_port: Data, value: Bits): Unit = {
+    require(io_port.isInstanceOf[Bundle] || io_port.dir == INPUT, s"poke error: $io_port not an input")
     require(!test_actions.last.input_map.contains(io_port),
       s"second poke to $io_port without step\nkeys ${test_actions.last.input_map.keys.mkString(",")}")
 
-    test_actions.last.input_map(io_port) = Bits(value)
+    test_actions.last.input_map(io_port) = value
   }
 //  def poke(io_port: Data, bool_value: Boolean) = poke(io_port, if(bool_value) 1 else 0)
 
   def expect(io_port: Data, value: Int): Unit = {
-    require(io_port.dir == OUTPUT, s"expect error: $io_port not an output")
+    expect(io_port, Bits(value))
+  }
+  def expect(io_port: Data, value: Bits): Unit = {
+    require(io_port.isInstanceOf[Bundle] || io_port.dir == OUTPUT, s"expect error: $io_port not an output")
     require(!test_actions.last.output_map.contains(io_port), s"second expect to $io_port without step")
 
-    val bit_value = Bits(value)
 //    println(s"expect port $io_port $bit_value")
-    test_actions.last.output_map(io_port) = bit_value
+    test_actions.last.output_map(io_port) = value
 //    println(
 //      test_actions.last.output_map.keys.map { k =>
 //        val v = test_actions.last.output_map(k)
@@ -126,6 +132,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
         default_value
       }
     )
+//    input_values(counter.value) <> input_port
     input_port := input_values(counter.value)
   }
 
