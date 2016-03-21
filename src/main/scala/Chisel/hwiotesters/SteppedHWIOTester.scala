@@ -45,6 +45,10 @@ abstract class SteppedHWIOTester extends HWIOTester {
   private val test_actions = new ArrayBuffer[Step]()
   step(1) // gives us a slot to put in our input and outputs from beginning
 
+  def poke(io_port: Data, value: Bundle): Unit = {
+    poke(io_port, value.toBits())
+  }
+
   def poke(io_port: Data, value: Int): Unit = {
     poke(io_port, Bits(value))
   }
@@ -58,6 +62,9 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 //  def poke(io_port: Data, bool_value: Boolean) = poke(io_port, if(bool_value) 1 else 0)
 
+  def expect(io_port: Data, value: Bundle): Unit = {
+    expect(io_port, value.toBits())
+  }
   def expect(io_port: Data, value: Int): Unit = {
     expect(io_port, Bits(value))
   }

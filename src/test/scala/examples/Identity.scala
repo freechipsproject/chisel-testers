@@ -51,8 +51,10 @@ class IdentityTests extends SteppedHWIOTester {
   poke(c.io.uint_in, UInt(5))
   expect(c.io.uint_out, UInt(5))
 
-  poke(c.io.bundle_in, IdentityBundle(Bool(true), UInt(10)).toBits() )
-  expect(c.io.bundle_out, IdentityBundle(Bool(true), UInt(10)).toBits() )
+//  poke(c.io.bundle_in, IdentityBundle(Bool(true), UInt(10)).toBits() )
+//  expect(c.io.bundle_out, IdentityBundle(Bool(true), UInt(10)).toBits() )
+  poke(c.io.bundle_in, IdentityBundle(Bool(true), UInt(10) ))
+  expect(c.io.bundle_out, IdentityBundle(Bool(true), UInt(10) ))
 }
 
 class IdentityTester extends ChiselFlatSpec {
