@@ -43,49 +43,52 @@ abstract class SteppedHWIOTester extends HWIOTester {
   val input_vector_factory = IOVectorFactory("input")
   val output_vector_factory = IOVectorFactory("output")
 
-  // Scala stuff
-  private val test_actions = new ArrayBuffer[Step]()
   var step_number = 0
 
   step(1) // gives us a slot to put in our input and outputs from beginning
 
+
+  def checkPoke(io_port: Data): Unit = {
+    require(io_port.isInstanceOf[Bundle] || io_port.dir == INPUT, s"poke error: $io_port not an input")
+    require(!input_vector_factory.hash.contains(io_port) ||
+            (input_vector_factory.hash.contains(io_port) && input_vector_factory(io_port).okToAdd(step_number)),
+      s"second poke to $io_port at step ${step_number}\nkeys ${input_vector_factory(io_port).value_list(step_number)}")
+  }
   def poke(io_port: Data, value: Bundle): Unit = {
+    checkPoke(io_port)
     input_vector_factory(io_port, value, step_number)
   }
 
   def poke(io_port: Data, value: Int): Unit = {
+    checkPoke(io_port)
     input_vector_factory(io_port, Bits(value), step_number)
   }
 
   def poke(io_port: Data, value: Bits): Unit = {
-    require(io_port.isInstanceOf[Bundle] || io_port.dir == INPUT, s"poke error: $io_port not an input")
-    require(!test_actions.last.input_map.contains(io_port),
-      s"second poke to $io_port without step\nkeys ${test_actions.last.input_map.keys.mkString(",")}")
-
+    checkPoke(io_port)
     input_vector_factory(io_port, value, step_number)
   }
-//  def poke(io_port: Data, bool_value: Boolean) = poke(io_port, if(bool_value) 1 else 0)
 
-  def expect(io_port: Data, value: Bundle): Unit = {
-//    expect(io_port, value.toBits())
+  def checkExpect(io_port: Data): Unit = {
+    require(io_port.isInstanceOf[Bundle] || io_port.dir == OUTPUT, s"expect error: $io_port not an output")
+    require(! output_vector_factory.hash.contains(io_port) ||
+      (output_vector_factory.hash.contains(io_port) && output_vector_factory(io_port).okToAdd(step_number)),
+      s"second expect on $io_port at ${step_number}\nkeys ${output_vector_factory(io_port).value_list(step_number)}")
+
+  }
+  def expect(io_port: Bundle, value: Bundle): Unit = {
     output_vector_factory(io_port, value, step_number)
   }
   def expect(io_port: Data, value: Int): Unit = {
     output_vector_factory(io_port, UInt(value), step_number)
-//    expect(io_port, Bits(value))
   }
   def expect(io_port: Data, value: Bits): Unit = {
-    require(io_port.isInstanceOf[Bundle] || io_port.dir == OUTPUT, s"expect error: $io_port not an output")
-    require(!test_actions.last.output_map.contains(io_port), s"second expect to $io_port without step")
-
+    checkExpect(io_port)
     output_vector_factory(io_port, value, step_number)
   }
   def expect(io_port: Data, bool_value: Boolean): Unit = expect(io_port, if(bool_value) 1 else 0)
 
   def step(number_of_cycles: Int): Unit = {
-    test_actions ++= Array.fill(number_of_cycles) {
-      new Step(new TesterMap(), new TesterMap())
-    }
     step_number += 1
   }
 
@@ -136,13 +139,13 @@ abstract class SteppedHWIOTester extends HWIOTester {
         output_vector_factory(port).value_list.getOrElse(step, "-").toString
       }
 
-      test_actions.zipWithIndex.foreach { case (step, step_number) =>
-        print("%6d".format(step_number))
+      for( step <- 0 to step_number) {
+        print("%6d".format(step))
         for (port <- ordered_inputs) {
-          print(column_width_templates(port).format(get_in_str(port, step_number)))
+          print(column_width_templates(port).format(get_in_str(port, step)))
         }
         for (port <- ordered_outputs) {
-          print(column_width_templates(port).format(get_out_str(port, step_number)))
+          print(column_width_templates(port).format(get_out_str(port, step)))
         }
         println()
       }
@@ -151,28 +154,15 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 
   private def createVectorsForInput(input_port: Data, counter: Counter): Unit = {
-    var default_value = Bits(0)
-    val input_values = Vec(
-      test_actions.map { step =>
-        default_value = step.input_map.getOrElse(input_port, default_value).asUInt()
-        default_value
-      }
-    )
-//    input_values(counter.value) <> input_port
-//    input_port := input_values(counter.value)
     input_vector_factory.hash(input_port).build(counter.value)
   }
 
   private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
-    val output_values = Vec(
-      test_actions.map { step =>
-        output_port.fromBits(step.output_map.getOrElse(output_port, Bits(0)))
-      }
-    )
     val ok_to_test_output_values = output_vector_factory(output_port).buildIsUsedVector
+    val test_vectors = output_vector_factory(output_port).buildExpectedVectors
 
     when(ok_to_test_output_values(counter.value)) {
-      when(output_vector_factory(output_port).buildTestConditional(counter.value)) {
+      when(output_vector_factory(output_port).buildTestConditional(counter.value, test_vectors)) {
                   logPrintfDebug("    passed step %d -- " + name(output_port) + ":  %d\n",
                     counter.value,
                     output_port.toBits()
@@ -181,7 +171,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
         printf("    failed on step %d -- port " + name(output_port) + ":  %d expected %d\n",
           counter.value,
           output_port.toBits(),
-          output_values(counter.value).toBits()
+          test_vectors(counter.value)
         )
         assert(Bool(false))
         stop()
@@ -190,11 +180,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 
   private def processEvents(): Unit = {
-    test_actions.foreach { case step =>
-//      io_info.ports_referenced ++= step.input_map.keys
-      io_info.ports_referenced ++= input_vector_factory.portsUsed
-      io_info.ports_referenced ++= output_vector_factory.portsUsed
-    }
+    io_info.ports_referenced ++= input_vector_factory.portsUsed
+    io_info.ports_referenced ++= output_vector_factory.portsUsed
   }
 
   override def finish(): Unit = {
@@ -202,7 +189,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
 
     processEvents()
 
-    val pc             = Counter(test_actions.length)
+    val pc             = Counter(step_number)
     val done           = Reg(init = Bool(false))
 
     when(!done) {
@@ -210,7 +197,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
       output_vector_factory.portsUsed.foreach { port => createVectorsAndTestsForOutput(port, pc) }
 
       when(pc.inc()) {
-        printf(s"Stopping, end of tests, ${test_actions.length} steps\n")
+        printf(s"Stopping, end of tests, $step_number steps\n")
         done := Bool(true)
         stop()
       }

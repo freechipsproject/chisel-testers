@@ -11,7 +11,11 @@ case class IOVectorGenerator[T <: Data](port: T) {
   val value_list = new mutable.HashMap[Int, T]()
   var max_step = 0
 
+  def okToAdd(step: Int): Boolean = {
+    ! value_list.contains(step)
+  }
   def add(step: Int, value: T): Unit = {
+
     value_list(step) = value
     max_step = max_step.max(step)
   }
@@ -29,14 +33,17 @@ case class IOVectorGenerator[T <: Data](port: T) {
       })
     vec
   }
-
-  def buildTestConditional(index: UInt): Bool = {
+  def buildExpectedVectors: Vec[UInt] = {
     val vec = Vec(
       (0 to max_step).map { step_number =>
-        value_list.getOrElse(step_number, port.fromBits(Bits(0)))
+        value_list.getOrElse(step_number, port.fromBits(Bits(0))).toBits()
       })
+    vec
+  }
 
-    port.toBits() === vec(index).toBits()
+  def buildTestConditional(index: UInt, vec: Vec[UInt]): Bool = {
+
+    port.toBits() === vec(index)
   }
 }
 
