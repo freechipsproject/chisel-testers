@@ -86,7 +86,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
   def expect(io_port: Data, bool_value: Boolean): Unit = expect(io_port, if(bool_value) 1 else 0)
 
   def step(number_of_cycles: Int): Unit = {
-    step_number += 1
+    step_number += number_of_cycles
   }
 
   private def name(port: Data): String = io_info.port_to_name(port)
@@ -152,7 +152,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 
   private def createVectorsForInput(input_port: Data, counter: Counter): Unit = {
-    input_vector_factory.hash(input_port).build(counter.value)
+    input_vector_factory.hash(input_port).buildInputAssignment(counter.value)
   }
 
   private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {

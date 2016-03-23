@@ -19,10 +19,12 @@ case class IOVectorGenerator[T <: Data](port: T) {
     value_list(step) = value
     max_step = max_step.max(step)
   }
-  def build(index: UInt): Unit = {
+  def buildInputAssignment(index: UInt): Unit = {
+    var defaultValue : T = port.fromBits(Bits(0))
     val vec = Vec(
       (0 to max_step).map { step_number =>
-        value_list.getOrElse(step_number, port.fromBits(Bits(0)))
+        defaultValue = value_list.getOrElse(step_number, defaultValue)
+        defaultValue
       })
     port := vec(index)
   }

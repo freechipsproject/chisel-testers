@@ -60,7 +60,7 @@ class DynamicMemorySearchTests(val n: Int, val w: Int) extends SteppedHWIOTester
     poke(c.io.en, 1)
     step(1)
     poke(c.io.en, 0)
-    step(1)
+    step(wrAddr)
     val expectedIndex = if (list.contains(target)) {
       list.indexOf(target)
     } else {
