@@ -78,7 +78,7 @@ class DecoupledAdderTests extends OrderedDecoupledHWIOTester {
     z = x + y
   } {
     println(s"adding $x + $y -> $z")
-    inputEventBundles(device_under_test.io.in.bits -> SlowDecoupledAdderIn(x, y))
+//    inputEventBundles(device_under_test.io.in.bits -> SlowDecoupledAdderIn(x, y))
 //    inputEvent(device_under_test.io.in.bits.a -> x, device_under_test.io.in.bits.b -> y)
     outputEvent(device_under_test.io.out.bits.c -> z)
   }

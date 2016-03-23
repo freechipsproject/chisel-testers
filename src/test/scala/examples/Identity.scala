@@ -4,6 +4,7 @@ package examples
 
 import Chisel.hwiotesters.{ChiselFlatSpec, SteppedHWIOTester}
 import Chisel._
+import Chisel.internal.firrtl.{LitArg, ULit}
 
 object IdentityBundle {
   def apply(bool: Bool, uint: UInt): IdentityBundle = {
@@ -12,40 +13,38 @@ object IdentityBundle {
     ib
   }
 }
+
 class IdentityBundle extends Bundle {
   val i_bool = Bool(OUTPUT)
   val i_uint = UInt(OUTPUT, width = 16)
+  var my_litArg : Option[LitArg] = None
 
   def init(bool: Bool, uint: UInt): Unit = {
     i_bool := bool
     i_uint := uint
+    my_litArg = Some(ULit(uint.litValue(), uint.width))
   }
+  override def litArg: Option[LitArg] = my_litArg
 }
 
 class Identity extends Module {
   val size = 16
   val io = new Bundle {
-    val bool_in = Bool(INPUT)
-    val bool_out = Bool(OUTPUT)
-
-    val uint_in = UInt(INPUT, width =  size)
-    val uint_out = UInt(OUTPUT, width =  size)
-
+//    val bool_in = Bool(INPUT)
+//    val bool_out = Bool(OUTPUT)
+//
+//    val uint_in = UInt(INPUT, width =  size)
+//    val uint_out = UInt(OUTPUT, width =  size)
+//
     val bundle_in = (new IdentityBundle).flip()
     val bundle_out = new IdentityBundle
   }
 
-  val r1 = Reg(new IdentityBundle)
-
-  r1 := io.bundle_in
-
-  io.bundle_out := r1
-
-  io.bool_out := io.bool_in
-  io.uint_out := io.uint_in
-//  io.bundle_in <> io.bundle_out
-  io.bundle_out.i_uint := io.bundle_in.i_uint * UInt(2)
-  io.bundle_out.i_bool := ! io.bundle_in.i_bool
+//  io.bool_out := io.bool_in
+//  io.uint_out := io.uint_in
+  io.bundle_out := io.bundle_in
+//  io.bundle_out.i_uint := io.bundle_in.i_uint * UInt(2)
+//  io.bundle_out.i_bool := ! io.bundle_in.i_bool
 }
 
 class IdentityTests extends SteppedHWIOTester {
