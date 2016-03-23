@@ -26,8 +26,8 @@ class IdentityBundle extends Bundle {
     my_litArg = Some(ULit(uint.litValue(), uint.width))
     my_rep = s"(${bool.litValue()},${uint.litValue()})"
   }
-  override def litArg: Option[LitArg] = my_litArg
-//  override def toString = my_rep
+//  override def litArg: Option[LitArg] = my_litArg
+  override def toString = my_rep
 }
 
 class Identity extends Module {

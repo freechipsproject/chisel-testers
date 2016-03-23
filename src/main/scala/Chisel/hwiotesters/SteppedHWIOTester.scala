@@ -106,8 +106,10 @@ abstract class SteppedHWIOTester extends HWIOTester {
       def compute_widths(ordered_ports: Seq[Data], factory: IOVectorFactory): Map[Data, String] = {
         ordered_ports.map { port =>
           val column_header_width = name(port).length
-          val data_width = factory(port).value_list.map { value => value.toString.length }.max
-          val column_width = column_header_width.max(data_width)
+          val data_width = factory(port).value_list.map { case (step, value) =>
+            factory.asString(port, step).length
+          }.max
+          val column_width = column_header_width.max(data_width) + 2
           port -> s"%${column_width}s"
         }.toMap
       }
@@ -127,10 +129,12 @@ abstract class SteppedHWIOTester extends HWIOTester {
         */
 
       def get_in_str(port: Data, step: Int): String = {
-        input_vector_factory.hash(port).value_list.getOrElse(step, "-").toString
+        input_vector_factory.asString(port, step)
+//        input_vector_factory.hash(port).value_list.getOrElse(step, "-").toString
       }
       def get_out_str(port: Data, step: Int): String = {
-        output_vector_factory(port).value_list.getOrElse(step, "-").toString
+        output_vector_factory.asString(port, step)
+//        output_vector_factory(port).value_list.getOrElse(step, "-").toString
       }
 
       for( step <- 0 to step_number) {

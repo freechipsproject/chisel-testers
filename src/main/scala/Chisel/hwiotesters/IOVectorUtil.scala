@@ -42,8 +42,20 @@ case class IOVectorGenerator[T <: Data](port: T) {
   }
 
   def buildTestConditional(index: UInt, vec: Vec[UInt]): Bool = {
-
     port.toBits() === vec(index)
+  }
+
+  def asString(step: Int): String = {
+    if( ! value_list.contains(step) ) {
+      "-"
+    }
+    else {
+      val value = value_list(step)
+      value.litArg() match {
+        case Some(lit_arg) => lit_arg.num.toString()
+        case _ => value.toString
+      }
+    }
   }
 }
 
@@ -64,6 +76,13 @@ case class IOVectorFactory(name: String) {
 
   def portsUsed: Iterable[Data] = {
     hash.keys
+  }
+
+  def asString[T <: Data](port: T, step: Int): String = {
+    if(! hash.contains(port) ) "-"
+    else {
+      hash(port).asString(step)
+    }
   }
 }
 
