@@ -13,6 +13,17 @@ import Chisel.hwiotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 class SlowDecoupledAdderIn extends Bundle {
   val a = UInt(width=16)
   val b = UInt(width=16)
+  def init(x: Int, y: Int): Unit = {
+    a := UInt(x)
+    b := UInt(y)
+  }
+}
+object SlowDecoupledAdderIn {
+  def apply(x : Int, y: Int) : SlowDecoupledAdderIn = {
+    val adder_in = Wire(new SlowDecoupledAdderIn)
+    adder_in.init(x, y)
+    adder_in
+  }
 }
 
 class SlowDecoupledAdderOut extends Bundle {
@@ -59,13 +70,16 @@ class SlowDecoupledAdder extends Module {
 
 class DecoupledAdderTests extends OrderedDecoupledHWIOTester {
   val device_under_test = Module(new SlowDecoupledAdder())
+  enable_all_debug = true
 
   for {
     x <- 0 to 4
     y <- 0 to 6 by 2
     z = x + y
   } {
-    inputEvent(device_under_test.io.in.bits.a -> x, device_under_test.io.in.bits.b -> y)
+    println(s"adding $x + $y -> $z")
+    inputEventBundles(device_under_test.io.in.bits -> SlowDecoupledAdderIn(x, y))
+//    inputEvent(device_under_test.io.in.bits.a -> x, device_under_test.io.in.bits.b -> y)
     outputEvent(device_under_test.io.out.bits.c -> z)
   }
 }

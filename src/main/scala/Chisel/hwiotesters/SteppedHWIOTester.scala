@@ -7,6 +7,37 @@ import Chisel._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
+case class IOVectorGenerator[T <: Data](port: T) {
+  val value_list = new mutable.ArrayBuffer[T]()
+  var max_step = 0
+
+  def add(step: Int, value: T): Unit = {
+    while(value_list.length <= step) value_list += port.fromBits(Bits(0))
+    value_list(step) = value
+    max_step = max_step.max(step)
+  }
+  def build(index: UInt): Unit = {
+    val vec = Vec(value_list)
+    port := vec(index)
+  }
+}
+
+object IOVectorFactory {
+  var hash = new mutable.HashMap[Data, IOVectorGenerator[_]]()
+
+  def apply[T <: Data](port: T, value: T, step: Int): Unit = {
+    if(!hash.contains(port)) {
+      hash(port) = IOVectorGenerator(port)
+    }
+    val poker = hash(port).asInstanceOf[IOVectorGenerator[T]]
+    poker.add(step, value)
+  }
+
+  def portsUsed = {
+    hash.keys
+  }
+}
+
 /**
   * Use a UnitTester to construct a test harness for a chisel module
   * this module will be canonically referred to as the device_under_test, often simply as c in
@@ -37,20 +68,23 @@ import scala.collection.mutable.ArrayBuffer
   * }
   * }}}
   */
+
 abstract class SteppedHWIOTester extends HWIOTester {
   type TesterMap = mutable.HashMap[Data,Bits]
   case class Step(input_map: TesterMap, output_map: TesterMap)
 
   // Scala stuff
   private val test_actions = new ArrayBuffer[Step]()
+  var step_number = 0
+
   step(1) // gives us a slot to put in our input and outputs from beginning
 
   def poke(io_port: Data, value: Bundle): Unit = {
-    poke(io_port, value.toBits())
+    IOVectorFactory(io_port, value, step_number)
   }
 
   def poke(io_port: Data, value: Int): Unit = {
-    poke(io_port, Bits(value))
+    IOVectorFactory(io_port, Bits(value), step_number)
   }
 
   def poke(io_port: Data, value: Bits): Unit = {
@@ -58,7 +92,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
     require(!test_actions.last.input_map.contains(io_port),
       s"second poke to $io_port without step\nkeys ${test_actions.last.input_map.keys.mkString(",")}")
 
-    test_actions.last.input_map(io_port) = value
+    IOVectorFactory(io_port, value, step_number)
   }
 //  def poke(io_port: Data, bool_value: Boolean) = poke(io_port, if(bool_value) 1 else 0)
 
@@ -85,6 +119,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
     test_actions ++= Array.fill(number_of_cycles) {
       new Step(new TesterMap(), new TesterMap())
     }
+    step_number += 1
   }
 
   private def name(port: Data): String = io_info.port_to_name(port)
@@ -94,36 +129,44 @@ abstract class SteppedHWIOTester extends HWIOTester {
     val default_table_width = 80
 
     if(io_info.ports_referenced.nonEmpty) {
-      val ordered_inputs = io_info.dut_inputs.toList
-      val ordered_outputs = io_info.dut_outputs.toList
+//      val ordered_inputs = io_info.dut_inputs.filter(io_info.ports_referenced.contains).toList.sortWith { case (a, b) =>
+      val ordered_inputs = IOVectorFactory.portsUsed.toList.sortWith { case (a, b) =>
+        io_info.port_to_name(a) < io_info.port_to_name(b) }
+      val ordered_outputs = io_info.dut_outputs.filter(io_info.ports_referenced.contains).toList.sortWith { case (a, b) =>
+        io_info.port_to_name(a) < io_info.port_to_name(b) }
 
-      val max_col_width = io_info.ports_referenced.map { port =>
-        Array(name(port).length, port.getWidth / 4).max // width/4 is how wide value might be in hex
-      }.max + 2
-      val string_col_template = s"%${max_col_width}s"
-//      val number_col_template = s"%${max_col_width}x"
+      val column_width_templates = (ordered_inputs ++ ordered_outputs).map { port =>
+        val column_header = name(port)
+        val data_width    = port.getWidth / 3
+        port -> s"%${column_header.length.max(data_width)+2}s"
+        }.toMap
 
       println("=" * default_table_width)
       println("UnitTester state table")
       println(
         "%6s".format("step") +
-          ordered_inputs.map { dut_input => string_col_template.format(name(dut_input)) }.mkString +
-          ordered_outputs.map { dut_output => string_col_template.format(name(dut_output)) }.mkString
+          ordered_inputs.map { dut_input => column_width_templates(dut_input).format(name(dut_input)) }.mkString +
+          ordered_outputs.map { dut_output => column_width_templates(dut_output).format(name(dut_output)) }.mkString
       )
       println("-" * default_table_width)
       /**
         * prints out a table form of input and expected outputs
         */
+
       def val_str(hash: TesterMap, key: Data): String = {
         if (hash.contains(key)) "%s".format(hash(key).litValue()) else "-"
       }
+      def get_str(port: Data, step: Int): String = {
+        IOVectorFactory.hash(port).value_list(step).toString
+      }
+
       test_actions.zipWithIndex.foreach { case (step, step_number) =>
         print("%6d".format(step_number))
         for (port <- ordered_inputs) {
-          print(string_col_template.format(val_str(step.input_map, port)))
+          print(column_width_templates(port).format(get_str(port, step_number)))
         }
         for (port <- ordered_outputs) {
-          print(string_col_template.format(val_str(step.output_map, port)))
+          print(column_width_templates(port).format(val_str(step.output_map, port)))
         }
         println()
       }
@@ -140,7 +183,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
       }
     )
 //    input_values(counter.value) <> input_port
-    input_port := input_values(counter.value)
+//    input_port := input_values(counter.value)
+    IOVectorFactory.hash(input_port).build(counter.value)
   }
 
   private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
@@ -177,7 +221,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
 
   private def processEvents(): Unit = {
     test_actions.foreach { case step =>
-      io_info.ports_referenced ++= step.input_map.keys
+//      io_info.ports_referenced ++= step.input_map.keys
+      io_info.ports_referenced ++= IOVectorFactory.portsUsed
       io_info.ports_referenced ++= step.output_map.keys
     }
   }
@@ -191,7 +236,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
     val done           = Reg(init = Bool(false))
 
     when(!done) {
-      io_info.dut_inputs.filter(io_info.ports_referenced.contains).foreach { port => createVectorsForInput(port, pc) }
+//      io_info.dut_inputs.filter(io_info.ports_referenced.contains).foreach { port => createVectorsForInput(port, pc) }
+      IOVectorFactory.portsUsed.foreach { port => createVectorsForInput(port, pc) }
       io_info.dut_outputs.filter(io_info.ports_referenced.contains).foreach { port => createVectorsAndTestsForOutput(port, pc) }
 
       when(pc.inc()) {

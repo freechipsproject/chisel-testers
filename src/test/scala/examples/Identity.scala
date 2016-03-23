@@ -35,26 +35,34 @@ class Identity extends Module {
     val bundle_out = new IdentityBundle
   }
 
+  val r1 = Reg(new IdentityBundle)
+
+  r1 := io.bundle_in
+
+  io.bundle_out := r1
+
   io.bool_out := io.bool_in
   io.uint_out := io.uint_in
 //  io.bundle_in <> io.bundle_out
-  io.bundle_out <> io.bundle_in
+  io.bundle_out.i_uint := io.bundle_in.i_uint * UInt(2)
+  io.bundle_out.i_bool := ! io.bundle_in.i_bool
 }
 
 class IdentityTests extends SteppedHWIOTester {
-  val device_under_test = Module( new Identity )
+  val device_under_test = Module(new Identity)
   val c = device_under_test
   enable_all_debug = true
 
-  poke(c.io.bool_in, Bool(true))
-  expect(c.io.bool_out, Bool(true))
-  poke(c.io.uint_in, UInt(5))
-  expect(c.io.uint_out, UInt(5))
+  for (i <- 0 to 4) {
+//    poke(c.io.bool_in, Bool(i % 2 == 0))
+//    expect(c.io.bool_out, Bool(i % 2 == 0))
+//    poke(c.io.uint_in, UInt(i))
+//    expect(c.io.uint_out, UInt(i))
 
-//  poke(c.io.bundle_in, IdentityBundle(Bool(true), UInt(10)).toBits() )
-//  expect(c.io.bundle_out, IdentityBundle(Bool(true), UInt(10)).toBits() )
-  poke(c.io.bundle_in, IdentityBundle(Bool(true), UInt(10) ))
-  expect(c.io.bundle_out, IdentityBundle(Bool(true), UInt(10) ))
+    poke(c.io.bundle_in, IdentityBundle(Bool(i % 3 == 0), UInt(10+i)))
+    expect(c.io.bundle_out, IdentityBundle(Bool(i % 3 == 0), UInt(10+i)))
+    step(1)
+  }
 }
 
 class IdentityTester extends ChiselFlatSpec {
