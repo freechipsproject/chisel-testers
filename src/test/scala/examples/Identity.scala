@@ -18,13 +18,16 @@ class IdentityBundle extends Bundle {
   val i_bool = Bool(OUTPUT)
   val i_uint = UInt(OUTPUT, width = 16)
   var my_litArg : Option[LitArg] = None
+  var my_rep: String = this.toString
 
   def init(bool: Bool, uint: UInt): Unit = {
     i_bool := bool
     i_uint := uint
     my_litArg = Some(ULit(uint.litValue(), uint.width))
+    my_rep = s"(${bool.litValue()},${uint.litValue()})"
   }
   override def litArg: Option[LitArg] = my_litArg
+  override def toString = my_rep
 }
 
 class Identity extends Module {
@@ -59,7 +62,9 @@ class IdentityTests extends SteppedHWIOTester {
 //    expect(c.io.uint_out, UInt(i))
 
     poke(c.io.bundle_in, IdentityBundle(Bool(i % 3 == 0), UInt(10+i)))
-    expect(c.io.bundle_out, IdentityBundle(Bool(i % 3 == 0), UInt(10+i)))
+    if(i % 5 > 0 ) {
+      expect(c.io.bundle_out, IdentityBundle(Bool(i % 3 == 0), UInt(10+i)))
+    }
     step(1)
   }
 }

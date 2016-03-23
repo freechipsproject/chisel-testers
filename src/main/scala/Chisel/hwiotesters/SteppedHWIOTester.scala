@@ -168,7 +168,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
         output_port.fromBits(step.output_map.getOrElse(output_port, Bits(0)))
       }
     )
-    val ok_to_test_output_values = Vec((0 to output_vector_factory.hash(output_port).max_step).map { x => Bool(x > 2) })
+    val ok_to_test_output_values = output_vector_factory.hash(output_port).buildIsUsedVector
+//    val ok_to_test_output_values = Vec((0 to output_vector_factory.hash(output_port).max_step).map { x => Bool(x > 2) })
 //    val ok_to_test_output_values = Vec(
 //      test_actions.map { step =>
 //        Bool(step.output_map.contains(output_port))
