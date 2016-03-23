@@ -37,9 +37,6 @@ import scala.collection.mutable.ArrayBuffer
   */
 
 abstract class SteppedHWIOTester extends HWIOTester {
-  type TesterMap = mutable.HashMap[Data,Bits]
-  case class Step(input_map: TesterMap, output_map: TesterMap)
-
   val input_vector_factory = IOVectorFactory("input")
   val output_vector_factory = IOVectorFactory("output")
 
@@ -129,9 +126,6 @@ abstract class SteppedHWIOTester extends HWIOTester {
         * prints out a table form of input and expected outputs
         */
 
-      def val_str(hash: TesterMap, key: Data): String = {
-        if (hash.contains(key)) "%s".format(hash(key).litValue()) else "-"
-      }
       def get_in_str(port: Data, step: Int): String = {
         input_vector_factory.hash(port).value_list.getOrElse(step, "-").toString
       }
