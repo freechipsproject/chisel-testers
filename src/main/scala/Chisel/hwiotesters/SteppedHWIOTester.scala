@@ -129,10 +129,10 @@ abstract class SteppedHWIOTester extends HWIOTester {
         if (hash.contains(key)) "%s".format(hash(key).litValue()) else "-"
       }
       def get_in_str(port: Data, step: Int): String = {
-        input_vector_factory.hash(port).value_list(step).toString
+        input_vector_factory.hash(port).value_list.getOrElse(step, "-").toString
       }
       def get_out_str(port: Data, step: Int): String = {
-        output_vector_factory.hash(port).value_list(step).toString
+        output_vector_factory.hash(port).value_list.getOrElse(step, "-").toString
       }
 
       test_actions.zipWithIndex.foreach { case (step, step_number) =>

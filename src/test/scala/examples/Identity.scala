@@ -52,7 +52,7 @@ class IdentityTests extends SteppedHWIOTester {
   val c = device_under_test
   enable_all_debug = true
 
-  for (i <- 0 to 4) {
+  for (i <- 0 to 64) {
 //    poke(c.io.bool_in, Bool(i % 2 == 0))
 //    expect(c.io.bool_out, Bool(i % 2 == 0))
 //    poke(c.io.uint_in, UInt(i))
