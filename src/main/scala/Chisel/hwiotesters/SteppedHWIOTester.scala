@@ -107,11 +107,21 @@ abstract class SteppedHWIOTester extends HWIOTester {
       val ordered_outputs = output_vector_factory.portsUsed.toList.sortWith { case (a, b) =>
         io_info.port_to_name(a) < io_info.port_to_name(b) }
 
-      val column_width_templates = (ordered_inputs ++ ordered_outputs).map { port =>
-        val column_header = name(port)
-        val data_width    = port.getWidth / 3
-        port -> s"%${column_header.length.max(data_width)+2}s"
+      def compute_widths(ordered_ports: Seq[Data], factory: IOVectorFactory): Map[Data, String] = {
+        ordered_ports.map { port =>
+          val column_header_width = name(port).length
+          val data_width = factory(port).value_list.map { value => value.toString.length }.max
+          val column_width = column_header_width.max(data_width)
+          port -> s"%${column_width}s"
         }.toMap
+      }
+      val column_width_templates = compute_widths(ordered_inputs, input_vector_factory) ++
+        compute_widths(ordered_outputs, output_vector_factory)
+//      val column_width_templates = (ordered_inputs ++ ordered_outputs).map { port =>
+//        val column_header = name(port)
+//        val data_width    = port.getWidth / 3
+//        port -> s"%${column_header.length.max(data_width)+2}s"
+//        }.toMap
 
       println("=" * default_table_width)
       println("UnitTester state table")
@@ -132,7 +142,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
         input_vector_factory.hash(port).value_list.getOrElse(step, "-").toString
       }
       def get_out_str(port: Data, step: Int): String = {
-        output_vector_factory.hash(port).value_list.getOrElse(step, "-").toString
+        output_vector_factory(port).value_list.getOrElse(step, "-").toString
       }
 
       test_actions.zipWithIndex.foreach { case (step, step_number) =>
@@ -168,8 +178,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
         output_port.fromBits(step.output_map.getOrElse(output_port, Bits(0)))
       }
     )
-    val ok_to_test_output_values = output_vector_factory.hash(output_port).buildIsUsedVector
-//    val ok_to_test_output_values = Vec((0 to output_vector_factory.hash(output_port).max_step).map { x => Bool(x > 2) })
+    val ok_to_test_output_values = output_vector_factory(output_port).buildIsUsedVector
+//    val ok_to_test_output_values = Vec((0 to output_vector_factory(output_port).max_step).map { x => Bool(x > 2) })
 //    val ok_to_test_output_values = Vec(
 //      test_actions.map { step =>
 //        Bool(step.output_map.contains(output_port))
@@ -178,7 +188,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
 
     when(ok_to_test_output_values(counter.value)) {
 //      when(output_port.toBits() === output_values(counter.value).toBits()) {
-      when(output_vector_factory.hash(output_port).buildTestConditional(counter.value)) {
+      when(output_vector_factory(output_port).buildTestConditional(counter.value)) {
                   logPrintfDebug("    passed step %d -- " + name(output_port) + ":  %d\n",
                     counter.value,
                     output_port.toBits()

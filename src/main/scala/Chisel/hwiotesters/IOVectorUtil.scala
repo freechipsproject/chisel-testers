@@ -51,6 +51,10 @@ case class IOVectorFactory(name: String) {
     poker.add(step, value)
   }
 
+  def apply[T <: Data](port: T): IOVectorGenerator[_] = {
+    hash(port).asInstanceOf[IOVectorGenerator[T]]
+  }
+
   def portsUsed: Iterable[Data] = {
     hash.keys
   }
