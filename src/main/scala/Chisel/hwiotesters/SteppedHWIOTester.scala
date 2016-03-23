@@ -71,18 +71,14 @@ abstract class SteppedHWIOTester extends HWIOTester {
     output_vector_factory(io_port, value, step_number)
   }
   def expect(io_port: Data, value: Int): Unit = {
-    expect(io_port, Bits(value))
+    output_vector_factory(io_port, UInt(value), step_number)
+//    expect(io_port, Bits(value))
   }
   def expect(io_port: Data, value: Bits): Unit = {
     require(io_port.isInstanceOf[Bundle] || io_port.dir == OUTPUT, s"expect error: $io_port not an output")
     require(!test_actions.last.output_map.contains(io_port), s"second expect to $io_port without step")
 
-//    println(s"expect port $io_port $bit_value")
-    test_actions.last.output_map(io_port) = value
-//    println(
-//      test_actions.last.output_map.keys.map { k =>
-//        val v = test_actions.last.output_map(k)
-//        s"$k -> ${} $v  ${v.litValue()}"}.mkString("   ", "\n   ", ""))
+    output_vector_factory(io_port, value, step_number)
   }
   def expect(io_port: Data, bool_value: Boolean): Unit = expect(io_port, if(bool_value) 1 else 0)
 
@@ -100,12 +96,12 @@ abstract class SteppedHWIOTester extends HWIOTester {
     val default_table_width = 80
 
     if(io_info.ports_referenced.nonEmpty) {
-//      val ordered_inputs = io_info.dut_inputs.filter(io_info.ports_referenced.contains).toList.sortWith { case (a, b) =>
       val ordered_inputs = input_vector_factory.portsUsed.toList.sortWith { case (a, b) =>
-        io_info.port_to_name(a) < io_info.port_to_name(b) }
-//      val ordered_outputs = io_info.dut_outputs.filter(io_info.ports_referenced.contains).toList.sortWith { case (a, b) =>
+        io_info.port_to_name(a) < io_info.port_to_name(b)
+      }
       val ordered_outputs = output_vector_factory.portsUsed.toList.sortWith { case (a, b) =>
-        io_info.port_to_name(a) < io_info.port_to_name(b) }
+        io_info.port_to_name(a) < io_info.port_to_name(b)
+      }
 
       def compute_widths(ordered_ports: Seq[Data], factory: IOVectorFactory): Map[Data, String] = {
         ordered_ports.map { port =>
@@ -117,11 +113,6 @@ abstract class SteppedHWIOTester extends HWIOTester {
       }
       val column_width_templates = compute_widths(ordered_inputs, input_vector_factory) ++
         compute_widths(ordered_outputs, output_vector_factory)
-//      val column_width_templates = (ordered_inputs ++ ordered_outputs).map { port =>
-//        val column_header = name(port)
-//        val data_width    = port.getWidth / 3
-//        port -> s"%${column_header.length.max(data_width)+2}s"
-//        }.toMap
 
       println("=" * default_table_width)
       println("UnitTester state table")
@@ -179,15 +170,8 @@ abstract class SteppedHWIOTester extends HWIOTester {
       }
     )
     val ok_to_test_output_values = output_vector_factory(output_port).buildIsUsedVector
-//    val ok_to_test_output_values = Vec((0 to output_vector_factory(output_port).max_step).map { x => Bool(x > 2) })
-//    val ok_to_test_output_values = Vec(
-//      test_actions.map { step =>
-//        Bool(step.output_map.contains(output_port))
-//      }
-//    )
 
     when(ok_to_test_output_values(counter.value)) {
-//      when(output_port.toBits() === output_values(counter.value).toBits()) {
       when(output_vector_factory(output_port).buildTestConditional(counter.value)) {
                   logPrintfDebug("    passed step %d -- " + name(output_port) + ":  %d\n",
                     counter.value,
@@ -199,8 +183,6 @@ abstract class SteppedHWIOTester extends HWIOTester {
           output_port.toBits(),
           output_values(counter.value).toBits()
         )
-        // TODO: Use the following line instead of the unadorned assert when firrtl parsing error issue #111 is fixed
-        // assert(Bool(false), "Failed test")
         assert(Bool(false))
         stop()
       }
@@ -224,9 +206,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
     val done           = Reg(init = Bool(false))
 
     when(!done) {
-//      io_info.dut_inputs.filter(io_info.ports_referenced.contains).foreach { port => createVectorsForInput(port, pc) }
       input_vector_factory.portsUsed.foreach { port => createVectorsForInput(port, pc) }
-//      io_info.dut_outputs.filter(io_info.ports_referenced.contains).foreach { port => createVectorsAndTestsForOutput(port, pc) }
       output_vector_factory.portsUsed.foreach { port => createVectorsAndTestsForOutput(port, pc) }
 
       when(pc.inc()) {
