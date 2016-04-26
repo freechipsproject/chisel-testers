@@ -27,6 +27,6 @@ abstract class HWIOTester extends BasicTester {
   }
 
   def logPrintfDebug(fmt: String, args: Bits*): Unit = {
-    if(enable_all_debug || enable_scala_debug) printf(fmt, args :_*)
+    if(enable_all_debug || enable_printf_debug) printf(fmt, args :_*)
   }
 }
