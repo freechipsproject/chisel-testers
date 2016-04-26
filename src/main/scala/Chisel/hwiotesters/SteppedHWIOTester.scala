@@ -38,13 +38,13 @@ import scala.collection.mutable.ArrayBuffer
   * }}}
   */
 abstract class SteppedHWIOTester extends HWIOTester {
-  case class Step(input_map: mutable.HashMap[Data,Int], output_map: mutable.HashMap[Data,Int])
+  case class Step(input_map: mutable.HashMap[Data,BigInt], output_map: mutable.HashMap[Data,BigInt])
 
   // Scala stuff
   private val test_actions = new ArrayBuffer[Step]()
   step(1) // gives us a slot to put in our input and outputs from beginning
 
-  def poke(io_port: Data, value: Int): Unit = {
+  def poke(io_port: Data, value: BigInt): Unit = {
     require(io_port.dir == INPUT, s"poke error: $io_port not an input")
     require(!test_actions.last.input_map.contains(io_port),
       s"second poke to $io_port without step\nkeys ${test_actions.last.input_map.keys.mkString(",")}")
@@ -53,17 +53,17 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 //  def poke(io_port: Data, bool_value: Boolean) = poke(io_port, if(bool_value) 1 else 0)
 
-  def expect(io_port: Data, value: Int): Unit = {
+  def expect(io_port: Data, value: BigInt): Unit = {
     require(io_port.dir == OUTPUT, s"expect error: $io_port not an output")
     require(!test_actions.last.output_map.contains(io_port), s"second expect to $io_port without step")
 
     test_actions.last.output_map(io_port) = value
   }
-  def expect(io_port: Data, bool_value: Boolean): Unit = expect(io_port, if(bool_value) 1 else 0)
+  def expect(io_port: Data, bool_value: Boolean): Unit = expect(io_port, BigInt(if(bool_value) 1 else 0))
 
   def step(number_of_cycles: Int): Unit = {
     test_actions ++= Array.fill(number_of_cycles) {
-      new Step(new mutable.HashMap[Data, Int](), new mutable.HashMap[Data, Int]())
+      new Step(new mutable.HashMap[Data, BigInt](), new mutable.HashMap[Data, BigInt]())
     }
   }
 
@@ -91,7 +91,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
       /**
         * prints out a table form of input and expected outputs
         */
-      def val_str(hash: mutable.HashMap[Data, Int], key: Data): String = {
+      def val_str(hash: mutable.HashMap[Data, BigInt], key: Data): String = {
         if (hash.contains(key)) "%d".format(hash(key)) else "-"
       }
       test_actions.zipWithIndex.foreach { case (step, step_number) =>
@@ -109,7 +109,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 
   private def createVectorsForInput(input_port: Data, counter: Counter): Unit = {
-    var default_value = 0
+    var default_value = BigInt(0)
     val input_values = Vec(
       test_actions.map { step =>
         default_value = step.input_map.getOrElse(input_port, default_value)
@@ -122,7 +122,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
   private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
     val output_values = Vec(
       test_actions.map { step =>
-        output_port.fromBits(UInt(step.output_map.getOrElse(output_port, 0)))
+        output_port.fromBits(UInt(step.output_map.getOrElse(output_port, BigInt(0))))
       }
     )
     val ok_to_test_output_values = Vec(
