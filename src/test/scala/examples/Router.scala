@@ -141,7 +141,7 @@ class RouterUnitTester(number_of_packets_to_send: Int) extends OrderedDecoupledH
   }
 
   // send a bunch of packets, with random values
-  for (i <- 0 to number_of_packets_to_send) {
+  for (i <- 0 until number_of_packets_to_send) {
     val data = rnd.nextInt(Int.MaxValue - 1)
     routePacket(i % Router.routeTableSize, data, new_routing_table(i % Router.routeTableSize))
   }
