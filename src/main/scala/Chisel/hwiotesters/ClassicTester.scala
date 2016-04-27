@@ -217,12 +217,11 @@ object getNodeInfo {
     def parseBundle(b: Bundle, name: String = ""): Unit = {
       for ((n, e) <- b.namedElts) {
         val new_name = name + (if (name.length > 0) "_" else "") + n
-        add_to_ports_by_direction(e, new_name, e.getWidth)
 
         e match {
           case bb: Bundle => parseBundle(bb, new_name)
           case vv: Vec[_] => parseVecs(vv, new_name)
-          case ee: Element =>
+          case ee: Element => add_to_ports_by_direction(e, new_name, e.getWidth)
           case _ =>
             throw new Exception(s"bad bundle member $new_name $e")
         }
@@ -230,7 +229,7 @@ object getNodeInfo {
     }
     def parseVecs[T <: Data](b: Vec[T], name: String = ""): Unit = {
       for ((e, i) <- b.zipWithIndex) {
-        val new_name = name + s"($i)"
+        val new_name = name + s"_$i"
         add_to_ports_by_direction(e, new_name, e.getWidth)
 
         e match {
