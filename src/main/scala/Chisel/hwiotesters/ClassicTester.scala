@@ -67,6 +67,7 @@ class ClassicTester(dut: Module) {
   outputNodeInfoMap.toList.foreach(x => outputSignalToChunkSizeMap(x._2._1) = (x._2._2 - 1)/64 + 1)
   private val nodeToStringMap: Map[Data, String] = (inputNodeInfoMap.toList ++ outputNodeInfoMap.toList).map(x => (x._1, x._2._1)).toMap
   private val cppEmulatorInterface = new CppEmulatorInterface(genCppEmulatorBinaryPath(dut), inputSignalToChunkSizeMap, outputSignalToChunkSizeMap, 0)
+  val rnd = cppEmulatorInterface.rnd
   cppEmulatorInterface.start()//start cpp emulator
 
 
@@ -159,6 +160,7 @@ object genClassicTesterCppHarness {
     fileWriter.write("    } \n")
     fileWriter.write("    virtual inline void reset() {\n")
     fileWriter.write("        dut->reset = 1;\n")
+    fileWriter.write("        dut->clk = 1;\n")
     fileWriter.write("        dut->eval();\n")
     fileWriter.write("        dut->reset = 0;\n")
     fileWriter.write("    }\n")
@@ -257,7 +259,7 @@ class CppEmulatorInterface(val cmd: String, val inputSignalToChunkSizeMap: Linke
   private val _logs = new ArrayBuffer[String]()
   private var simTime = 0L // simulation time
   private var isStale = false
-  private val rnd = new Random(testerSeed)
+  val rnd = new Random(testerSeed)
   /* state variables */
 
   /* standalone util functions */
@@ -457,7 +459,9 @@ class CppEmulatorInterface(val cmd: String, val inputSignalToChunkSizeMap: Linke
     } else if(outputSignalValueMap.contains(signalName)) {
       result = outputSignalValueMap(signalName)
     }
-    println(s"  PEEK ${signalName} -> ${bigIntToStr(result, 16)}")
+    if (!mutePrintOut) {
+      println(s"  PEEK ${signalName} -> ${bigIntToStr(result, 16)}")
+    }
     result
   }
   def expect (signalName: String, expected: BigInt, msg: => String = ""): Boolean = {
