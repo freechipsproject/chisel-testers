@@ -12,6 +12,27 @@ import scala.concurrent.{Future, _}
 import scala.sys.process.{Process, ProcessLogger}
 import scala.util.Random
 import Chisel._
+import firrtl.{Parser, VerilogCompiler}
+
+object chiselMainTest {
+  def apply[T <: Module](args: Array[String], dutGenFunc: () => T)(testerGenFunc: T => ClassicTester): Unit = {
+    println("DEBUG0")
+    val rootDir = new File(".").getCanonicalPath()
+    val dutModule = Chisel.Driver.elaborateModule(dutGenFunc)
+    val dutName = dutModule.name
+    val verilogFilePath = s"${rootDir}/${dutName}.v"
+    //run Chisel 3
+    val dutFirrtlIR = Chisel.Driver.emit(dutGenFunc)
+    // Parse circuit into FIRRTL
+    val circuit = firrtl.Parser.parse(dutFirrtlIR.split("\n"))
+    val writer = new PrintWriter(new File(verilogFilePath))
+    // Compile to verilog
+    firrtl.VerilogCompiler.run(circuit, writer)
+    //writer.write(dutFirrtlIR)
+    writer.close()
+    runClassicTester(dutGenFunc, verilogFilePath) {testerGenFunc}
+  }
+}
 
 object runClassicTester {
   private def setupTestDir(testDirPath: String, verilogFilePath: String): Unit = {
@@ -71,17 +92,41 @@ class ClassicTester(dut: Module) {
   cppEmulatorInterface.start()//start cpp emulator
 
 
-  def poke(signal: Data, value: BigInt) = {
+  def poke(signal: Bits, value: BigInt) = {
     cppEmulatorInterface.poke(nodeToStringMap(signal), value)
   }
-  def peek(signal: Data): BigInt = {
+  def poke(signal: Bundle, value: Array[BigInt]) = {
+    assert(false)
+    //cppEmulatorInterface.poke(nodeToStringMap(signal), value)
+  }
+
+  def peek(signal: Bits): BigInt = {
     cppEmulatorInterface.peek(nodeToStringMap(signal))
   }
-  def expect (signal: Data, expected: BigInt, msg: => String = ""): Boolean = {
+  def peek(signal: Bundle): Array[BigInt] = {
+    assert(false)
+    Array(-1)
+    //cppEmulatorInterface.peek(nodeToStringMap(signal))
+  }
+
+  def expect (signal: Bits, expected: BigInt, msg: => String): Boolean = {
     cppEmulatorInterface.expect(nodeToStringMap(signal), expected, msg)
   }
+  def expect (signal: Bits, expected: BigInt): Boolean = {
+    cppEmulatorInterface.expect(nodeToStringMap(signal), expected, "")
+  }
+  def expect (signal: Bool, msg: => String): Boolean = {
+    cppEmulatorInterface.expect(nodeToStringMap(signal), 1, msg)
+  }
+  def expect (signal: Bool): Boolean = {
+    cppEmulatorInterface.expect(nodeToStringMap(signal), 1, "")
+  }
+
   def step(n: Int) {
     cppEmulatorInterface.step(n)
+  }
+  def reset(n: Int = 1) = {
+    cppEmulatorInterface.reset(n)
   }
   def finish(): Boolean = {
     cppEmulatorInterface.finish()
@@ -388,7 +433,7 @@ class CppEmulatorInterface(val cmd: String, val inputSignalToChunkSizeMap: Linke
     ready
   }
 
-  private def reset(n: Int = 1) {
+  def reset(n: Int = 1) {
     for (i <- 0 until n) {
       mwhile(!sendCmd(SIM_CMD.RESET)) { }
       mwhile(!recvOutputs) { }
