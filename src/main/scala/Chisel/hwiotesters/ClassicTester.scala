@@ -16,7 +16,6 @@ import firrtl.{Parser, VerilogCompiler}
 
 object chiselMainTest {
   def apply[T <: Module](args: Array[String], dutGenFunc: () => T)(testerGenFunc: T => ClassicTester): Unit = {
-    println("DEBUG0")
     val rootDir = new File(".").getCanonicalPath()
     val dutModule = Chisel.Driver.elaborateModule(dutGenFunc)
     val dutName = dutModule.name
@@ -28,7 +27,6 @@ object chiselMainTest {
     val writer = new PrintWriter(new File(verilogFilePath))
     // Compile to verilog
     firrtl.VerilogCompiler.run(circuit, writer)
-    //writer.write(dutFirrtlIR)
     writer.close()
     runClassicTester(dutGenFunc, verilogFilePath) {testerGenFunc}
   }
