@@ -55,9 +55,9 @@ object runClassicTester {
       }
     }
 
-    Files.copy(Paths.get("src/main/resources/emulator.h"), emulatorHFilePath, REPLACE_EXISTING)
-    Files.copy(Paths.get("src/main/resources/sim_api.h"), simApiHFilePath, REPLACE_EXISTING)
-    Files.copy(Paths.get("src/main/resources/verilator_api.h"), verilatorApiHFilePath, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/emulator.h"), emulatorHFilePath, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/sim_api.h"), simApiHFilePath, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/verilator_api.h"), verilatorApiHFilePath, REPLACE_EXISTING)
     Files.copy(Paths.get(verilogFilePath), newVerilogFilePath, REPLACE_EXISTING)
   }
 
