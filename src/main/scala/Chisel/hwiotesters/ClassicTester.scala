@@ -91,6 +91,7 @@ class ClassicTester(dut: Module) {
   val rnd = cppEmulatorInterface.rnd
   cppEmulatorInterface.start()//start cpp emulator
 
+  def t = cppEmulatorInterface.getSimTime()
 
   def poke(signal: Bits, value: BigInt) = {
     cppEmulatorInterface.poke(nodeToStringMap(signal), value)
@@ -121,6 +122,8 @@ class ClassicTester(dut: Module) {
   def expect (signal: Bool): Boolean = {
     cppEmulatorInterface.expect(nodeToStringMap(signal), 1, "")
   }
+
+  def fail = cppEmulatorInterface.fail
 
   def step(n: Int) {
     cppEmulatorInterface.step(n)
@@ -325,6 +328,7 @@ class CppEmulatorInterface(val cmd: String, val inputSignalToChunkSizeMap: Linke
   /* standalone util functions */
 
   /* state modification functions */
+  def getSimTime() = simTime
   private def incTime(n: Int) { simTime += n }
   private def printfs = _logs.toVector
   private def throwExceptionIfDead(exitValue: Future[Int]) {
@@ -545,7 +549,7 @@ class CppEmulatorInterface(val cmd: String, val inputSignalToChunkSizeMap: Linke
   /** Indicate a failure has occurred.  */
   private var failureTime = -1L
   private var ok = true
-  private def fail = if (ok) {
+  def fail = if (ok) {
     failureTime = simTime
     ok = false
   }
