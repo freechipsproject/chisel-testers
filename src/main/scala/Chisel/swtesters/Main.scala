@@ -44,12 +44,13 @@ object chiselMainTest {
     Files.copy(getClass.getResourceAsStream("/sim_api.h"), simApiHFilePath, REPLACE_EXISTING)
     Files.copy(getClass.getResourceAsStream("/veri_api.h"), veriApiHFilePath, REPLACE_EXISTING)
 
-    val dir = new File(Driver.targetDir)
-    val firrtl = new File(s"${Driver.targetDir}/${circuit.name}.fir")
-    // Generate FIRRTL
-    Driver.dumpFirrtl(circuit, Some(firrtl))
+    // Parse FIRRTL
+    val ir = firrtl.Parser.parse(circuit.emit split "\n")
     // Generate Verilog
-    Driver.firrtlToVerilog(circuit.name, dir).!
+    val dir = new File(Driver.targetDir)
+    val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
+    firrtl.VerilogCompiler.run(ir, v)
+    v.close
 
     if (isVCS) {
     } else {
