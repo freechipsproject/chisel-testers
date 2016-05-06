@@ -14,7 +14,7 @@ publishMavenStyle := true
 publishArtifact in Test := false
 pomIncludeRepository := { x => false }
 
-pomExtra := <url>http://chisel.eecs.berkeley.edu/</url>
+pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
 <licenses>
   <license>
     <name>BSD-style</name>
@@ -32,7 +32,7 @@ pomExtra := <url>http://chisel.eecs.berkeley.edu/</url>
     <name>Jonathan Bachrach</name>
     <url>http://www.eecs.berkeley.edu/~jrb/</url>
   </developer>
-</developers>
+</developers>)
 
 
 publishTo <<= version { v: String =>
