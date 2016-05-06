@@ -1,3 +1,5 @@
+// See LICENSE for license details.
+
 package Chisel.swtesters
 
 import Chisel._
@@ -11,13 +13,30 @@ import scala.sys.process.{Process, ProcessLogger}
 import scala.util.Random
 import java.nio.channels.FileChannel
 
-abstract class ClassicTester(dut: Module) {
+// Provides a template to define tester transactions
+trait ClassicTests {
+  type DUT
+  def dut: DUT
+  def t: Long
+  def rnd: Random
+  implicit def int(x: Boolean): BigInt
+  implicit def int(x: Int):     BigInt
+  implicit def int(x: Long):    BigInt
+  implicit def int(x: Bits):    BigInt
+  def poke(data: Bits, x: BigInt): Unit
+  def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int): Unit
+  def peek(data: Bits): BigInt
+  def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt
+  def expect(good: Boolean, msg: => String): Boolean
+  def expect(data: Bits, expected: BigInt, msg: => String = ""): Boolean
+}
+
+abstract class ClassicTester[+T <: Module](val dut: T) {
   private val _nameMap = HashMap[Data, String]()
-  private val (_inputs: ListMap[Bits, Int], _outputs: ListMap[Bits, Int]) = {
-    val (inputs, outputs) = parsePorts(dut.io)
+  private val (_inputs, _outputs) = {
     def genChunk(arg: (Bits, (String, Int))) = arg match {case (io, (n, w)) => 
       _nameMap(io) = s"${dut.name}.${n}" ; io -> ((w-1)/64 + 1) }
-    (inputs map genChunk, outputs map genChunk) 
+    (chiselMain.context.inputMap map genChunk, chiselMain.context.outputMap map genChunk) 
   } 
   private val _pokeMap = HashMap[Bits, BigInt]()
   private val _peekMap = HashMap[Bits, BigInt]()
@@ -294,7 +313,7 @@ abstract class ClassicTester(dut: Module) {
   }
 
   //initialize cpp process and memory mapped channels
-  val cmd = chiselMainTest.testCmd mkString " "
+  val cmd = chiselMain.context.testCmd mkString " "
   private val (process: Process, exitValue: Future[Int], inChannel, outChannel, cmdChannel) = {
     val processBuilder = Process(cmd)
     val processLogger = ProcessLogger(println, _logs += _) // don't log stdout
@@ -348,7 +367,7 @@ abstract class ClassicTester(dut: Module) {
   /********************************/
   /* Simulation Time */
   private var simTime = 0L 
-  private def incTime(n: Int) { simTime += n }
+  protected[swtesters] def incTime(n: Int) { simTime += n }
   def t = simTime
 
   private def dumpNode(data: Data) = _nameMap getOrElse (data, "<no signal name>")
@@ -361,17 +380,17 @@ abstract class ClassicTester(dut: Module) {
     ok = false
   }
 
-  private val _seed = chiselMainTest.testerSeed
+  private val _seed = chiselMain.context.testerSeed
   val rnd = new Random(_seed)
 
   /** Convert a Boolean to BigInt */
-  def int(x: Boolean): BigInt = if (x) 1 else 0
+  implicit def int(x: Boolean): BigInt = if (x) 1 else 0
   /** Convert an Int to BigInt */
-  def int(x: Int):     BigInt = (BigInt(x >>> 1) << 1) | x & 1
+  implicit def int(x: Int):     BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
   /** Convert a Long to BigInt */
-  def int(x: Long):    BigInt = (BigInt(x >>> 1) << 1) | x & 1
+  implicit def int(x: Long):    BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
   /** Convert Bits to BigInt */
-  def int(x: Bits):    BigInt = x.litValue()
+  implicit def int(x: Bits):    BigInt = x.litValue()
 
   protected def bigIntToStr(x: BigInt, base: Int) = base match {
     case 2  if x < 0 => s"-0b${(-x).toString(base)}"
@@ -395,6 +414,10 @@ abstract class ClassicTester(dut: Module) {
     }
   }
 
+  def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int) {
+    // TODO: empty now...
+  }
+
   private def _peek(signal: Bits) = {
     if (isStale) update
     if (_outputs contains signal) _peekMap get signal
@@ -406,6 +429,16 @@ abstract class ClassicTester(dut: Module) {
     val result = _peek(signal) getOrElse BigInt(rnd.nextInt)
     println(s"  PEEK ${dumpNode(signal)} -> ${bigIntToStr(result, 16)}")
     result
+  }
+
+  def peekAt[T <: Bits](data: Mem[T], off: Int) = {
+    BigInt(rnd.nextInt) // TODO
+  }
+
+  def expect (good: Boolean, msg: => String): Boolean = {
+    println(s"""EXPECT ${msg} ${if (good) "PASS" else "FAIL"}""")
+    if (!good) fail
+    good
   }
 
   def expect(signal: Bits, expected: BigInt, msg: => String = "") = {
