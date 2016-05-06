@@ -18,7 +18,8 @@ trait AdvTests extends ClassicTests {
   def do_until(work: =>Unit)(pred: =>Boolean, maxCycles: Long = 0L): Boolean
 }
 
-abstract class AdvTester[+T <: Module](dut: T) extends ClassicTester(dut) {
+abstract class AdvTester[+T <: Module](dut: T, isTrace: Boolean = false)
+    extends ClassicTester(dut, isTrace) {
   val defaultMaxCycles = 1024L
   var _cycles = 0L
   def cycles = _cycles

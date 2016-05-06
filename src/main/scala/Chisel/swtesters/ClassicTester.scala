@@ -31,7 +31,7 @@ trait ClassicTests {
   def expect(data: Bits, expected: BigInt, msg: => String = ""): Boolean
 }
 
-abstract class ClassicTester[+T <: Module](val dut: T) {
+abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) {
   private val _nameMap = HashMap[Data, String]()
   private val (_inputs, _outputs) = {
     def genChunk(arg: (Bits, (String, Int))) = arg match {case (io, (n, w)) => 
@@ -401,7 +401,7 @@ abstract class ClassicTester[+T <: Module](val dut: T) {
   }
 
   def step(n: Int) {
-    println(s"STEP ${simTime} -> ${simTime+n}")
+    if (isTrace) println(s"STEP ${simTime} -> ${simTime+n}")
     (0 until n) foreach (_ => takeStep)
     incTime(n)
   }
@@ -410,7 +410,7 @@ abstract class ClassicTester[+T <: Module](val dut: T) {
     if (_inputs contains signal) {
       _pokeMap(signal) = value
       isStale = true
-      println(s"  POKE ${dumpNode(signal)} <- ${bigIntToStr(value, 16)}")
+      if (isTrace) println(s"  POKE ${dumpNode(signal)} <- ${bigIntToStr(value, 16)}")
     }
   }
 
@@ -427,7 +427,7 @@ abstract class ClassicTester[+T <: Module](val dut: T) {
 
   def peek(signal: Bits) = {
     val result = _peek(signal) getOrElse BigInt(rnd.nextInt)
-    println(s"  PEEK ${dumpNode(signal)} -> ${bigIntToStr(result, 16)}")
+    if (isTrace) println(s"  PEEK ${dumpNode(signal)} -> ${bigIntToStr(result, 16)}")
     result
   }
 
@@ -436,7 +436,7 @@ abstract class ClassicTester[+T <: Module](val dut: T) {
   }
 
   def expect (good: Boolean, msg: => String): Boolean = {
-    println(s"""EXPECT ${msg} ${if (good) "PASS" else "FAIL"}""")
+    if (isTrace) println(s"""EXPECT ${msg} ${if (good) "PASS" else "FAIL"}""")
     if (!good) fail
     good
   }
@@ -445,7 +445,7 @@ abstract class ClassicTester[+T <: Module](val dut: T) {
     val got = _peek(signal) getOrElse BigInt(rnd.nextInt)
     val good = got == expected
     if (!good) fail
-    println(s"""${msg}  EXPECT ${dumpNode(signal)} -> ${bigIntToStr(got, 16)} == ${bigIntToStr(expected, 16)} ${if (good) "PASS" else "FAIL"}""")
+    if (isTrace) println(s"""${msg}  EXPECT ${dumpNode(signal)} -> ${bigIntToStr(got, 16)} == ${bigIntToStr(expected, 16)} ${if (good) "PASS" else "FAIL"}""")
     good
   }
 }

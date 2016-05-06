@@ -106,9 +106,12 @@ object chiselMain {
   }
 
   def apply[T <: Module](args: Array[String], dutGen: () => T): T = {
-    contextVar.withValue(Some(new TesterContext)) {
+    val ctx = Some(new TesterContext)
+    val dut = contextVar.withValue(ctx) {
       elaborate(args, dutGen)
     }
+    contextVar.value = ctx // TODO: is it ok?
+    dut
   }
 
   def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => ClassicTester[T]): T = {
