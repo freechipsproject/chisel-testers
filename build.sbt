@@ -1,3 +1,4 @@
+/*
 organization := "edu.berkeley.cs"
 version := "1.0"
 name := "Chisel.hwiotesters"
@@ -8,7 +9,7 @@ libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel3" % "3.0",
                            "org.scalatest" % "scalatest_2.11" % "2.2.4",
                            "org.scalacheck" %% "scalacheck" % "1.12.4")
 
-    
+
 publishMavenStyle := true
 
 publishArtifact in Test := false
@@ -54,3 +55,44 @@ resolvers ++= Seq(
 scalacOptions in (Compile, doc) <++= (baseDirectory, version) map { (bd, v) =>
   Seq("-diagrams", "-diagrams-max-classes", "25", "-sourcepath", bd.getAbsolutePath, "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala")
 }
+*/
+lazy val buildSettings = Seq (
+  organization := "edu.berkeley.cs",
+  version := "1.0",
+  name := "Chisel.hwiotesters",
+
+  scalaVersion := "2.11.7",
+
+  libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel3" % "3.0",
+    "org.scalatest" % "scalatest_2.11" % "2.2.4",
+    "org.scalacheck" %% "scalacheck" % "1.12.4"),
+
+
+  publishMavenStyle := true,
+
+  publishArtifact in Test := false,
+  pomIncludeRepository := { x => false },
+
+
+  publishTo <<= version { v: String =>
+    val nexus = "https://oss.sonatype.org/"
+    if (v.trim.endsWith("SNAPSHOT")) {
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    }
+    else {
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    }
+  },
+
+  resolvers ++= Seq(
+    "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+    "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
+  ),
+
+  scalacOptions in (Compile, doc) <++= (baseDirectory, version) map { (bd, v) =>
+    Seq("-diagrams", "-diagrams-max-classes", "25", "-sourcepath", bd.getAbsolutePath, "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala")
+  }
+)
+
+lazy val chiselTesters = (project in file(".")).settings(buildSettings).dependsOn(firrtl)
+lazy val firrtl = project in file("firrtl")
