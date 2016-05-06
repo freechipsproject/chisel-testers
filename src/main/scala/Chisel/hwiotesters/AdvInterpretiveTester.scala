@@ -37,6 +37,7 @@ class AdvInterpretiveTester(dutGenFunc: () => Module) {
   protected val dut = Chisel.Driver.elaborateModule(dutGenFunc)
   private val (inputNodeInfoMap, outputNodeInfoMap) = getNodeInfo(dut)
   private val nodeToStringMap: Map[Data, String] = (inputNodeInfoMap.toList ++ outputNodeInfoMap.toList).map(x => (x._1, x._2._1)).toMap
+  protected val rnd = new scala.util.Random(0)
   private val interpreter = FirrtlTerp(firrtlIR)
   interpreter.setInputUpdater(new EmptyUpdater())
 
@@ -54,7 +55,7 @@ class AdvInterpretiveTester(dutGenFunc: () => Module) {
     println(s"  POKE ${name} <- ${bigIntToStr(value, 16)}")
   }
 
-  def peek(name: String): BigInt = {
+  def peek(name: String, verbose: Boolean = true): BigInt = {
     interpreter.doCombinationalUpdate()
     var result: BigInt = -1
     interpreter.sourceState.getValue(name) match {
@@ -62,12 +63,14 @@ class AdvInterpretiveTester(dutGenFunc: () => Module) {
       case Some(ConcreteSInt(value, _)) => result = value
       case _ => throw new InterpreterException(s"Error:peek($name) value not found")
     }
-    println(s"  PEEK ${name} -> ${bigIntToStr(result, 16)}")
+    interpreter.sourceState.resetNameToConcreteValue()
+    if (verbose) {
+      println(s"  PEEK ${name} -> ${bigIntToStr(result, 16)}")
+    }
     result
   }
 
   def expect(name: String, expectedValue: BigInt): Unit = {
-    interpreter.doCombinationalUpdate()
     def testValue(value: BigInt): Unit = {
       println(s"  EXPECT ${name} -> ${bigIntToStr(value, 16)} == ${bigIntToStr(expectedValue, 16)}")
       println(s" ${if (value == expectedValue) "PASS" else "FAIL"}")
@@ -75,11 +78,7 @@ class AdvInterpretiveTester(dutGenFunc: () => Module) {
         throw new InterpreterException (s"Error:expect($name, $expectedValue) got $value")
       }
     }
-    interpreter.sourceState.getValue(name) match {
-      case Some(ConcreteUInt (value, _)) => testValue(value)
-      case Some(ConcreteSInt(value, _))  => testValue(value)
-      case _ => throw new InterpreterException(s"Error:expect($name, $expectedValue) value not found")
-    }
+    testValue(peek(name, false))
   }
 
   def poke(signal: Bits, value: BigInt): Unit = {
