@@ -15,7 +15,7 @@ import java.nio.channels.FileChannel
 
 // Provides a template to define tester transactions
 trait ClassicTests {
-  type DUT
+  type DUT <: Module
   def dut: DUT
   def t: Long
   def rnd: Random
