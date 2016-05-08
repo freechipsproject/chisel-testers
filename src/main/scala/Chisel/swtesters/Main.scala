@@ -17,8 +17,8 @@ private[swtesters] class TesterContext {
   var isCompiling = false
   var testerSeed = System.currentTimeMillis
   val testCmd = ArrayBuffer[String]()
-  val inputMap = LinkedHashMap[Bits, (String, Int)]()
-  val outputMap = LinkedHashMap[Bits, (String, Int)]()
+  val inputMap = LinkedHashMap[Bits, String]()
+  val outputMap = LinkedHashMap[Bits, String]()
 }
 
 object chiselMain {
@@ -41,8 +41,8 @@ object chiselMain {
     def loop(name: String, data: Data): Unit = data match {
       case b: Bundle => b.elements foreach {case (n, e) => loop(s"${name}_${n}", e)}
       case v: Vec[_] => v.zipWithIndex foreach {case (e, i) => loop(s"${name}_${i}", e)}
-      case b: Bits if b.dir == INPUT => context.inputMap(b) = (name, b.getWidth)
-      case b: Bits if b.dir == OUTPUT => context.outputMap(b) = (name, b.getWidth)
+      case b: Bits if b.dir == INPUT => context.inputMap(b) = name
+      case b: Bits if b.dir == OUTPUT => context.outputMap(b) = name
       case _ => // skip
     }
     loop("io", io)
@@ -131,15 +131,15 @@ object chiselMainTest {
 
 private[swtesters] object genHarness {
   def apply[T <: Module](dut: T, dutName: String, isVCS: Boolean) {
-    val inputs = chiselMain.context.inputMap.toList.unzip._2
-    val outputs = chiselMain.context.outputMap.toList.unzip._2
+    val inputs = chiselMain.context.inputMap.toList
+    val outputs = chiselMain.context.outputMap.toList
     if (isVCS) {
     } else {
       genCppHarness(dutName, inputs, outputs)
     }
   }
 
-  private def genCppHarness(dutName: String, inputs: List[(String, Int)], outputs: List[(String, Int)]) {
+  private def genCppHarness(dutName: String, inputs: List[(Bits, String)], outputs: List[(Bits, String)]) {
     val dutApiClassName = s"${dutName}_api_t"
     val dutVerilatorClassName = s"V${dutName}"
     val cppHarnessFilePath = s"${Driver.targetDir}/${dutName}-harness.cpp"
@@ -169,31 +169,31 @@ private[swtesters] object genHarness {
     fileWriter.write("        sim_data.inputs.clear();\n")
     fileWriter.write("        sim_data.outputs.clear();\n")
     fileWriter.write("        sim_data.signals.clear();\n")
-    inputs foreach { case (nodeName, nodeWidth) =>
-      if (nodeWidth <= 8) {
+    inputs foreach { case (node, nodeName) =>
+      if (node.getWidth <= 8) {
         fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorCData(&(dut->${nodeName})));\n")
-      } else if (nodeWidth <= 16) {
+      } else if (node.getWidth <= 16) {
         fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorSData(&(dut->${nodeName})));\n")
-      } else if (nodeWidth <= 32) {
+      } else if (node.getWidth <= 32) {
         fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorIData(&(dut->${nodeName})));\n")
-      } else if (nodeWidth <= 64) {
+      } else if (node.getWidth <= 64) {
         fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorQData(&(dut->${nodeName})));\n")
       } else {
-        val numWords = (nodeWidth - 1)/32 + 1
+        val numWords = (node.getWidth - 1)/32 + 1
         fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorWData(dut->${nodeName}, ${numWords}));\n")
       }
     }
-    outputs foreach { case (nodeName, nodeWidth) =>
-      if (nodeWidth <= 8) {
+    outputs foreach { case (node, nodeName) =>
+      if (node.getWidth <= 8) {
         fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorCData(&(dut->${nodeName})));\n")
-      } else if (nodeWidth <= 16) {
+      } else if (node.getWidth <= 16) {
         fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorSData(&(dut->${nodeName})));\n")
-      } else if (nodeWidth <= 32) {
+      } else if (node.getWidth <= 32) {
         fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorIData(&(dut->${nodeName})));\n")
-      } else if (nodeWidth <= 64) {
+      } else if (node.getWidth <= 64) {
         fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorQData(&(dut->${nodeName})));\n")
       } else {
-        val numWords = (nodeWidth-1)/32 + 1
+        val numWords = (node.getWidth-1)/32 + 1
         fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorWData(dut->${nodeName}, ${numWords}));\n")
       }
     }

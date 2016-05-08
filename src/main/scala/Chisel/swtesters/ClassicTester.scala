@@ -34,8 +34,8 @@ trait ClassicTests {
 abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) {
   private val _nameMap = HashMap[Data, String]()
   private val (_inputs, _outputs) = {
-    def genChunk(arg: (Bits, (String, Int))) = arg match {case (io, (n, w)) => 
-      _nameMap(io) = s"${dut.name}.${n}" ; io -> ((w-1)/64 + 1) }
+    def genChunk(arg: (Bits, String)) = arg match {case (io, n) =>
+      _nameMap(io) = s"${dut.name}.${n}" ; io -> ((io.getWidth-1)/64 + 1) }
     (chiselMain.context.inputMap map genChunk, chiselMain.context.outputMap map genChunk) 
   } 
   private val _pokeMap = HashMap[Bits, BigInt]()
