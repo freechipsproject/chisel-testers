@@ -23,6 +23,7 @@ trait ClassicTests {
   implicit def int(x: Int):     BigInt
   implicit def int(x: Long):    BigInt
   implicit def int(x: Bits):    BigInt
+  def step(n: Int): Unit
   def poke(data: Bits, x: BigInt): Unit
   def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int): Unit
   def peek(data: Bits): BigInt
