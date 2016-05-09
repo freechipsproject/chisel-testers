@@ -13,6 +13,7 @@ import scala.util.DynamicVariable
 
 private[swtesters] class TesterContext {
   var isVCS = false
+  var isGenVerilog = false
   var isGenHarness = false
   var isCompiling = false
   var testerSeed = System.currentTimeMillis
@@ -29,6 +30,7 @@ object chiselMain {
     for (i <- 0 until args.size) {
       args(i) match {
         case "--vcs" => context.isVCS = true
+        case "--v" => context.isGenVerilog = true
         case "--genHarness" => context.isGenHarness = true
         case "--compile" => context.isCompiling = true
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
@@ -48,7 +50,19 @@ object chiselMain {
     loop("io", io)
   }
 
-  private def compile(circuit: internal.firrtl.Circuit) {
+  private def genVerilog(circuit: internal.firrtl.Circuit) {
+    val dir = new File(Driver.targetDir)
+    // Dump FIRRTL for debugging
+    Driver.dumpFirrtl(circuit, Some(new File(s"${dir}/${circuit.name}.ir")))
+    // Parse FIRRTL
+    val ir = firrtl.Parser.parse(circuit.emit split "\n")
+    // Generate Verilog
+    val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
+    firrtl.VerilogCompiler.run(ir, v)
+    v.close
+  }
+
+  private def compile(dutName: String) {
     // Copy API files
     val simApiHFilePath = Paths.get(s"${Driver.targetDir}/sim_api.h")
     val veriApiHFilePath = Paths.get(s"${Driver.targetDir}/veri_api.h")
@@ -65,22 +79,13 @@ object chiselMain {
     Files.copy(getClass.getResourceAsStream("/veri_api.h"), veriApiHFilePath, REPLACE_EXISTING)
 
     val dir = new File(Driver.targetDir)
-    // Dump FIRRTL for debugging
-    Driver.dumpFirrtl(circuit, Some(new File(s"${dir}/${circuit.name}.ir")))
-    // Parse FIRRTL
-    val ir = firrtl.Parser.parse(circuit.emit split "\n")
-    // Generate Verilog
-    val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
-    firrtl.VerilogCompiler.run(ir, v)
-    v.close
-
     if (context.isVCS) {
     } else {
       // Generate Verilator
-      val harness = new File(s"${dir}/${circuit.name}-harness.cpp")
-      Driver.verilogToCpp(circuit.name, dir, Seq(), harness).!
+      val harness = new File(s"${dir}/${dutName}-harness.cpp")
+      Driver.verilogToCpp(dutName, dir, Seq(), harness).!
       // Compile Verilator
-      Driver.cppToExe(circuit.name, dir).!
+      Driver.cppToExe(dutName, dir).!
     }
   }
 
@@ -97,8 +102,10 @@ object chiselMain {
     lazy val dut = dutGen()
     val circuit = Driver.elaborate(() => dut)
     parsePorts(dut.io)
-    if (context.isGenHarness) genHarness(dut, circuit.name, context.isVCS)
-    if (context.isCompiling) compile(circuit)
+
+    if (context.isGenVerilog) genVerilog(circuit)
+    if (context.isGenHarness) genHarness(circuit.name, context.isVCS)
+    if (context.isCompiling) compile(circuit.name)
     if (context.testCmd.isEmpty) {
       context.testCmd += s"""${Driver.targetDir}/${if (context.isVCS) "" else "V"}${dut.name}"""
     }
@@ -130,7 +137,7 @@ object chiselMainTest {
 }
 
 private[swtesters] object genHarness {
-  def apply[T <: Module](dut: T, dutName: String, isVCS: Boolean) {
+  def apply[T <: Module](dutName: String, isVCS: Boolean) {
     val inputs = chiselMain.context.inputMap.toList
     val outputs = chiselMain.context.outputMap.toList
     if (isVCS) {
