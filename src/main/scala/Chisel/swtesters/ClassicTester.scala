@@ -23,82 +23,74 @@ trait ClassicTests {
   implicit def int(x: Int):     BigInt
   implicit def int(x: Long):    BigInt
   implicit def int(x: Bits):    BigInt
+  def reset(n: Int): Unit
   def step(n: Int): Unit
   def poke(data: Bits, x: BigInt): Unit
-  def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int): Unit
   def peek(data: Bits): BigInt
-  def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt
   def expect(good: Boolean, msg: => String): Boolean
   def expect(data: Bits, expected: BigInt, msg: => String = ""): Boolean
+  def finish: Boolean
 }
 
-abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) {
-  private val _nameMap = HashMap[Data, String]()
-  private val (_inputs, _outputs) = {
-    def genChunk(arg: (Bits, String)) = arg match {case (io, n) =>
-      _nameMap(io) = s"${dut.name}.${n}" ; io -> ((io.getWidth-1)/64 + 1) }
-    (chiselMain.context.inputMap map genChunk, chiselMain.context.outputMap map genChunk) 
-  } 
-  private val _pokeMap = HashMap[Bits, BigInt]()
-  private val _peekMap = HashMap[Bits, BigInt]()
-  private val _signalMap = HashMap[String, Int]()
-  private val _chunks = HashMap[String, Int]()
-  private val _logs = ArrayBuffer[String]()
+private[swtesters] class Channel(name: String) {
+  private lazy val file = new java.io.RandomAccessFile(name, "rw")
+  private lazy val channel = file.getChannel
+  @volatile private lazy val buffer = {
+    /* We have seen runs where buffer.put(0,0) fails with:
+[info]   java.lang.IndexOutOfBoundsException:
+[info]   at java.nio.Buffer.checkIndex(Buffer.java:532)
+[info]   at java.nio.DirectByteBuffer.put(DirectByteBuffer.java:300)
+[info]   at Chisel.Tester$Channel.release(Tester.scala:148)
+[info]   at Chisel.Tester.start(Tester.scala:717)
+[info]   at Chisel.Tester.<init>(Tester.scala:743)
+[info]   at ArbiterSuite$ArbiterTests$8.<init>(ArbiterTest.scala:396)
+[info]   at ArbiterSuite$$anonfun$testStableRRArbiter$1.apply(ArbiterTest.scala:440)
+[info]   at ArbiterSuite$$anonfun$testStableRRArbiter$1.apply(ArbiterTest.scala:440)
+[info]   at Chisel.Driver$.apply(Driver.scala:65)
+[info]   at Chisel.chiselMain$.apply(hcl.scala:63)
+[info]   ...
+     */
+    val size = channel.size
+    assert(size > 16, "channel.size is bogus: %d".format(size))
+    channel map (FileChannel.MapMode.READ_WRITE, 0, size)
+  }
+  implicit def intToByte(i: Int) = i.toByte
+  val channel_data_offset_64bw = 4    // Offset from start of channel buffer to actual user data in 64bit words.
+  def aquire {
+    buffer put (0, 1)
+    buffer put (2, 0)
+    while((buffer get 1) == 1 && (buffer get 2) == 0) {}
+  }
+  def release { buffer put (0, 0) }
+  def ready = (buffer get 3) == 0
+  def valid = (buffer get 3) == 1
+  def produce { buffer put (3, 1) }
+  def consume { buffer put (3, 0) }
+  def update(idx: Int, data: Long) { buffer putLong (8 * idx + channel_data_offset_64bw, data) }
+  def update(base: Int, data: String) {
+    data.zipWithIndex foreach {case (c, i) => buffer put (base + i + channel_data_offset_64bw, c) }
+    buffer put (base + data.size + channel_data_offset_64bw, 0)
+  }
+  def apply(idx: Int): Long = buffer getLong (8 * idx + channel_data_offset_64bw)
+  def close { file.close }
+  buffer order java.nio.ByteOrder.nativeOrder
+  new java.io.File(name).delete
+}
 
+case class TestApplicationException(exitVal: Int, lastMessage: String) extends RuntimeException(lastMessage)
+
+class EmulatorInterface(cmd: String, _inputs: ListMap[String, Int], _outputs: ListMap[String, Int]) {
   private object SIM_CMD extends Enumeration {
     val RESET, STEP, UPDATE, POKE, PEEK, FORCE, GETID, GETCHK, SETCLK, FIN = Value }
   implicit def cmdToId(cmd: SIM_CMD.Value) = cmd.id
-  implicit def longToInt(x: Long) = x.toInt
-
-  class Channel(name: String) {
-    private lazy val file = new java.io.RandomAccessFile(name, "rw")
-    private lazy val channel = file.getChannel
-    @volatile private lazy val buffer = {
-      /* We have seen runs where buffer.put(0,0) fails with:
-[info]     java.lang.IndexOutOfBoundsException:
-[info]     at java.nio.Buffer.checkIndex(Buffer.java:532)
-[info]     at java.nio.DirectByteBuffer.put(DirectByteBuffer.java:300)
-[info]     at Chisel.Tester$Channel.release(Tester.scala:148)
-[info]     at Chisel.Tester.start(Tester.scala:717)
-[info]     at Chisel.Tester.<init>(Tester.scala:743)
-[info]     at ArbiterSuite$ArbiterTests$8.<init>(ArbiterTest.scala:396)
-[info]     at ArbiterSuite$$anonfun$testStableRRArbiter$1.apply(ArbiterTest.scala:440)
-[info]     at ArbiterSuite$$anonfun$testStableRRArbiter$1.apply(ArbiterTest.scala:440)
-[info]     at Chisel.Driver$.apply(Driver.scala:65)
-[info]     at Chisel.chiselMain$.apply(hcl.scala:63)
-[info]     ...
-       */
-      val size = channel.size
-      assert(size > 16, "channel.size is bogus: %d".format(size))
-      channel map (FileChannel.MapMode.READ_WRITE, 0, size)
-    }
-    implicit def intToByte(i: Int) = i.toByte
-    val channel_data_offset_64bw = 4    // Offset from start of channel buffer to actual user data in 64bit words.
-    def aquire {
-      buffer put (0, 1)
-      buffer put (2, 0)
-      while((buffer get 1) == 1 && (buffer get 2) == 0) {}
-    }
-    def release { buffer put (0, 0) }
-    def ready = (buffer get 3) == 0
-    def valid = (buffer get 3) == 1
-    def produce { buffer put (3, 1) }
-    def consume { buffer put (3, 0) }
-    def update(idx: Int, data: Long) { buffer putLong (8 * idx + channel_data_offset_64bw, data) }
-    def update(base: Int, data: String) {
-      data.zipWithIndex foreach {case (c, i) => buffer put (base + i + channel_data_offset_64bw, c) }
-      buffer put (base + data.size + channel_data_offset_64bw, 0)
-    }
-    def apply(idx: Int): Long = buffer getLong (8 * idx + channel_data_offset_64bw)
-    def close { file.close }
-    buffer order java.nio.ByteOrder.nativeOrder
-    new java.io.File(name).delete
-  }
-
-  /****************************/
-  /*** Simulation Interface ***/
-  /****************************/
-  case class TestApplicationException(exitVal: Int, lastMessage: String) extends RuntimeException(lastMessage)
+  implicit def int(x: Int):  BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
+  implicit def int(x: Long): BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
+  private var isStale = false
+  private val _pokeMap = HashMap[String, BigInt]()
+  private val _peekMap = HashMap[String, BigInt]()
+  private val _signalMap = HashMap[String, Int]()
+  private val _chunks = HashMap[String, Int]()
+  private val _logs = ArrayBuffer[String]()
 
   private def throwExceptionIfDead(exitValue: Future[Int]) {
     if (exitValue.isCompleted) {
@@ -209,8 +201,6 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
     ready
   }
 
-  private var isStale = false
-
   private def update {
     mwhile(!sendCmd(SIM_CMD.UPDATE)) { }
     mwhile(!sendInputs) { }
@@ -274,6 +264,24 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
     }
   }
 
+  def poke(signal: String, value: BigInt) = {
+    if (_inputs contains signal) {
+      _pokeMap(signal) = value
+      isStale = true
+    } // else ...
+  }
+
+  def peek(signal: String) = {
+    if (isStale) update
+    if (_outputs contains signal) _peekMap get signal
+    else if (_inputs contains signal) _pokeMap get signal
+    else None
+  }
+
+  def step(n: Int) {
+    (0 until n) foreach (_ => takeStep)
+  }
+
   def reset(n: Int = 1) {
     for (i <- 0 until n) {
       mwhile(!sendCmd(SIM_CMD.RESET)) { }
@@ -282,7 +290,6 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
   }
 
   private def start {
-    println(s"SEED ${_seed}")
     println(s"STARTING ${cmd}")
     mwhile(!recvOutputs) { }
     // reset(5)
@@ -292,30 +299,18 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
     }
   }
 
-  /** Complete the simulation and inspect all tests */
-  def finish: Boolean = {
-    try {
-      mwhile(!sendCmd(SIM_CMD.FIN)) { }
-      while(!exitValue.isCompleted) { }
-    }
-    catch {
-      // Depending on load and timing, we may get a TestApplicationException
-      //  when the test application exits.
-      //  Check the exit value.
-      //  Anything other than 0 is an error.
-      case e: TestApplicationException => if (e.exitVal != 0) fail
-    }
+  def finish {
+    mwhile(!sendCmd(SIM_CMD.FIN)) { }
+    while(!exitValue.isCompleted) { }
     _logs.clear
     inChannel.close
     outChannel.close
     cmdChannel.close
-    println(s"""RAN ${simTime} CYCLES ${if (ok) "PASSED" else s"FAILED FIRST AT CYCLE ${failureTime}"}""")
-    ok
   }
 
   //initialize cpp process and memory mapped channels
-  val cmd = chiselMain.context.testCmd mkString " "
   private val (process: Process, exitValue: Future[Int], inChannel, outChannel, cmdChannel) = {
+    require(new java.io.File(cmd).exists, s"${cmd} doesn't exists")
     val processBuilder = Process(cmd)
     val processLogger = ProcessLogger(println, _logs += _) // don't log stdout
     val process = processBuilder run processLogger
@@ -362,6 +357,30 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
 
   // Once everything has been prepared, we can start the communications.
   start
+} 
+
+abstract class ClassicTester[+T <: Module](
+    val dut: T, 
+    verbose: Boolean = true,
+    emulBinPath: Option[String] = None,
+    _seed: Long = System.currentTimeMillis) {
+  private val _nameMap = HashMap[Data, String]()
+  private val (_inputs, _outputs) = {
+    def genChunk(arg: (Bits, (String, String))) = arg match {case (io, (_, name)) =>
+      _nameMap(io) = name
+      name -> ((io.getWidth-1)/64 + 1) 
+    }
+    val (inputMap, outputMap) = parsePorts(dut)
+    (inputMap map genChunk, outputMap map genChunk)
+  }
+  implicit def longToInt(x: Long) = x.toInt
+
+  /****************************/
+  /*** Simulation Interface ***/
+  /****************************/
+  println(s"SEED ${_seed}")
+  val cmd = emulBinPath getOrElse (chiselMain.context.testCmd mkString " ")
+  val interface = new EmulatorInterface(cmd, _inputs, _outputs)
 
   /********************************/
   /*** Classic Tester Interface ***/
@@ -371,7 +390,7 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
   protected[swtesters] def incTime(n: Int) { simTime += n }
   def t = simTime
 
-  private def dumpNode(data: Data) = _nameMap getOrElse (data, "<no signal name>")
+  private def getIPCName(data: Data) = _nameMap getOrElse (data, "<no signal name>")
 
   /** Indicate a failure has occurred.  */
   private var failureTime = -1L
@@ -381,7 +400,6 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
     ok = false
   }
 
-  private val _seed = chiselMain.context.testerSeed
   val rnd = new Random(_seed)
 
   /** Convert a Boolean to BigInt */
@@ -401,52 +419,62 @@ abstract class ClassicTester[+T <: Module](val dut: T, isTrace: Boolean = true) 
     case _ => x.toString(base)
   }
 
+  def reset(n: Int = 1) {
+    interface.reset(n)
+  }
+
   def step(n: Int) {
-    if (isTrace) println(s"STEP ${simTime} -> ${simTime+n}")
-    (0 until n) foreach (_ => takeStep)
+    if (verbose) println(s"STEP ${simTime} -> ${simTime+n}")
+    interface.step(n)
     incTime(n)
   }
 
   def poke(signal: Bits, value: BigInt) {
-    if (_inputs contains signal) {
-      _pokeMap(signal) = value
-      isStale = true
-      if (isTrace) println(s"  POKE ${dumpNode(signal)} <- ${bigIntToStr(value, 16)}")
-    }
+    val name = getIPCName(signal)
+    if (verbose) println(s"  POKE ${name} <- ${bigIntToStr(value, 16)}")
+    interface.poke(name, value)
   }
 
   def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int) {
-    // TODO: empty now...
-  }
-
-  private def _peek(signal: Bits) = {
-    if (isStale) update
-    if (_outputs contains signal) _peekMap get signal
-    else if (_inputs contains signal) _pokeMap get signal
-    else None
   }
 
   def peek(signal: Bits) = {
-    val result = _peek(signal) getOrElse BigInt(rnd.nextInt)
-    if (isTrace) println(s"  PEEK ${dumpNode(signal)} -> ${bigIntToStr(result, 16)}")
+    val name = getIPCName(signal)
+    val result = interface.peek(name) getOrElse BigInt(rnd.nextInt)
+    if (verbose) println(s"  PEEK ${name} -> ${bigIntToStr(result, 16)}")
     result
   }
 
-  def peekAt[T <: Bits](data: Mem[T], off: Int) = {
-    BigInt(rnd.nextInt) // TODO
+  def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt = {
+    BigInt(0)
   }
 
   def expect (good: Boolean, msg: => String): Boolean = {
-    if (isTrace) println(s"""EXPECT ${msg} ${if (good) "PASS" else "FAIL"}""")
+    if (verbose) println(s"""EXPECT ${msg} ${if (good) "PASS" else "FAIL"}""")
     if (!good) fail
     good
   }
 
   def expect(signal: Bits, expected: BigInt, msg: => String = "") = {
-    val got = _peek(signal) getOrElse BigInt(rnd.nextInt)
+    val name = getIPCName(signal)
+    val got = interface.peek(name) getOrElse BigInt(rnd.nextInt)
     val good = got == expected
     if (!good) fail
-    if (isTrace) println(s"""${msg}  EXPECT ${dumpNode(signal)} -> ${bigIntToStr(got, 16)} == ${bigIntToStr(expected, 16)} ${if (good) "PASS" else "FAIL"}""")
+    if (verbose) println(s"""${msg}  EXPECT ${name} -> ${bigIntToStr(got, 16)} == ${bigIntToStr(expected, 16)} ${if (good) "PASS" else "FAIL"}""")
     good
+  }
+
+  def finish: Boolean = {
+    try {
+      interface.finish
+    } catch {
+      // Depending on load and timing, we may get a TestApplicationException
+      //  when the test application exits.
+      //  Check the exit value.
+      //  Anything other than 0 is an error.
+      case e: TestApplicationException => if (e.exitVal != 0) fail
+    }
+    println(s"""RAN ${simTime} CYCLES ${if (ok) "PASSED" else s"FAILED FIRST AT CYCLE ${failureTime}"}""")
+    ok
   }
 }

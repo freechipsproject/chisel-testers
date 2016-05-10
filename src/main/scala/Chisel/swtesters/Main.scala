@@ -18,8 +18,7 @@ private[swtesters] class TesterContext {
   var isCompiling = false
   var testerSeed = System.currentTimeMillis
   val testCmd = ArrayBuffer[String]()
-  val inputMap = LinkedHashMap[Bits, String]()
-  val outputMap = LinkedHashMap[Bits, String]()
+  var targetDir = new File("test_run_dir").getCanonicalPath
 }
 
 object chiselMain {
@@ -34,24 +33,14 @@ object chiselMain {
         case "--genHarness" => context.isGenHarness = true
         case "--compile" => context.isCompiling = true
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
+        case "--targetDir" => context.targetDir = args(i+1)
         case _ =>
       }
     }
   }
 
-  private def parsePorts(io: Data) {
-    def loop(name: String, data: Data): Unit = data match {
-      case b: Bundle => b.elements foreach {case (n, e) => loop(s"${name}_${n}", e)}
-      case v: Vec[_] => v.zipWithIndex foreach {case (e, i) => loop(s"${name}_${i}", e)}
-      case b: Bits if b.dir == INPUT => context.inputMap(b) = name
-      case b: Bits if b.dir == OUTPUT => context.outputMap(b) = name
-      case _ => // skip
-    }
-    loop("io", io)
-  }
-
   private def genVerilog(circuit: internal.firrtl.Circuit) {
-    val dir = new File(Driver.targetDir)
+    val dir = new File(context.targetDir)
     // Dump FIRRTL for debugging
     Driver.dumpFirrtl(circuit, Some(new File(s"${dir}/${circuit.name}.ir")))
     // Parse FIRRTL
@@ -64,8 +53,8 @@ object chiselMain {
 
   private def compile(dutName: String) {
     // Copy API files
-    val simApiHFilePath = Paths.get(s"${Driver.targetDir}/sim_api.h")
-    val veriApiHFilePath = Paths.get(s"${Driver.targetDir}/veri_api.h")
+    val simApiHFilePath = Paths.get(s"${context.targetDir}/sim_api.h")
+    val veriApiHFilePath = Paths.get(s"${context.targetDir}/veri_api.h")
     try {
       Files.createFile(simApiHFilePath)
       Files.createFile(veriApiHFilePath)
@@ -78,7 +67,7 @@ object chiselMain {
     Files.copy(getClass.getResourceAsStream("/sim_api.h"), simApiHFilePath, REPLACE_EXISTING)
     Files.copy(getClass.getResourceAsStream("/veri_api.h"), veriApiHFilePath, REPLACE_EXISTING)
 
-    val dir = new File(Driver.targetDir)
+    val dir = new File(context.targetDir)
     if (context.isVCS) {
     } else {
       // Generate Verilator
@@ -91,9 +80,8 @@ object chiselMain {
 
   private def elaborate[T <: Module](args: Array[String], dutGen: () => T): T = {
     parseArgs(args)
-    Driver.parseArgs(args)
     try {
-      Files.createDirectory(Paths.get(Driver.targetDir))
+      Files.createDirectory(Paths.get(context.targetDir))
     } catch {
       case x: FileAlreadyExistsException =>
       case x: IOException =>
@@ -101,13 +89,12 @@ object chiselMain {
     }
     lazy val dut = dutGen()
     val circuit = Driver.elaborate(() => dut)
-    parsePorts(dut.io)
 
     if (context.isGenVerilog) genVerilog(circuit)
-    if (context.isGenHarness) genHarness(circuit.name, context.isVCS)
+    if (context.isGenHarness) genHarness(dut, context.isVCS)
     if (context.isCompiling) compile(circuit.name)
     if (context.testCmd.isEmpty) {
-      context.testCmd += s"""${Driver.targetDir}/${if (context.isVCS) "" else "V"}${dut.name}"""
+      context.testCmd += s"""${context.targetDir}/${if (context.isVCS) "" else "V"}${dut.name}"""
     }
     dut
   }
@@ -121,7 +108,7 @@ object chiselMain {
     dut
   }
 
-  def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => ClassicTester[T]): T = {
+  def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => ClassicTester[T]) = {
     contextVar.withValue(Some(new TesterContext)) {
       val dut = elaborate(args, dutGen)
       assert(testerGen(dut).finish, "Test failed")
@@ -136,21 +123,50 @@ object chiselMainTest {
   }
 }
 
+object runClassicTester {
+  def apply[T <: Module] (dutGen: () => T, cppEmulatorBinaryFilePath: String)
+      (testerGen: (T, Option[String]) => ClassicTester[T]): Boolean = {
+    lazy val dut = dutGen()
+    val circuit = Chisel.Driver.elaborate(() => dut)
+    val tester = testerGen(dut, Some(cppEmulatorBinaryFilePath))
+    tester.finish
+  }
+}
+
+private[swtesters] object parsePorts {
+  def apply(dut: Module) = {
+    // Node -> (firrtl name, IPC name)
+    val inputMap = LinkedHashMap[Bits, (String, String)]() 
+    val outputMap = LinkedHashMap[Bits, (String, String)]()
+    def loop(name: String, data: Data): Unit = data match {
+      case b: Bundle => b.elements foreach {case (n, e) => loop(s"${name}_${n}", e)}
+      case v: Vec[_] => v.zipWithIndex foreach {case (e, i) => loop(s"${name}_${i}", e)}
+      case b: Bits if b.dir == INPUT => inputMap(b) = (name, s"${dut.name}.${name}")
+      case b: Bits if b.dir == OUTPUT => outputMap(b) = (name, s"${dut.name}.${name}")
+      case _ => // skip
+    }
+    loop("io", dut.io)
+    (ListMap(inputMap.toList:_*), ListMap(outputMap.toList:_*))
+  }
+}
+
 private[swtesters] object genHarness {
-  def apply[T <: Module](dutName: String, isVCS: Boolean) {
-    val inputs = chiselMain.context.inputMap.toList
-    val outputs = chiselMain.context.outputMap.toList
+  def apply[T <: Module](dut: Module, isVCS: Boolean) {
+    val (inputs, outputs) = parsePorts(dut)
     if (isVCS) {
     } else {
-      genCppHarness(dutName, inputs, outputs)
+      def getVerilatorName(arg: (Bits, (String, String))) = arg match {
+        case (io, (name, _)) => io -> name
+      }
+      genCppHarness(dut.name, inputs.toList map getVerilatorName, outputs.toList map getVerilatorName)
     }
   }
 
   private def genCppHarness(dutName: String, inputs: List[(Bits, String)], outputs: List[(Bits, String)]) {
     val dutApiClassName = s"${dutName}_api_t"
     val dutVerilatorClassName = s"V${dutName}"
-    val cppHarnessFilePath = s"${Driver.targetDir}/${dutName}-harness.cpp"
-    val vcdFilePath = s"${Driver.targetDir}/${dutName}.vcd"
+    val cppHarnessFilePath = s"${chiselMain.context.targetDir}/${dutName}-harness.cpp"
+    val vcdFilePath = s"${chiselMain.context.targetDir}/${dutName}.vcd"
  
     val fileWriter = new PrintWriter(new File(cppHarnessFilePath))
 
