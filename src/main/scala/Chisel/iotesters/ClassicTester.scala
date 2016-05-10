@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package Chisel.swtesters
+package Chisel.iotesters
 
 import Chisel._
 
@@ -32,7 +32,7 @@ trait ClassicTests {
   def finish: Boolean
 }
 
-private[swtesters] class Channel(name: String) {
+private[iotesters] class Channel(name: String) {
   private lazy val file = new java.io.RandomAccessFile(name, "rw")
   private lazy val channel = file.getChannel
   @volatile private lazy val buffer = {
@@ -387,7 +387,7 @@ abstract class ClassicTester[+T <: Module](
   /********************************/
   /* Simulation Time */
   private var simTime = 0L 
-  protected[swtesters] def incTime(n: Int) { simTime += n }
+  protected[iotesters] def incTime(n: Int) { simTime += n }
   def t = simTime
 
   private def getIPCName(data: Data) = _nameMap getOrElse (data, "<no signal name>")

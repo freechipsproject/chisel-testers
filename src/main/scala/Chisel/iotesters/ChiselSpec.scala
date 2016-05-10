@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package Chisel.hwiotesters
+package Chisel.iotesters
 
 import org.scalatest._
 import org.scalatest.prop._

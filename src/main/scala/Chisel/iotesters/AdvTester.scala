@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package Chisel.swtesters
+package Chisel.iotesters
 
 /* Written by Stephen Twigg, Eric Love */
 import Chisel._

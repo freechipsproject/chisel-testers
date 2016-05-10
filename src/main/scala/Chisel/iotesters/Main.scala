@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package Chisel.swtesters
+package Chisel.iotesters
 
 import Chisel._
 import java.io.{File, IOException, PrintWriter}
@@ -11,7 +11,7 @@ import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
 import scala.collection.immutable.ListMap
 import scala.util.DynamicVariable
 
-private[swtesters] class TesterContext {
+private[iotesters] class TesterContext {
   var isVCS = false
   var isGenVerilog = false
   var isGenHarness = false
@@ -23,7 +23,7 @@ private[swtesters] class TesterContext {
 
 object chiselMain {
   private val contextVar = new DynamicVariable[Option[TesterContext]](None)
-  private[swtesters] def context = contextVar.value getOrElse (new TesterContext)
+  private[iotesters] def context = contextVar.value getOrElse (new TesterContext)
 
   private def parseArgs(args: Array[String]) {
     for (i <- 0 until args.size) {
@@ -133,7 +133,7 @@ object runClassicTester {
   }
 }
 
-private[swtesters] object parsePorts {
+private[iotesters] object parsePorts {
   def apply(dut: Module) = {
     // Node -> (firrtl name, IPC name)
     val inputMap = LinkedHashMap[Bits, (String, String)]() 
@@ -150,7 +150,7 @@ private[swtesters] object parsePorts {
   }
 }
 
-private[swtesters] object genHarness {
+private[iotesters] object genHarness {
   def apply[T <: Module](dut: Module, isVCS: Boolean) {
     val (inputs, outputs) = parsePorts(dut)
     if (isVCS) {

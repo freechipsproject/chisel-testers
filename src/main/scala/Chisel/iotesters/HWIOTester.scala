@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package Chisel.hwiotesters
+package Chisel.iotesters
 
 import Chisel.testers.BasicTester
 import Chisel.{Bits, Module, printf}
