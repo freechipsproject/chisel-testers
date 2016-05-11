@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import Chisel.hwiotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import Chisel.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object Router {
   val addressWidth    = 32

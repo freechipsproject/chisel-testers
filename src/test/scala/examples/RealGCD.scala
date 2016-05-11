@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object RealGCD {
   val num_width = 16

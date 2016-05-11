@@ -40,7 +40,7 @@ have a lot more examples of the use of these testers
 ### A couple of imports
 ```scala
 import Chisel._
-import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec}
+import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
 ```
 
 ### The device under test

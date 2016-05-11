@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import Chisel.hwiotesters.{ChiselFlatSpec, SteppedHWIOTester}
+import Chisel.iotesters.{ChiselFlatSpec, SteppedHWIOTester}
 
 class MaxN(val n: Int, val w: Int) extends Module {
 

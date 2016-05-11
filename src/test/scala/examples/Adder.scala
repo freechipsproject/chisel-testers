@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
+import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
 
 class Adder(val w: Int) extends Module {
   val io = new Bundle {

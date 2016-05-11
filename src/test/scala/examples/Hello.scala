@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec}
+import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
 import Chisel.testers.TesterDriver
 
 class Hello extends Module {

@@ -4,15 +4,318 @@ package Chisel.iotesters
 
 import Chisel._
 
-import scala.collection.mutable.{HashMap, ArrayBuffer}
+import scala.collection.mutable.{ArrayBuffer, HashMap, LinkedHashMap}
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Future, _}
 import scala.sys.process.{Process, ProcessLogger}
-import scala.util.Random
+import scala.util.{DynamicVariable, Random}
 import java.nio.channels.FileChannel
+import java.nio.file.{FileAlreadyExistsException, Files, Paths}
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.io.{File, IOException, PrintWriter}
 
+private[iotesters] class TesterContext {
+  var isVCS = false
+  var isGenVerilog = false
+  var isGenHarness = false
+  var isCompiling = false
+  var testerSeed = System.currentTimeMillis
+  val testCmd = ArrayBuffer[String]()
+  var targetDir = new File("test_run_dir").getCanonicalPath
+}
+
+object chiselMain {
+  private val contextVar = new DynamicVariable[Option[TesterContext]](None)
+  private[iotesters] def context = contextVar.value getOrElse (new TesterContext)
+
+  private def parseArgs(args: Array[String]) {
+    for (i <- 0 until args.size) {
+      args(i) match {
+        case "--vcs" => context.isVCS = true
+        case "--v" => context.isGenVerilog = true
+        case "--genHarness" => context.isGenHarness = true
+        case "--compile" => context.isCompiling = true
+        case "--testCommand" => context.testCmd ++= args(i+1) split ' '
+        case "--targetDir" => context.targetDir = args(i+1)
+        case _ =>
+      }
+    }
+  }
+
+  private def genVerilog(circuit: internal.firrtl.Circuit) {
+    val dir = new File(context.targetDir)
+    // Dump FIRRTL for debugging
+    Driver.dumpFirrtl(circuit, Some(new File(s"${dir}/${circuit.name}.ir")))
+    // Parse FIRRTL
+    val ir = firrtl.Parser.parse(circuit.emit split "\n")
+    // Generate Verilog
+    val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
+    firrtl.VerilogCompiler.run(ir, v)
+    v.close
+  }
+
+  private def compile(dutName: String) {
+    // Copy API files
+    copyCppEmulatorHeaderFiles(s"${context.targetDir}")
+
+    val dir = new File(context.targetDir)
+    if (context.isVCS) {
+    } else {
+      // Generate Verilator
+      val harness = new File(s"${dir}/${dutName}-harness.cpp")
+      Driver.verilogToCpp(dutName, dir, Seq(), harness).!
+      // Compile Verilator
+      Driver.cppToExe(dutName, dir).!
+    }
+  }
+
+  private def elaborate[T <: Module](args: Array[String], dutGen: () => T): T = {
+    parseArgs(args)
+    try {
+      Files.createDirectory(Paths.get(context.targetDir))
+    } catch {
+      case x: FileAlreadyExistsException =>
+      case x: IOException =>
+        System.err.format("createFile error: %s%n", x)
+    }
+    lazy val dut = dutGen()
+    val circuit = Driver.elaborate(() => dut)
+
+    if (context.isGenVerilog) genVerilog(circuit)
+
+    if (context.isGenHarness) genHarness(dutGen, context.isVCS, s"${circuit.name}.v", s"${chiselMain.context.targetDir}/${dut.name}-harness.cpp", s"${chiselMain.context.targetDir}/${dut.name}.vcd")
+    if (context.isCompiling) compile(circuit.name)
+    if (context.testCmd.isEmpty) {
+      context.testCmd += s"""${context.targetDir}/${if (context.isVCS) "" else "V"}${dut.name}"""
+    }
+    dut
+  }
+
+  def apply[T <: Module](args: Array[String], dutGen: () => T): T = {
+    val ctx = Some(new TesterContext)
+    val dut = contextVar.withValue(ctx) {
+      elaborate(args, dutGen)
+    }
+    contextVar.value = ctx // TODO: is it ok?
+    dut
+  }
+
+  def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => ClassicTester[T]) = {
+    contextVar.withValue(Some(new TesterContext)) {
+      val dut = elaborate(args, dutGen)
+      assert(testerGen(dut).finish, "Test failed")
+      dut
+    }
+  }
+}
+
+object chiselMainTest {
+  def apply[T <: Module](args: Array[String], dutGen: () => T)(testerGen: T => ClassicTester[T]) = {
+    chiselMain(args, dutGen, testerGen)
+  }
+}
+object copyCppEmulatorHeaderFiles {
+  def apply(destinationDirPath: String): Unit = {
+    val simApiHFilePath = Paths.get(destinationDirPath + "/sim_api.h")
+    val verilatorApiHFilePath = Paths.get(destinationDirPath + "/veri_api.h")
+    try {
+      Files.createFile(simApiHFilePath)
+      Files.createFile(verilatorApiHFilePath)
+    } catch {
+      case x: FileAlreadyExistsException =>
+        System.out.format("")
+      case x: IOException => {
+        System.err.format("createFile error: %s%n", x)
+      }
+    }
+
+    Files.copy(getClass.getResourceAsStream("/sim_api.h"), simApiHFilePath, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/veri_api.h"), verilatorApiHFilePath, REPLACE_EXISTING)
+  }
+}
+
+object genCppHarness {
+  def getVerilatorName(arg: (Bits, (String, String))) = arg match {
+    case (io, (name, _)) => io -> name
+  }
+  def apply(dutGen: () => Module, verilogFileName: String, cppHarnessFilePath: String, vcdFilePath: String): Unit = {
+    val dut = Chisel.Driver.elaborateModule(dutGen)
+    val (dutInputNodeInfo, dutOutputNodeInfo) = parsePorts(dut)
+    val (inputs, outputs) = (dutInputNodeInfo.toList map getVerilatorName, dutOutputNodeInfo.toList map getVerilatorName)
+    val dutName = verilogFileName.split("\\.")(0)
+    val dutApiClassName = dutName + "_api_t"
+    val dutVerilatorClassName = "V" + dutName
+    val fileWriter = new PrintWriter(new File(cppHarnessFilePath))
+
+    fileWriter.write("#include \"%s.h\"\n".format(dutVerilatorClassName))
+    fileWriter.write("#include \"verilated.h\"\n")
+    fileWriter.write("#include \"veri_api.h\"\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("#include \"verilated_vcd_c.h\"\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("#include <iostream>\n")
+
+    fileWriter.write(s"class ${dutApiClassName}: public sim_api_t<VerilatorDataWrapper*> {\n")
+    fileWriter.write("public:\n")
+    fileWriter.write(s"    ${dutApiClassName}(${dutVerilatorClassName}* _dut) {\n")
+    fileWriter.write("        dut = _dut;\n")
+    fileWriter.write("        main_time = 0L;\n")
+    fileWriter.write("        is_exit = false;\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("        tfp = NULL;\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("    }\n")
+    fileWriter.write("    void init_sim_data() {\n")
+    fileWriter.write("        sim_data.inputs.clear();\n")
+    fileWriter.write("        sim_data.outputs.clear();\n")
+    fileWriter.write("        sim_data.signals.clear();\n")
+    inputs foreach { case (node, nodeName) =>
+      if (node.getWidth <= 8) {
+        fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorCData(&(dut->${nodeName})));\n")
+      } else if (node.getWidth <= 16) {
+        fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorSData(&(dut->${nodeName})));\n")
+      } else if (node.getWidth <= 32) {
+        fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorIData(&(dut->${nodeName})));\n")
+      } else if (node.getWidth <= 64) {
+        fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorQData(&(dut->${nodeName})));\n")
+      } else {
+        val numWords = (node.getWidth - 1)/32 + 1
+        fileWriter.write(s"        sim_data.inputs.push_back(new VerilatorWData(dut->${nodeName}, ${numWords}));\n")
+      }
+    }
+    outputs foreach { case (node, nodeName) =>
+      if (node.getWidth <= 8) {
+        fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorCData(&(dut->${nodeName})));\n")
+      } else if (node.getWidth <= 16) {
+        fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorSData(&(dut->${nodeName})));\n")
+      } else if (node.getWidth <= 32) {
+        fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorIData(&(dut->${nodeName})));\n")
+      } else if (node.getWidth <= 64) {
+        fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorQData(&(dut->${nodeName})));\n")
+      } else {
+        val numWords = (node.getWidth-1)/32 + 1
+        fileWriter.write(s"        sim_data.outputs.push_back(new VerilatorWData(dut->${nodeName}, ${numWords}));\n")
+      }
+    }
+    fileWriter.write("    }\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("     void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("    inline bool exit() { return is_exit; }\n")
+    fileWriter.write("private:\n")
+    fileWriter.write(s"    ${dutVerilatorClassName}* dut;\n")
+    fileWriter.write("    bool is_exit;\n")
+    fileWriter.write("    vluint64_t main_time;\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("    VerilatedVcdC* tfp;\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("    virtual inline size_t put_value(VerilatorDataWrapper* &sig, uint64_t* data, bool force=false) {\n")
+    fileWriter.write("        return sig->put_value(data);\n")
+    fileWriter.write("    }\n")
+    fileWriter.write("    virtual inline size_t get_value(VerilatorDataWrapper* &sig, uint64_t* data) {\n")
+    fileWriter.write("        return sig->get_value(data);\n")
+    fileWriter.write("    }\n")
+    fileWriter.write("    virtual inline size_t get_chunk(VerilatorDataWrapper* &sig) {\n")
+    fileWriter.write("        return sig->get_num_words();\n")
+    fileWriter.write("    } \n")
+    fileWriter.write("    virtual inline void reset() {\n")
+    fileWriter.write("        dut->reset = 1;\n")
+    fileWriter.write("        dut->clk = 1;\n")
+    fileWriter.write("        dut->eval();\n")
+    fileWriter.write("        dut->reset = 0;\n")
+    fileWriter.write("    }\n")
+    fileWriter.write("    virtual inline void start() { }\n")
+    fileWriter.write("    virtual inline void finish() {\n")
+    fileWriter.write("        dut->eval();\n")
+    fileWriter.write("        is_exit = true;\n")
+    fileWriter.write("    }\n")
+    fileWriter.write("    virtual inline void step() {\n")
+    fileWriter.write("        dut->clk = 0;\n")
+    fileWriter.write("        dut->eval();\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("        if (tfp) tfp->dump(main_time);\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("        main_time++;\n")
+    fileWriter.write("        dut->clk = 1;\n")
+    fileWriter.write("        dut->eval();\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("        if (tfp) tfp->dump(main_time);\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("        dut->clk = 0;\n")
+    fileWriter.write("        dut->eval();\n")
+    fileWriter.write("        main_time++;\n")
+    fileWriter.write("    }\n")
+    fileWriter.write("    virtual inline void update() {\n")
+    fileWriter.write("        dut->eval();\n")
+    fileWriter.write("    }\n")
+    fileWriter.write("};\n")
+    fileWriter.write("int main(int argc, char **argv, char **env) {\n")
+    fileWriter.write("    Verilated::commandArgs(argc, argv);\n")
+    fileWriter.write(s"    ${dutVerilatorClassName}* top = new ${dutVerilatorClassName};\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("    Verilated::traceEverOn(true);\n")
+    fileWriter.write("    VL_PRINTF(\"Enabling waves..\");\n")
+    fileWriter.write("    VerilatedVcdC* tfp = new VerilatedVcdC;\n")
+    fileWriter.write("    top->trace(tfp, 99);\n")
+    fileWriter.write("    tfp->open(\"%s\");\n".format(vcdFilePath))
+    fileWriter.write("#endif\n")
+    fileWriter.write(s"    ${dutApiClassName} api(top);\n")
+    fileWriter.write("    api.init_sim_data();\n")
+    fileWriter.write("    api.init_channels();\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("    api.init_dump(tfp);\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("    while(!api.exit()) api.tick();\n")
+    fileWriter.write("#if VM_TRACE\n")
+    fileWriter.write("    if (tfp) tfp->close();\n")
+    fileWriter.write("    delete tfp;\n")
+    fileWriter.write("#endif\n")
+    fileWriter.write("    delete top;\n")
+    fileWriter.write("    exit(0);\n")
+    fileWriter.write("}\n")
+    fileWriter.close()
+    println(s"ClassicTester CppHarness generated at ${cppHarnessFilePath}")
+  }
+}
+
+object runClassicTester {
+  def apply[T <: Module] (dutGen: () => T, cppEmulatorBinaryFilePath: String)
+                         (testerGen: (T, Option[String]) => ClassicTester[T]): Boolean = {
+    lazy val dut = dutGen()
+    val circuit = Chisel.Driver.elaborate(() => dut)
+    val tester = testerGen(dut, Some(cppEmulatorBinaryFilePath))
+    tester.finish
+  }
+}
+
+private[iotesters] object parsePorts {
+  def apply(dut: Module) = {
+    // Node -> (firrtl name, IPC name)
+    val inputMap = LinkedHashMap[Bits, (String, String)]()
+    val outputMap = LinkedHashMap[Bits, (String, String)]()
+    def loop(name: String, data: Data): Unit = data match {
+      case b: Bundle => b.elements foreach {case (n, e) => loop(s"${name}_${n}", e)}
+      case v: Vec[_] => v.zipWithIndex foreach {case (e, i) => loop(s"${name}_${i}", e)}
+      case b: Bits if b.dir == INPUT => inputMap(b) = (name, s"${dut.name}.${name}")
+      case b: Bits if b.dir == OUTPUT => outputMap(b) = (name, s"${dut.name}.${name}")
+      case _ => // skip
+    }
+    loop("io", dut.io)
+    (ListMap(inputMap.toList:_*), ListMap(outputMap.toList:_*))
+  }
+}
+
+private object genHarness {
+  def apply[T <: Module](dutGen: () => Module, isVCS: Boolean, verilogFileName:String, cppHarnessFilePath:String, vcdFilePath: String) {
+    if (isVCS) {
+      assert(false, "unimplemented")
+    } else {
+      genCppHarness(dutGen, verilogFileName, cppHarnessFilePath, vcdFilePath)
+    }
+  }
+}
 // Provides a template to define tester transactions
 trait ClassicTests {
   type DUT <: Module

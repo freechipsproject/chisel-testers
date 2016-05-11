@@ -3,7 +3,7 @@
 package examples
 
 import Chisel._
-import Chisel.hwiotesters.{SteppedHWIOTester, ChiselFlatSpec}
+import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
 
 class GCD extends Module {
   val int_width = 16
