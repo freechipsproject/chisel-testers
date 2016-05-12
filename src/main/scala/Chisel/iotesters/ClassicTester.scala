@@ -36,7 +36,11 @@ object chiselMain {
         case "--vcs" => context.isVCS = true
         case "--v" => context.isGenVerilog = true
         case "--genHarness" => context.isGenHarness = true
-        case "--compile" => context.isCompiling = true
+        case "--compile" => {
+          context.isGenVerilog = true
+          context.isGenHarness = true
+          context.isCompiling = true
+        }
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
         case "--targetDir" => context.targetDir = args(i+1)
         case _ =>
@@ -46,6 +50,7 @@ object chiselMain {
 
   private def genVerilog(circuit: internal.firrtl.Circuit) {
     val dir = new File(context.targetDir)
+    dir.mkdirs()
     // Dump FIRRTL for debugging
     Driver.dumpFirrtl(circuit, Some(new File(s"${dir}/${circuit.name}.ir")))
     // Parse FIRRTL
@@ -61,6 +66,7 @@ object chiselMain {
     copyCppEmulatorHeaderFiles(s"${context.targetDir}")
 
     val dir = new File(context.targetDir)
+    dir.mkdirs()
     if (context.isVCS) {
     } else {
       // Generate Verilator
@@ -116,8 +122,10 @@ object chiselMainTest {
     chiselMain(args, dutGen, testerGen)
   }
 }
+
 object copyCppEmulatorHeaderFiles {
   def apply(destinationDirPath: String): Unit = {
+    new File(destinationDirPath).mkdirs()
     val simApiHFilePath = Paths.get(destinationDirPath + "/sim_api.h")
     val verilatorApiHFilePath = Paths.get(destinationDirPath + "/veri_api.h")
     try {
@@ -147,7 +155,9 @@ object genCppHarness {
     val dutName = verilogFileName.split("\\.")(0)
     val dutApiClassName = dutName + "_api_t"
     val dutVerilatorClassName = "V" + dutName
-    val fileWriter = new PrintWriter(new File(cppHarnessFilePath))
+    val cppHarnessFile = new File(cppHarnessFilePath)
+    cppHarnessFile.getParentFile.mkdirs()
+    val fileWriter = new PrintWriter(cppHarnessFile)
 
     fileWriter.write("#include \"%s.h\"\n".format(dutVerilatorClassName))
     fileWriter.write("#include \"verilated.h\"\n")
@@ -283,8 +293,7 @@ object genCppHarness {
 object runClassicTester {
   def apply[T <: Module] (dutGen: () => T, cppEmulatorBinaryFilePath: String)
                          (testerGen: (T, Option[String]) => ClassicTester[T]): Boolean = {
-    lazy val dut = dutGen()
-    val circuit = Chisel.Driver.elaborate(() => dut)
+    val dut = Chisel.Driver.elaborateModule(dutGen)
     val tester = testerGen(dut, Some(cppEmulatorBinaryFilePath))
     tester.finish
   }
