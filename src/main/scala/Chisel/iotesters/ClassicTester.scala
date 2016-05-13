@@ -48,13 +48,14 @@ object chiselMain {
     }
   }
 
-  private def genVerilog(circuit: internal.firrtl.Circuit) {
+  private def genVerilog(dutGen: () => Module) {
+    val circuit = Driver.elaborate(dutGen)
     val dir = new File(context.targetDir)
     dir.mkdirs()
     // Dump FIRRTL for debugging
     Driver.dumpFirrtl(circuit, Some(new File(s"${dir}/${circuit.name}.ir")))
     // Parse FIRRTL
-    val ir = firrtl.Parser.parse(circuit.emit split "\n")
+    val ir = firrtl.Parser.parse(Chisel.Driver.emit(dutGen) split "\n")
     // Generate Verilog
     val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
     firrtl.VerilogCompiler.run(ir, v)
@@ -86,13 +87,12 @@ object chiselMain {
       case x: IOException =>
         System.err.format("createFile error: %s%n", x)
     }
-    lazy val dut = dutGen()
-    val circuit = Driver.elaborate(() => dut)
+    val dut = dutGen()
 
-    if (context.isGenVerilog) genVerilog(circuit)
+    if (context.isGenVerilog) genVerilog(dutGen)
 
-    if (context.isGenHarness) genHarness(dutGen, context.isVCS, s"${circuit.name}.v", s"${chiselMain.context.targetDir}/${dut.name}-harness.cpp", s"${chiselMain.context.targetDir}/${dut.name}.vcd")
-    if (context.isCompiling) compile(circuit.name)
+    if (context.isGenHarness) genHarness(dutGen, context.isVCS, s"${dut.name}.v", s"${chiselMain.context.targetDir}/${dut.name}-harness.cpp", s"${chiselMain.context.targetDir}/${dut.name}.vcd")
+    if (context.isCompiling) compile(dut.name)
     if (context.testCmd.isEmpty) {
       context.testCmd += s"""${context.targetDir}/${if (context.isVCS) "" else "V"}${dut.name}"""
     }
@@ -149,7 +149,7 @@ object genCppHarness {
     case (io, (name, _)) => io -> name
   }
   def apply(dutGen: () => Module, verilogFileName: String, cppHarnessFilePath: String, vcdFilePath: String): Unit = {
-    val dut = Chisel.Driver.elaborateModule(dutGen)
+    val dut = dutGen()
     val (dutInputNodeInfo, dutOutputNodeInfo) = parsePorts(dut)
     val (inputs, outputs) = (dutInputNodeInfo.toList map getVerilatorName, dutOutputNodeInfo.toList map getVerilatorName)
     val dutName = verilogFileName.split("\\.")(0)
@@ -293,7 +293,7 @@ object genCppHarness {
 object runClassicTester {
   def apply[T <: Module] (dutGen: () => T, cppEmulatorBinaryFilePath: String)
                          (testerGen: (T, Option[String]) => ClassicTester[T]): Boolean = {
-    val dut = Chisel.Driver.elaborateModule(dutGen)
+    val dut = dutGen()
     val tester = testerGen(dut, Some(cppEmulatorBinaryFilePath))
     tester.finish
   }
