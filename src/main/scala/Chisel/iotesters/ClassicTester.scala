@@ -87,7 +87,8 @@ object chiselMain {
       case x: IOException =>
         System.err.format("createFile error: %s%n", x)
     }
-    val dut = dutGen()
+    lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
+    Driver.elaborate(() => dut)
 
     if (context.isGenVerilog) genVerilog(dutGen)
 
@@ -149,7 +150,8 @@ object genCppHarness {
     case (io, (name, _)) => io -> name
   }
   def apply(dutGen: () => Module, verilogFileName: String, cppHarnessFilePath: String, vcdFilePath: String): Unit = {
-    val dut = dutGen()
+    lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
+    Driver.elaborate(() => dut)
     val (dutInputNodeInfo, dutOutputNodeInfo) = parsePorts(dut)
     val (inputs, outputs) = (dutInputNodeInfo.toList map getVerilatorName, dutOutputNodeInfo.toList map getVerilatorName)
     val dutName = verilogFileName.split("\\.")(0)
