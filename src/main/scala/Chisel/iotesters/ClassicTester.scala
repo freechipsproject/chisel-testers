@@ -21,6 +21,7 @@ private[iotesters] class TesterContext {
   var isGenVerilog = false
   var isGenHarness = false
   var isCompiling = false
+  var isRunTest = false
   var testerSeed = System.currentTimeMillis
   val testCmd = ArrayBuffer[String]()
   var targetDir = new File("test_run_dir").getCanonicalPath
@@ -35,12 +36,14 @@ object chiselMain {
       args(i) match {
         case "--vcs" => context.isVCS = true
         case "--v" => context.isGenVerilog = true
+        case "--backend" => if(args(i+1) == "v") context.isGenVerilog = true
         case "--genHarness" => context.isGenHarness = true
         case "--compile" => {
           context.isGenVerilog = true
           context.isGenHarness = true
           context.isCompiling = true
         }
+        case "--test" => context.isRunTest = true
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
         case "--targetDir" => context.targetDir = args(i+1)
         case _ =>
@@ -112,7 +115,9 @@ object chiselMain {
   def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => ClassicTester[T]) = {
     contextVar.withValue(Some(new TesterContext)) {
       val dut = elaborate(args, dutGen)
-      assert(testerGen(dut).finish, "Test failed")
+      if(context.isRunTest) {
+        assert(testerGen(dut).finish, "Test failed")
+      }
       dut
     }
   }
