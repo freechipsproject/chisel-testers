@@ -43,7 +43,12 @@ object chiselMain {
           context.isGenHarness = true
           context.isCompiling = true
         }
-        case "--test" => context.isRunTest = true
+        case "--test" => {
+          context.isGenVerilog = true
+          context.isGenHarness = true
+          context.isCompiling = true
+          context.isRunTest = true
+        }
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
         case "--targetDir" => context.targetDir = args(i+1)
         case _ =>
@@ -56,13 +61,16 @@ object chiselMain {
     val dir = new File(context.targetDir)
     dir.mkdirs()
     // Dump FIRRTL for debugging
-    Driver.dumpFirrtl(circuit, Some(new File(s"${dir}/${circuit.name}.ir")))
+    val firrtlIRFilePath = s"${dir}/${circuit.name}.ir"
+    Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
     // Parse FIRRTL
-    val ir = firrtl.Parser.parse(Chisel.Driver.emit(dutGen) split "\n")
+    //val ir = firrtl.Parser.parse(Chisel.Driver.emit(dutGen) split "\n")
     // Generate Verilog
-    val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
-    firrtl.VerilogCompiler.run(ir, v)
-    v.close
+    val verilogFilePath = s"${dir}/${circuit.name}.v"
+    //val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
+    firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler())
+    //firrtl.VerilogCompiler.run(ir, v)
+    //v.close
   }
 
   private def compile(dutName: String) {
@@ -300,7 +308,8 @@ object genCppHarness {
 object runClassicTester {
   def apply[T <: Module] (dutGen: () => T, cppEmulatorBinaryFilePath: String)
                          (testerGen: (T, Option[String]) => ClassicTester[T]): Boolean = {
-    val dut = dutGen()
+    lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
+    Driver.elaborate(() => dut)
     val tester = testerGen(dut, Some(cppEmulatorBinaryFilePath))
     tester.finish
   }
