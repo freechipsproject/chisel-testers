@@ -1,11 +1,11 @@
 organization := "edu.berkeley.cs"
-version := "1.0"
+version := "1.1-BETA"
 name := "Chisel.iotesters"
 
 scalaVersion := "2.11.7"
 
-libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel3" % "3.0",
-                           "edu.berkeley.cs" %% "firrtl" % "0.1-SNAPSHOT",
+libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel3" % "3.0-BETA",
+                           "edu.berkeley.cs" %% "firrtl" % "0.1-BETA",
                            "org.scalatest" % "scalatest_2.11" % "2.2.4",
                            "org.scalacheck" %% "scalacheck" % "1.12.4")
     
