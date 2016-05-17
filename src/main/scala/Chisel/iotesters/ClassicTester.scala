@@ -763,14 +763,23 @@ abstract class ClassicTester[+T <: Module](
     interface.poke(name, value)
   }
 
+  def poke(signal: Aggregate, value: Array[BigInt]) =  {
+    assert(false)
+  }
+
   def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int) {
   }
 
-  def peek(signal: Bits) = {
+  def peek(signal: Bits): BigInt = {
     val name = getIPCName(signal)
     val result = interface.peek(name) getOrElse BigInt(rnd.nextInt)
     if (verbose) println(s"  PEEK ${name} -> ${bigIntToStr(result, 16)}")
     result
+  }
+
+  def peek(signal: Aggregate): Array[BigInt] =  {
+    assert(false)
+    Array(0)
   }
 
   def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt = {
