@@ -83,7 +83,7 @@ object chiselMain {
     } else {
       // Generate Verilator
       val harness = new File(s"${dir}/${dutName}-harness.cpp")
-      Driver.verilogToCpp(dutName, dir, Seq(), harness).!
+      Driver.verilogToCpp(dutName, dutName, dir, Seq(), harness).!
       // Compile Verilator
       Driver.cppToExe(dutName, dir).!
     }
