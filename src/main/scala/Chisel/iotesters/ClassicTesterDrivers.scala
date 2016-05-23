@@ -14,7 +14,7 @@ import java.io.{File, IOException, PrintWriter}
   * Will do intermediate compliation steps to setup the backend specified, including cpp compilation for the verilator backend and firrtl IR compilation for the firrlt backend
   */
 object runClassicTester {
-  def apply[T <: Module](backendType: String, dutGen: () => T)(testerGen: (T, Option[Backend]) => ClassicTester[T]): Boolean = {
+  def apply[T <: Module](dutGen: () => T, backendType: String = "firrtl")(testerGen: (T, Option[Backend]) => ClassicTester[T]): Boolean = {
     var backend: Backend = null
     if (backendType == "verilator") {
       backend = setupVerilatorBackend(dutGen)
