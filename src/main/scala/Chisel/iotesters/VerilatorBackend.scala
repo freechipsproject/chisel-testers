@@ -39,12 +39,12 @@ private[iotesters] object setupVerilatorBackend {
 
     copyVerilatorHeaderFiles(testDirPath)
 
-    genVerilatorCppHarness(dutGen, verilogFileName, cppHarnessFilePath, vcdFilePath)
-    Chisel.Driver.verilogToCpp(verilogFileName.split("\\.")(0), new File(testDirPath), Seq(), new File(cppHarnessFilePath)).!
-    Chisel.Driver.cppToExe(verilogFileName.split("\\.")(0), new File(testDirPath)).!
-
     lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
     Driver.elaborate(() => dut)
+
+    genVerilatorCppHarness(dutGen, verilogFileName, cppHarnessFilePath, vcdFilePath)
+    Chisel.Driver.verilogToCpp(verilogFileName.split("\\.")(0), dut.name, new File(testDirPath), Seq(), new File(cppHarnessFilePath)).!
+    Chisel.Driver.cppToExe(verilogFileName.split("\\.")(0), new File(testDirPath)).!
 
     new VerilatorBackend(dut, cppBinaryPath)
   }
