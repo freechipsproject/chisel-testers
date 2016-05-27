@@ -7,7 +7,7 @@ import Chisel._
 import scala.collection.mutable.ArrayBuffer
 
 // Provides a template to define advanced tester transactions
-trait AdvTests extends ClassicTests {
+trait AdvTests extends PeekPokeTests {
   def cycles: Long
   def wire_poke(port: Bits, target: BigInt):  Unit
   def reg_poke(port: Bits, target: BigInt):   Unit
