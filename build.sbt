@@ -4,8 +4,9 @@ name := "Chisel.iotesters"
 
 scalaVersion := "2.11.7"
 
-libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel3" % "3.0",
-                           "edu.berkeley.cs" %% "firrtl" % "0.1-SNAPSHOT",
+libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel3" % "3.0-BETA-SNAPSHOT",
+                           "edu.berkeley.cs" %% "firrtl" % "0.2-BETA-SNAPSHOT",
+                           "edu.berkeley.cs" %% "firrtl-interpreter" % "0.1",
                            "org.scalatest" % "scalatest_2.11" % "2.2.4",
                            "org.scalacheck" %% "scalacheck" % "1.12.4")
     
