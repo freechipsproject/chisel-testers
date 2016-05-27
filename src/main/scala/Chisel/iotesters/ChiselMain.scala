@@ -117,7 +117,7 @@ object chiselMain {
     dut
   }
 
-  def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => ClassicTester[T]) = {
+  def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => PeekPokeTester[T]) = {
     contextVar.withValue(Some(new TesterContext)) {
       val dut = elaborate(args, dutGen)
       if(context.isRunTest) {
@@ -129,7 +129,7 @@ object chiselMain {
 }
 
 object chiselMainTest {
-  def apply[T <: Module](args: Array[String], dutGen: () => T)(testerGen: T => ClassicTester[T]) = {
+  def apply[T <: Module](args: Array[String], dutGen: () => T)(testerGen: T => PeekPokeTester[T]) = {
     chiselMain(args, dutGen, testerGen)
   }
 }
