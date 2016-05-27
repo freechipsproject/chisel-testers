@@ -7,7 +7,7 @@ import Chisel._
 import scala.util.Random
 
 // Provides a template to define tester transactions
-private [iotesters] trait ClassicTests {
+private [iotesters] trait PeekPokeTests {
   type DUT <: Module
   def dut: DUT
   def t: Long
