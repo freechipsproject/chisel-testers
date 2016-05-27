@@ -19,7 +19,7 @@ trait AdvTests extends ClassicTests {
 }
 
 abstract class AdvTester[+T <: Module](dut: T, isTrace: Boolean = false)
-    extends ClassicTester(dut, isTrace) {
+    extends PeekPokeTester(dut, isTrace) {
   val defaultMaxCycles = 1024L
   var _cycles = 0L
   def cycles = _cycles
