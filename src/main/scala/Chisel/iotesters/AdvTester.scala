@@ -18,8 +18,8 @@ trait AdvTests extends PeekPokeTests {
   def do_until(work: =>Unit)(pred: =>Boolean, maxCycles: Long = 0L): Boolean
 }
 
-abstract class AdvTester[+T <: Module](dut: T, isTrace: Boolean = false)
-    extends PeekPokeTester(dut, isTrace) {
+abstract class AdvTester[+T <: Module](dut: T, verbose: Boolean = false)
+    extends PeekPokeTester(dut, verbose) {
   val defaultMaxCycles = 1024L
   var _cycles = 0L
   def cycles = _cycles
@@ -95,19 +95,19 @@ abstract class AdvTester[+T <: Module](dut: T, isTrace: Boolean = false)
   }
 
   class DecoupledSink[T <: Data, R]( socket: DecoupledIO[T], cvt: T=>R, 
-    max_count: Int = -1 ) extends Processable
+    max_count: Option[Int] = None ) extends Processable
   {
     val outputs = new scala.collection.mutable.Queue[R]()
     private var amReady = false
-    private def isValid = () => (peek(socket.valid) == 1)
+    private def isValid = peek(socket.valid) == 1
 
     def process() = {
       // Handle this cycle
-      if(isValid() && amReady) {
+      if(isValid && amReady) {
         outputs.enqueue(cvt(socket.bits))
       }
       // Decide what to do next cycle and post onto register
-      amReady = max_count < 1 || outputs.length < max_count
+      amReady = max_count match { case None => true case Some(p) => outputs.length <= p }
       reg_poke(socket.ready, amReady)
     }
 

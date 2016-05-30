@@ -7,9 +7,7 @@ import Chisel._
 import scala.util.Random
 
 // Provides a template to define tester transactions
-private [iotesters] trait PeekPokeTests {
-  type DUT <: Module
-  def dut: DUT
+trait PeekPokeTests {
   def t: Long
   def rnd: Random
   implicit def int(x: Boolean): BigInt
@@ -56,7 +54,7 @@ abstract class PeekPokeTester[+T <: Module](
     ok = false
   }
 
-  val rnd = new Random(_seed)
+  val rnd = backend.rnd
 
   /** Convert a Boolean to BigInt */
   implicit def int(x: Boolean): BigInt = if (x) 1 else 0

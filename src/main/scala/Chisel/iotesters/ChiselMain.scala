@@ -29,20 +29,14 @@ object chiselMain {
       args(i) match {
         case "--vcs" => context.isVCS = true
         case "--v" => context.isGenVerilog = true
-        case "--backend" => {
-          if(args(i+1) == "v") {
-            context.isGenVerilog = true
-          } else if(args(i+1) == "c") {
-            context.isGenVerilog = true
-          }
+        case "--backend" => args(i+1) match {
+          case "v" => context.isGenVerilog = true
+          case "c" => context.isGenVerilog = true
+          case _ =>
         }
         case "--genHarness" => context.isGenHarness = true
-        case "--compile" => {
-          context.isCompiling = true
-        }
-        case "--test" => {
-          context.isRunTest = true
-        }
+        case "--compile" => context.isCompiling = true
+        case "--test" => context.isRunTest = true
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
         case "--targetDir" => context.targetDir = args(i+1)
         case _ =>
@@ -62,11 +56,11 @@ object chiselMain {
     firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler())
   }
 
-  private def genHarness[T <: Module](dutGen: () => Module, isVCS: Boolean, verilogFileName:String, cppHarnessFilePath:String, vcdFilePath: String) {
+  private def genHarness[T <: Module](dutGen: () => Module, isVCS: Boolean, verilogFileName:String, harnessFilePath:String, vcdFilePath: String) {
     if (isVCS) {
       assert(false, "unimplemented")
     } else {
-      genVerilatorCppHarness(dutGen, verilogFileName, cppHarnessFilePath, vcdFilePath)
+      genVerilatorCppHarness(dutGen, verilogFileName, harnessFilePath, vcdFilePath)
     }
   }
 
@@ -79,8 +73,7 @@ object chiselMain {
     if (context.isVCS) {
     } else {
       // Generate Verilator
-      val harness = new File(s"${dir}/${dutName}-harness.cpp")
-      Driver.verilogToCpp(dutName, dutName, dir, Seq(), harness).!
+      Driver.verilogToCpp(dutName, dutName, dir, Seq(), new File(s"${dutName}-harness.cpp")).!
       // Compile Verilator
       Driver.cppToExe(dutName, dir).!
     }

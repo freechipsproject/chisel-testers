@@ -24,12 +24,10 @@ private[iotesters] object setupVerilatorBackend {
     // Dump FIRRTL for debugging
     val firrtlIRFilePath = s"${testDirPath}/${circuit.name}.ir"
     Chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
-    // Parse FIRRTL
-    //val ir = firrtl.Parser.parse(Chisel.Driver.emit(dutGen) split "\n")
     // Generate Verilog
     val verilogFilePath = s"${testDirPath}/${circuit.name}.v"
     //val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
-    firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler())
+    firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler)
 
     val verilogFileName = verilogFilePath.split("/").last
     val cppHarnessFileName = "classic_tester_top.cpp"
@@ -43,7 +41,7 @@ private[iotesters] object setupVerilatorBackend {
     Driver.elaborate(() => dut)
 
     genVerilatorCppHarness(dutGen, verilogFileName, cppHarnessFilePath, vcdFilePath)
-    Chisel.Driver.verilogToCpp(verilogFileName.split("\\.")(0), dut.name, new File(testDirPath), Seq(), new File(cppHarnessFilePath)).!
+    Chisel.Driver.verilogToCpp(verilogFileName.split("\\.")(0), dut.name, new File(testDirPath), Seq(), new File(cppHarnessFileName)).!
     Chisel.Driver.cppToExe(verilogFileName.split("\\.")(0), new File(testDirPath)).!
 
     new VerilatorBackend(dut, cppBinaryPath)

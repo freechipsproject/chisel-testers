@@ -8,6 +8,8 @@ import Chisel._
   */
 
 abstract class Backend {
+  def rnd: scala.util.Random
+
   def poke(data: Bits, signal: BigInt): Unit
 
   def peek(data: Bits): BigInt
