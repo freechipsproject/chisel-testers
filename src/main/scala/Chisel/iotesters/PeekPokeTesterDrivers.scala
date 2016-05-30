@@ -167,7 +167,6 @@ object genVerilatorCppHarness {
     fileWriter.write("        if (tfp) tfp->dump(main_time);\n")
     fileWriter.write("#endif\n")
     fileWriter.write("        dut->clk = 0;\n")
-    fileWriter.write("        dut->eval();\n")
     fileWriter.write("        main_time++;\n")
     fileWriter.write("    }\n")
     fileWriter.write("    virtual inline void update() {\n")

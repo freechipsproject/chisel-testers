@@ -15,6 +15,7 @@ private[iotesters] class TesterContext {
   var isGenHarness = false
   var isCompiling = false
   var isRunTest = false
+  var isUpdate = true
   var testerSeed = System.currentTimeMillis
   val testCmd = ArrayBuffer[String]()
   var targetDir = new File("test_run_dir").getCanonicalPath
@@ -39,6 +40,7 @@ object chiselMain {
         case "--test" => context.isRunTest = true
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
         case "--targetDir" => context.targetDir = args(i+1)
+        case "--noUpdate" => context.isUpdate = false
         case _ =>
       }
     }

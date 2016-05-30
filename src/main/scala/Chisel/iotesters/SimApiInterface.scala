@@ -153,7 +153,7 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
     mwhile(!sendCmd(SIM_CMD.STEP)) { }
     mwhile(!sendInputs) { }
     mwhile(!recvOutputs) { }
-    isStale = false
+    isStale = true
   }
 
   private def getId(path: String) = {
@@ -223,7 +223,7 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
   }
 
   def peek(signal: String) = {
-    if (isStale) update
+    if (isStale && chiselMain.context.isUpdate) update
     if (outputsNameToChunkSizeMap contains signal) _peekMap get signal
     else if (inputsNameToChunkSizeMap contains signal) _pokeMap get signal
     else None
