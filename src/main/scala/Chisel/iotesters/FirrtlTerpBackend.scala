@@ -9,9 +9,14 @@ import scala.collection.mutable.HashMap
 
 import firrtl_interpreter.InterpretiveTester
 
-private[iotesters] class FirrtlTerpBackend(dut: Module, firrtlIR: String, verbose: Boolean = true) extends Backend {
+private[iotesters] class FirrtlTerpBackend(
+                                           dut: Module,
+                                           firrtlIR: String,
+                                           verbose: Boolean = true,
+                                           logger: PrintStream = System.out,
+                                           _base: Int = 16) extends Backend {
   val interpretiveTester = new InterpretiveTester(firrtlIR)
-  reset(5)//reset firrtl interpreter on construction
+  reset(5) // reset firrtl interpreter on construction
 
   private val ioNameMap = {
     val result = HashMap[Data, String]()
@@ -28,13 +33,13 @@ private[iotesters] class FirrtlTerpBackend(dut: Module, firrtlIR: String, verbos
   override def poke(signal: Bits, value: BigInt): Unit = {
     val name = getIPCName(signal)
     interpretiveTester.poke(name, value)
-    if (verbose) println(s"  POKE ${name} <- ${bigIntToStr(value, 16)}")
+    if (verbose) logger println s"  POKE ${name} <- ${bigIntToStr(value, _base)}"
   }
 
   override def peek(signal: Bits): BigInt = {
     val name = getIPCName(signal)
     val result = interpretiveTester.peek(name)
-    if (verbose) println(s"  PEEK ${name} -> ${bigIntToStr(result, 16)}")
+    if (verbose) logger println s"  PEEK ${name} -> ${bigIntToStr(result, _base)}"
     result
   }
 
@@ -42,7 +47,7 @@ private[iotesters] class FirrtlTerpBackend(dut: Module, firrtlIR: String, verbos
     val name = getIPCName(signal)
     val got = interpretiveTester.peek(name)
     val good = got == expected
-    if (verbose) println(s"""${msg}  EXPECT ${name} -> ${bigIntToStr(got, 16)} == ${bigIntToStr(expected, 16)} ${if (good) "PASS" else "FAIL"}""")
+    if (verbose) logger println s"""${msg}  EXPECT ${name} -> ${bigIntToStr(got, _base)} == ${bigIntToStr(expected, _base)} ${if (good) "PASS" else "FAIL"}"""
     good
   }
 

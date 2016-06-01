@@ -1,17 +1,11 @@
 // See LICENSE for license details.
 package Chisel.iotesters
 
-import java.io.File
-
 import Chisel._
 
-import scala.collection.mutable.{ArrayBuffer, HashMap}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Future, _}
-import scala.sys.process.{Process, ProcessLogger}
+import scala.collection.mutable.HashMap
 import scala.util.Random
-import java.nio.channels.FileChannel
+import java.io.{File, PrintStream}
 
 private[iotesters] object setupVerilatorBackend {
   def apply(dutGen: ()=> Chisel.Module): Backend = {
@@ -26,7 +20,6 @@ private[iotesters] object setupVerilatorBackend {
     Chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
     // Generate Verilog
     val verilogFilePath = s"${testDirPath}/${circuit.name}.v"
-    //val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
     firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler)
 
     val verilogFileName = verilogFilePath.split("/").last
@@ -48,8 +41,15 @@ private[iotesters] object setupVerilatorBackend {
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: Module, cmd: String = chiselMain.context.testCmd mkString " ", verbose: Boolean = true, _seed: Long = System.currentTimeMillis) extends Backend {
-  val simApiInterface = new SimApiInterface(dut, cmd)
+private[iotesters] class VerilatorBackend(
+                                          dut: Module, 
+                                          cmd: String,
+                                          verbose: Boolean = true,
+                                          logger: PrintStream = System.out,
+                                          _base: Int = 16,
+                                          _seed: Long = System.currentTimeMillis) extends Backend {
+
+  val simApiInterface = new SimApiInterface(dut, cmd, logger)
   val rnd = new Random(_seed)
 
   private val ioNameMap = {
@@ -66,14 +66,14 @@ private[iotesters] class VerilatorBackend(dut: Module, cmd: String = chiselMain.
 
   override def poke(signal: Bits, value: BigInt) {
     val name = getIPCName(signal)
-    if (verbose) println(s"  POKE ${name} <- ${bigIntToStr(value, 16)}")
+    if (verbose) logger println s"  POKE ${name} <- ${bigIntToStr(value, _base)}"
     simApiInterface.poke(name, value)
   }
 
   override def peek(signal: Bits) = {
     val name = getIPCName(signal)
     val result = simApiInterface.peek(name) getOrElse BigInt(rnd.nextInt)
-    if (verbose) println(s"  PEEK ${name} -> ${bigIntToStr(result, 16)}")
+    if (verbose) logger println s"  PEEK ${name} -> ${bigIntToStr(result, _base)}"
     result
   }
 
@@ -81,7 +81,7 @@ private[iotesters] class VerilatorBackend(dut: Module, cmd: String = chiselMain.
     val name = getIPCName(signal)
     val got = simApiInterface.peek(name) getOrElse BigInt(rnd.nextInt)
     val good = got == expected
-    if (verbose) println(s"""${msg}  EXPECT ${name} -> ${bigIntToStr(got, 16)} == ${bigIntToStr(expected, 16)} ${if (good) "PASS" else "FAIL"}""")
+    if (verbose) logger println s"""${msg}  EXPECT ${name} -> ${bigIntToStr(got, _base)} == ${bigIntToStr(expected, _base)} ${if (good) "PASS" else "FAIL"}"""
     good
   }
 

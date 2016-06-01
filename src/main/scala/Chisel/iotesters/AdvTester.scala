@@ -18,8 +18,12 @@ trait AdvTests extends PeekPokeTests {
   def do_until(work: =>Unit)(pred: =>Boolean, maxCycles: Long = 0L): Boolean
 }
 
-abstract class AdvTester[+T <: Module](dut: T, verbose: Boolean = false)
-    extends PeekPokeTester(dut, verbose) {
+abstract class AdvTester[+T <: Module](
+                                       dut: T,
+                                       verbose: Boolean = false,
+                                       logFile: Option[String] = chiselMain.context.logFile,
+                                       _base: Int = 16)
+                extends PeekPokeTester(dut, verbose, logFile, _base) {
   val defaultMaxCycles = 1024L
   var _cycles = 0L
   def cycles = _cycles
@@ -62,9 +66,13 @@ abstract class AdvTester[+T <: Module](dut: T, verbose: Boolean = false)
       postprocessors.foreach(_.process())
     } catch {
       case e: java.lang.AssertionError =>
-        assert(false, e.toString) // catch assert
+        // catch assert
+        if (verbose) logger println e.toString
+        assert(false, e.toString)
       case e: java.lang.IllegalArgumentException =>
-        assert(false, e.toString) // catch require
+        // catch require
+        if (verbose) logger println e.toString
+        assert(false, e.toString)
     }
   }
   def takesteps(n: Int)(work: =>Unit = {}): Unit = {
