@@ -40,6 +40,7 @@ object chiselMain {
         case "--compile" => context.isCompiling = true
         case "--test" => context.isRunTest = true
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
+        case "--testerSeed" => context.testerSeed = args(i+1).toLong
         case "--targetDir" => context.targetDir = args(i+1)
         case "--noUpdate" => context.isUpdate = false
         case "--logFile" => context.logFile = Some(args(i+1))
