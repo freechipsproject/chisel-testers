@@ -27,8 +27,9 @@ trait PeekPokeTests {
 abstract class PeekPokeTester[+T <: Module](
                                             val dut: T,
                                             verbose: Boolean = true,
-                                            logFile: Option[String] = chiselMain.context.logFile,
                                             _base: Int = 16,
+                                            logFile: Option[String] = chiselMain.context.logFile,
+                                            waveform: Option[String] = chiselMain.context.waveform,
                                             _backend: Option[Backend] = None,
                                             _seed: Long = System.currentTimeMillis) {
 
@@ -47,8 +48,12 @@ abstract class PeekPokeTester[+T <: Module](
   /*** Simulation Interface ***/
   /****************************/
   logger println s"SEED ${_seed}"
+  val cmd = chiselMain.context.testCmd.toList ++ (waveform match {
+    case None    => Nil
+    case Some(f) => logger println s"Waveform: $f" ; List(s"+waveform=$f")
+  })
   val backend = _backend getOrElse(new VerilatorBackend(
-    dut, chiselMain.context.testCmd mkString " ", verbose, logger, _base, _seed))
+    dut, cmd, verbose, logger, _base, _seed))
 
   /********************************/
   /*** Classic Tester Interface ***/

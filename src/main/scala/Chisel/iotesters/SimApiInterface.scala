@@ -13,7 +13,7 @@ import java.nio.channels.FileChannel
 
 private[iotesters] class SimApiInterface(
                                          dut: Module,
-                                         cmd: String,
+                                         cmd: List[String],
                                          logger: java.io.PrintStream) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
     def genChunk(arg: (Bits, (String, String))) = arg match {case (io, (_, name)) =>
@@ -214,7 +214,7 @@ private[iotesters] class SimApiInterface(
   }
 
   private def start {
-    println(s"STARTING ${cmd}")
+    println(s"""STARTING ${cmd mkString " "}""")
     mwhile(!recvOutputs) { }
     // reset(5)
     for (i <- 0 until 5) {
@@ -259,8 +259,8 @@ private[iotesters] class SimApiInterface(
 
   //initialize cpp process and memory mapped channels
   private val (process: Process, exitValue: Future[Int], inChannel, outChannel, cmdChannel) = {
-    require(new java.io.File(cmd).exists, s"${cmd} doesn't exists")
-    val processBuilder = Process(cmd)
+    require(new java.io.File(cmd.head).exists, s"${cmd.head} doesn't exists")
+    val processBuilder = Process(cmd mkString " ")
     val processLogger = ProcessLogger(println, _logs += _) // don't log stdout
     val process = processBuilder run processLogger
 

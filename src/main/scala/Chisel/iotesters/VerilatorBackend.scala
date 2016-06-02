@@ -37,13 +37,13 @@ private[iotesters] object setupVerilatorBackend {
     Chisel.Driver.verilogToCpp(verilogFileName.split("\\.")(0), dut.name, new File(testDirPath), Seq(), new File(cppHarnessFileName)).!
     Chisel.Driver.cppToExe(verilogFileName.split("\\.")(0), new File(testDirPath)).!
 
-    new VerilatorBackend(dut, cppBinaryPath)
+    new VerilatorBackend(dut, List(cppBinaryPath))
   }
 }
 
 private[iotesters] class VerilatorBackend(
                                           dut: Module, 
-                                          cmd: String,
+                                          cmd: List[String],
                                           verbose: Boolean = true,
                                           logger: PrintStream = System.out,
                                           _base: Int = 16,

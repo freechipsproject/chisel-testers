@@ -20,6 +20,7 @@ private[iotesters] class TesterContext {
   val testCmd = ArrayBuffer[String]()
   var targetDir = new File("test_run_dir").getCanonicalPath
   var logFile: Option[String] = None
+  var waveform: Option[String] = None
 }
 
 object chiselMain {
@@ -44,6 +45,7 @@ object chiselMain {
         case "--targetDir" => context.targetDir = args(i+1)
         case "--noUpdate" => context.isUpdate = false
         case "--logFile" => context.logFile = Some(args(i+1))
+        case "--waveform" => context.waveform = Some(args(i+1))
         case _ =>
       }
     }
