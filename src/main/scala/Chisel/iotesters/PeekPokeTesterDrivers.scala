@@ -167,7 +167,6 @@ object genVerilatorCppHarness {
     fileWriter.write("        if (tfp) tfp->dump(main_time);\n")
     fileWriter.write("#endif\n")
     fileWriter.write("        dut->clk = 0;\n")
-    fileWriter.write("        dut->eval();\n")
     fileWriter.write("        main_time++;\n")
     fileWriter.write("    }\n")
     fileWriter.write("    virtual inline void update() {\n")
@@ -177,12 +176,18 @@ object genVerilatorCppHarness {
     fileWriter.write("int main(int argc, char **argv, char **env) {\n")
     fileWriter.write("    Verilated::commandArgs(argc, argv);\n")
     fileWriter.write(s"    ${dutVerilatorClassName}* top = new ${dutVerilatorClassName};\n")
+    fileWriter.write("    std::string vcdfile = \"%s\";\n".format(vcdFilePath))
+    fileWriter.write("    std::vector<std::string> args(argv+1, argv+argc);\n")
+    fileWriter.write("    std::vector<std::string>::const_iterator it;\n")
+    fileWriter.write("    for (it = args.begin() ; it != args.end() ; it++) {\n")
+    fileWriter.write("      if (it->find(\"+waveform=\") == 0) vcdfile = it->c_str()+10;\n")
+    fileWriter.write("    }\n")
     fileWriter.write("#if VM_TRACE\n")
     fileWriter.write("    Verilated::traceEverOn(true);\n")
     fileWriter.write("    VL_PRINTF(\"Enabling waves..\");\n")
     fileWriter.write("    VerilatedVcdC* tfp = new VerilatedVcdC;\n")
     fileWriter.write("    top->trace(tfp, 99);\n")
-    fileWriter.write("    tfp->open(\"%s\");\n".format(vcdFilePath))
+    fileWriter.write("    tfp->open(vcdfile.c_str());\n")
     fileWriter.write("#endif\n")
     fileWriter.write(s"    ${dutApiClassName} api(top);\n")
     fileWriter.write("    api.init_sim_data();\n")
@@ -212,7 +217,7 @@ object runPeekPokeTesterWithVerilatorBinary {
                          (testerGen: (T, Option[Backend]) => PeekPokeTester[T]): Boolean = {
     lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
     Driver.elaborate(() => dut)
-    val tester = testerGen(dut, Some(new VerilatorBackend(dut, verilatorBinaryFilePath)))
+    val tester = testerGen(dut, Some(new VerilatorBackend(dut, List(verilatorBinaryFilePath))))
     tester.finish
   }
 }

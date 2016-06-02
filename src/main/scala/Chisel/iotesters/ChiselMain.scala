@@ -6,6 +6,7 @@ import Chisel._
 
 import scala.collection.mutable.{ArrayBuffer}
 import scala.util.{DynamicVariable}
+import scala.sys.process.Process
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.io.{File, IOException}
 
@@ -15,9 +16,13 @@ private[iotesters] class TesterContext {
   var isGenHarness = false
   var isCompiling = false
   var isRunTest = false
+  var isUpdate = true
   var testerSeed = System.currentTimeMillis
   val testCmd = ArrayBuffer[String]()
   var targetDir = new File("test_run_dir").getCanonicalPath
+  var logFile: Option[String] = None
+  var waveform: Option[String] = None
+  val processes = ArrayBuffer[Process]()
 }
 
 object chiselMain {
@@ -29,22 +34,20 @@ object chiselMain {
       args(i) match {
         case "--vcs" => context.isVCS = true
         case "--v" => context.isGenVerilog = true
-        case "--backend" => {
-          if(args(i+1) == "v") {
-            context.isGenVerilog = true
-          } else if(args(i+1) == "c") {
-            context.isGenVerilog = true
-          }
+        case "--backend" => args(i+1) match {
+          case "v" => context.isGenVerilog = true
+          case "c" => context.isGenVerilog = true
+          case _ =>
         }
         case "--genHarness" => context.isGenHarness = true
-        case "--compile" => {
-          context.isCompiling = true
-        }
-        case "--test" => {
-          context.isRunTest = true
-        }
+        case "--compile" => context.isCompiling = true
+        case "--test" => context.isRunTest = true
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
+        case "--testerSeed" => context.testerSeed = args(i+1).toLong
         case "--targetDir" => context.targetDir = args(i+1)
+        case "--noUpdate" => context.isUpdate = false
+        case "--logFile" => context.logFile = Some(args(i+1))
+        case "--waveform" => context.waveform = Some(args(i+1))
         case _ =>
       }
     }
@@ -62,11 +65,11 @@ object chiselMain {
     firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler())
   }
 
-  private def genHarness[T <: Module](dutGen: () => Module, isVCS: Boolean, verilogFileName:String, cppHarnessFilePath:String, vcdFilePath: String) {
+  private def genHarness[T <: Module](dutGen: () => Module, isVCS: Boolean, verilogFileName:String, harnessFilePath:String, vcdFilePath: String) {
     if (isVCS) {
       assert(false, "unimplemented")
     } else {
-      genVerilatorCppHarness(dutGen, verilogFileName, cppHarnessFilePath, vcdFilePath)
+      genVerilatorCppHarness(dutGen, verilogFileName, harnessFilePath, vcdFilePath)
     }
   }
 
@@ -79,8 +82,7 @@ object chiselMain {
     if (context.isVCS) {
     } else {
       // Generate Verilator
-      val harness = new File(s"${dir}/${dutName}-harness.cpp")
-      Driver.verilogToCpp(dutName, dutName, dir, Seq(), harness).!
+      Driver.verilogToCpp(dutName, dutName, dir, Seq(), new File(s"${dutName}-harness.cpp")).!
       // Compile Verilator
       Driver.cppToExe(dutName, dir).!
     }
@@ -120,8 +122,13 @@ object chiselMain {
   def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => PeekPokeTester[T]) = {
     contextVar.withValue(Some(new TesterContext)) {
       val dut = elaborate(args, dutGen)
-      if(context.isRunTest) {
-        assert(testerGen(dut).finish, "Test failed")
+      if (context.isRunTest) {
+        try {
+          assert(testerGen(dut).finish, "Test failed")
+        } finally {
+          context.processes foreach (_.destroy)
+          context.processes.clear
+        }
       }
       dut
     }
