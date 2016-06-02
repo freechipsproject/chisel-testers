@@ -6,6 +6,7 @@ import Chisel._
 
 import scala.collection.mutable.{ArrayBuffer}
 import scala.util.{DynamicVariable}
+import scala.sys.process.Process
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.io.{File, IOException}
 
@@ -21,6 +22,7 @@ private[iotesters] class TesterContext {
   var targetDir = new File("test_run_dir").getCanonicalPath
   var logFile: Option[String] = None
   var waveform: Option[String] = None
+  val processes = ArrayBuffer[Process]()
 }
 
 object chiselMain {
@@ -120,8 +122,13 @@ object chiselMain {
   def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => PeekPokeTester[T]) = {
     contextVar.withValue(Some(new TesterContext)) {
       val dut = elaborate(args, dutGen)
-      if(context.isRunTest) {
-        assert(testerGen(dut).finish, "Test failed")
+      if (context.isRunTest) {
+        try {
+          assert(testerGen(dut).finish, "Test failed")
+        } finally {
+          context.processes foreach (_.destroy)
+          context.processes.clear
+        }
       }
       dut
     }

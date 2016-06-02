@@ -255,6 +255,7 @@ private[iotesters] class SimApiInterface(
     inChannel.close
     outChannel.close
     cmdChannel.close
+    chiselMain.context.processes -= process
   }
 
   //initialize cpp process and memory mapped channels
@@ -300,6 +301,7 @@ private[iotesters] class SimApiInterface(
     in_channel.release
     out_channel.release
     cmd_channel.release
+    chiselMain.context.processes += process
 
     (process, exitValue, in_channel, out_channel, cmd_channel)
   }
