@@ -5,6 +5,7 @@ package Chisel.iotesters
 import Chisel._
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
+import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Future, _}
@@ -16,14 +17,12 @@ private[iotesters] class SimApiInterface(
                                          cmd: List[String],
                                          logger: java.io.PrintStream) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
-    def genChunk(arg: (Bits, (String, String))) = arg match {case (io, (_, name)) =>
-      name -> ((io.getWidth-1)/64 + 1)
-    }
-    val (inputMap, outputMap) = getPortNameMaps(dut)
-    (inputMap map genChunk, outputMap map genChunk)
+    def genChunk(io: Data) = (CircuitGraph getPathName (io, ".")) -> ((io.getWidth-1)/64 + 1)
+    val (inputs, outputs) = getPorts(dut)
+    (ListMap((inputs map genChunk): _*), ListMap((outputs map genChunk): _*))
   }
   private object SIM_CMD extends Enumeration {
-    val RESET, STEP, UPDATE, POKE, PEEK, FORCE, GETID, GETCHK, SETCLK, FIN = Value }
+    val RESET, STEP, UPDATE, POKE, PEEK, FORCE, GETID, GETCHK, FIN = Value }
   implicit def cmdToId(cmd: SIM_CMD.Value) = cmd.id
   implicit def int(x: Int):  BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
   implicit def int(x: Long): BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
@@ -197,9 +196,10 @@ private[iotesters] class SimApiInterface(
     mwhile(!sendCmd(cmd)) { }
     mwhile(!sendCmd(id)) { }
     mwhile(!sendValue(v, chunk)) { }
+    isStale = true
   }
 
-  private def peek(id: Int, chunk: Int) = {
+  private def peek(id: Int, chunk: Int): BigInt = {
     mwhile(!sendCmd(SIM_CMD.PEEK)) { }
     mwhile(!sendCmd(id)) { }
     if (exitValue.isCompleted) {
@@ -223,18 +223,33 @@ private[iotesters] class SimApiInterface(
     }
   }
 
-  def poke(signal: String, value: BigInt) = {
+  def poke(signal: String, value: BigInt) {
     if (inputsNameToChunkSizeMap contains signal) {
       _pokeMap(signal) = value
       isStale = true
-    } // else ...
+    } else {
+      val id = _signalMap getOrElse (signal, getId(signal))
+      if (id >= 0) {
+        poke(id, _chunks getOrElseUpdate (signal, getChunk(id)), value)
+      } else {
+        logger println s"Can't find $signal in the emulator..."
+      }
+    }
   }
 
-  def peek(signal: String) = {
+  def peek(signal: String): Option[BigInt] = {
     if (isStale && chiselMain.context.isUpdate) update
     if (outputsNameToChunkSizeMap contains signal) _peekMap get signal
     else if (inputsNameToChunkSizeMap contains signal) _pokeMap get signal
-    else None
+    else {
+      val id = _signalMap getOrElse (signal, getId(signal))
+      if (id >= 0) {
+        Some(peek(id, _chunks getOrElse (signal, getChunk(id))))
+      } else {
+        logger println s"Can't find $signal in the emulator..."
+        None
+      }
+    }
   }
 
   def step(n: Int) {

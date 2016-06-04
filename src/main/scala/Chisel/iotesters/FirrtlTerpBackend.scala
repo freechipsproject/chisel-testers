@@ -3,7 +3,8 @@ package Chisel.iotesters
 
 import java.io.File
 
-import Chisel._
+import Chisel.{Module, Bits}
+import Chisel.internal.HasId
 
 import scala.collection.mutable.HashMap
 
@@ -13,55 +14,58 @@ private[iotesters] class FirrtlTerpBackend(
                                            dut: Module,
                                            firrtlIR: String,
                                            verbose: Boolean = true,
-                                           logger: PrintStream = System.out,
-                                           _base: Int = 16) extends Backend {
+                                           logger: java.io.PrintStream = System.out,
+                                           _base: Int = 16,
+                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
   val interpretiveTester = new InterpretiveTester(firrtlIR)
   reset(5) // reset firrtl interpreter on construction
 
-  private val ioNameMap = {
-    val result = HashMap[Data, String]()
-    def getFirrtlName(arg: (Bits, (String, String))) = arg match {case (io, (name, _)) =>
-      result(io) = name
+  val portNames = getDataNames(dut).toMap
+
+  def poke(signal: HasId, value: BigInt, off: Option[Int] = None): Unit = {
+    signal match {
+      case port: Bits =>
+        val name = portNames(port)
+        interpretiveTester.poke(name, value)
+        if (verbose) logger println s"  POKE ${name} <- ${bigIntToStr(value, _base)}"
+      case _ =>
     }
-    val (inputMap, outputMap) = getPortNameMaps(dut)
-    (inputMap map getFirrtlName, outputMap map getFirrtlName)
-    result
   }
 
-  private def getIPCName(data: Data) = ioNameMap getOrElse (data, "<no signal name>")
-
-  override def poke(signal: Bits, value: BigInt): Unit = {
-    val name = getIPCName(signal)
-    interpretiveTester.poke(name, value)
-    if (verbose) logger println s"  POKE ${name} <- ${bigIntToStr(value, _base)}"
+  def peek(signal: HasId, off: Option[Int] = None): BigInt = {
+    signal match {
+      case port: Bits =>
+        val name = portNames(port)
+        val result = interpretiveTester.peek(name)
+        if (verbose) logger println s"  PEEK ${name} -> ${bigIntToStr(result, _base)}"
+        result
+      case _ => BigInt(rnd.nextInt)
+    }
   }
 
-  override def peek(signal: Bits): BigInt = {
-    val name = getIPCName(signal)
-    val result = interpretiveTester.peek(name)
-    if (verbose) logger println s"  PEEK ${name} -> ${bigIntToStr(result, _base)}"
-    result
+  def expect(signal: HasId, expected: BigInt, msg: => String = "") : Boolean = {
+    signal match {
+      case port: Bits =>
+        val name = portNames(port)
+        val got = interpretiveTester.peek(name)
+        val good = got == expected
+        if (verbose) logger println s"""${msg}  EXPECT ${name} -> ${bigIntToStr(got, _base)} == ${bigIntToStr(expected, _base)} ${if (good) "PASS" else "FAIL"}"""
+        good
+      case _ => false
+    }
   }
 
-  override def expect(signal: Bits, expected: BigInt, msg: => String = "") : Boolean = {
-    val name = getIPCName(signal)
-    val got = interpretiveTester.peek(name)
-    val good = got == expected
-    if (verbose) logger println s"""${msg}  EXPECT ${name} -> ${bigIntToStr(got, _base)} == ${bigIntToStr(expected, _base)} ${if (good) "PASS" else "FAIL"}"""
-    good
-  }
-
-  override def step(n: Int): Unit = {
+  def step(n: Int): Unit = {
     interpretiveTester.step(n)
   }
 
-  override def reset(n: Int = 1): Unit = {
+  def reset(n: Int = 1): Unit = {
     interpretiveTester.poke("reset", 1)
     interpretiveTester.step(n)
     interpretiveTester.poke("reset", 0)
   }
 
-  override def finish: Unit = Unit
+  def finish: Unit = Unit
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
@@ -71,14 +75,15 @@ private[iotesters] object setupFirrtlTerpBackend {
     val dir = new File(testDirPath)
     dir.mkdirs()
 
+    CircuitGraph.clear
     val circuit = Chisel.Driver.elaborate(dutGen)
+    val dut = CircuitGraph construct circuit
+
     // Dump FIRRTL for debugging
     val firrtlIRFilePath = s"${testDirPath}/${circuit.name}.ir"
     Chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
     val firrtlIR = Chisel.Driver.emit(dutGen)
 
-    lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
-    Driver.elaborate(() => dut)
     new FirrtlTerpBackend(dut, firrtlIR)
   }
 }

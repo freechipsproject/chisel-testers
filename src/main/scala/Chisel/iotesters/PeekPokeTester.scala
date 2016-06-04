@@ -14,11 +14,13 @@ trait PeekPokeTests {
   implicit def int(x: Int):     BigInt
   implicit def int(x: Long):    BigInt
   implicit def int(x: Bits):    BigInt
-  def println(msg: String): Unit
+  def println(msg: String = ""): Unit
   def reset(n: Int): Unit
   def step(n: Int): Unit
   def poke(data: Bits, x: BigInt): Unit
+  def pokeAt[T <: Bits](data: Mem[T], x: BigInt, off: Int): Unit
   def peek(data: Bits): BigInt
+  def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt
   def expect(good: Boolean, msg: => String): Boolean
   def expect(data: Bits, expected: BigInt, msg: => String = ""): Boolean
   def finish: Boolean
@@ -40,7 +42,7 @@ abstract class PeekPokeTester[+T <: Module](
     case Some(f) => new java.io.PrintStream(f)
   }
 
-  def println(msg: String) {
+  def println(msg: String = "") {
     logger println msg
   }
 
@@ -93,21 +95,19 @@ abstract class PeekPokeTester[+T <: Module](
   }
 
   def poke(signal: Bits, value: BigInt) {
-    backend.poke(signal, value)
+    if (!signal.isLit) backend.poke(signal, value)
   }
 
   def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int): Unit = {
-    assert(false)
+    backend.poke(data, value, Some(off))
   }
 
   def peek(signal: Bits) = {
-    val result = backend.peek(signal)
-    result
+    if (!signal.isLit) backend.peek(signal) else signal.litValue()
   }
 
   def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt = {
-    assert(false)
-    BigInt(0)
+    backend.peek(data, Some(off))
   }
 
   def expect (good: Boolean, msg: => String): Boolean = {
@@ -116,10 +116,12 @@ abstract class PeekPokeTester[+T <: Module](
     good
   }
 
-  def expect(signal: Bits, expected: BigInt, msg: => String = "") = {
-    val good = backend.expect(signal, expected, msg)
-    if (!good) fail
-    good
+  def expect(signal: Bits, expected: BigInt, msg: => String = ""): Boolean = {
+    if (!signal.isLit) {
+      val good = backend.expect(signal, expected, msg)
+      if (!good) fail
+      good
+    } else expect(signal.litValue() == expected, s"${signal.litValue()} == $expected")
   }
 
   def finish: Boolean = {

@@ -53,34 +53,22 @@ object chiselMain {
     }
   }
 
-  private def genVerilog(dutGen: () => Module) {
-    val circuit = Driver.elaborate(dutGen)
-    val dir = new File(context.targetDir)
-    dir.mkdirs()
-    // Dump FIRRTL for debugging
-    val firrtlIRFilePath = s"${dir}/${circuit.name}.ir"
-    Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
-    // Generate Verilog
-    val verilogFilePath = s"${dir}/${circuit.name}.v"
-    firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler())
-  }
-
-  private def genHarness[T <: Module](dutGen: () => Module, isVCS: Boolean, verilogFileName:String, harnessFilePath:String, vcdFilePath: String) {
+  private def genHarness[T <: Module](dut: Module, isVCS: Boolean,
+      firrtlIRFilePath: String, harnessFilePath:String, vcdFilePath: String) {
     if (isVCS) {
       assert(false, "unimplemented")
     } else {
-      genVerilatorCppHarness(dutGen, verilogFileName, harnessFilePath, vcdFilePath)
+      firrtl.Driver.compile(firrtlIRFilePath, harnessFilePath, new VerilatorCppHarnessCompiler(dut, vcdFilePath))
     }
   }
 
   private def compile(dutName: String) {
-    // Copy API files
-    copyVerilatorHeaderFiles(s"${context.targetDir}")
-
     val dir = new File(context.targetDir)
-    dir.mkdirs()
+
     if (context.isVCS) {
     } else {
+      // Copy API files
+      copyVerilatorHeaderFiles(s"${context.targetDir}")
       // Generate Verilator
       Driver.verilogToCpp(dutName, dutName, dir, Seq(), new File(s"${dutName}-harness.cpp")).!
       // Compile Verilator
@@ -90,6 +78,7 @@ object chiselMain {
 
   private def elaborate[T <: Module](args: Array[String], dutGen: () => T): T = {
     parseArgs(args)
+    CircuitGraph.clear
     try {
       Files.createDirectory(Paths.get(context.targetDir))
     } catch {
@@ -97,13 +86,23 @@ object chiselMain {
       case x: IOException =>
         System.err.format("createFile error: %s%n", x)
     }
-    lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
-    Driver.elaborate(() => dut)
+    val circuit = Driver.elaborate(dutGen)
+    val dut = (CircuitGraph construct circuit).asInstanceOf[T]
+    val dir = new File(context.targetDir)
 
-    if (context.isGenVerilog) genVerilog(dutGen)
+    val firrtlIRFilePath = s"${dir}/${circuit.name}.ir"
+    Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
 
-    if (context.isGenHarness) genHarness(dutGen, context.isVCS, s"${dut.name}.v", s"${chiselMain.context.targetDir}/${dut.name}-harness.cpp", s"${chiselMain.context.targetDir}/${dut.name}.vcd")
-    if (context.isCompiling) compile(dut.name)
+    val verilogFilePath = s"${dir}/${circuit.name}.v"
+    if (context.isGenVerilog) firrtl.Driver.compile(
+      firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler())
+
+    if (context.isGenHarness) genHarness(dut, context.isVCS, firrtlIRFilePath,
+      s"${chiselMain.context.targetDir}/${circuit.name}-harness.cpp",
+      s"${chiselMain.context.targetDir}/${circuit.name}.vcd")
+
+    if (context.isCompiling) compile(circuit.name)
+
     if (context.testCmd.isEmpty) {
       context.testCmd += s"""${context.targetDir}/${if (context.isVCS) "" else "V"}${dut.name}"""
     }
