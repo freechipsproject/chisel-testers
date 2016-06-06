@@ -7,7 +7,7 @@ scalaVersion := "2.11.7"
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
   "chisel3" -> "3.0-BETA-SNAPSHOT",
-  "firrtl" -> "not-0.2-BETA-SNAPSHOT",
+  "firrtl" -> "0.2-BETA-SNAPSHOT",
   "firrtl-interpreter" -> "0.1"
   )
 
