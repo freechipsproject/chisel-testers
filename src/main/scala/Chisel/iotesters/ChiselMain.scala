@@ -8,7 +8,7 @@ import scala.collection.mutable.{ArrayBuffer}
 import scala.util.{DynamicVariable}
 import scala.sys.process.Process
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
-import java.io.{File, IOException}
+import java.io.{File, FileWriter, IOException}
 
 private[iotesters] class TesterContext {
   var isVCS = false
@@ -53,12 +53,12 @@ object chiselMain {
     }
   }
 
-  private def genHarness[T <: Module](dut: Module, isVCS: Boolean,
-      firrtlIRFilePath: String, harnessFilePath:String, vcdFilePath: String) {
-    if (isVCS) {
-      assert(false, "unimplemented")
+  private def genHarness[T <: Module](dut: Module,
+      firrtlIRFilePath: String, harnessFilePath:String, waveformPath: String) {
+    if (context.isVCS) {
+      genVCSVerilogHarness(dut, new FileWriter(new File(harnessFilePath)), waveformPath)
     } else {
-      firrtl.Driver.compile(firrtlIRFilePath, harnessFilePath, new VerilatorCppHarnessCompiler(dut, vcdFilePath))
+      firrtl.Driver.compile(firrtlIRFilePath, harnessFilePath, new VerilatorCppHarnessCompiler(dut, waveformPath))
     }
   }
 
@@ -66,11 +66,15 @@ object chiselMain {
     val dir = new File(context.targetDir)
 
     if (context.isVCS) {
+      // Copy API files
+      copyVpiFiles(s"${context.targetDir}")
+      // Compile VCS
+      verilogToVCS(dutName, dir, new File(s"$dutName-harness.v")).!
     } else {
       // Copy API files
       copyVerilatorHeaderFiles(s"${context.targetDir}")
       // Generate Verilator
-      Driver.verilogToCpp(dutName, dutName, dir, Seq(), new File(s"${dutName}-harness.cpp")).!
+      Driver.verilogToCpp(dutName, dutName, dir, Seq(), new File(s"$dutName-harness.cpp")).!
       // Compile Verilator
       Driver.cppToExe(dutName, dir).!
     }
@@ -97,9 +101,10 @@ object chiselMain {
     if (context.isGenVerilog) firrtl.Driver.compile(
       firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler())
 
-    if (context.isGenHarness) genHarness(dut, context.isVCS, firrtlIRFilePath,
-      s"${chiselMain.context.targetDir}/${circuit.name}-harness.cpp",
-      s"${chiselMain.context.targetDir}/${circuit.name}.vcd")
+    val pathPrefix = s"${chiselMain.context.targetDir}/${circuit.name}"
+    val harnessFilePath = s"$pathPrefix-harness.%s".format(if (context.isVCS) "v" else "cpp")
+    val waveformFilePath = s"$pathPrefix.%s".format(if (context.isVCS) "vpd" else "vcd")
+    if (context.isGenHarness) genHarness(dut, firrtlIRFilePath, harnessFilePath, waveformFilePath)
 
     if (context.isCompiling) compile(circuit.name)
 

@@ -11,13 +11,11 @@ import Chisel._
   */
 object runPeekPokeTester {
   def apply[T <: Module](dutGen: () => T, backendType: String = "firrtl")(testerGen: (T, Option[Backend]) => PeekPokeTester[T]): Boolean = {
-    var backend: Backend = null
-    if (backendType == "verilator") {
-      backend = setupVerilatorBackend(dutGen)
-    } else if (backendType == "firrtl") {
-      backend = setupFirrtlTerpBackend(dutGen)
-    } else {
-      assert(false, "Unrecongnized backend type:" + backendType)
+    val backend = backendType match {
+      case "firrtl" => setupFirrtlTerpBackend(dutGen)
+      case "verilator" => setupVerilatorBackend(dutGen)
+      case "vcs" => setupVCSBackend(dutGen)
+      case _ => throw new Exception("Unrecongnized backend type $backendType")
     }
     CircuitGraph.clear
     val circuit = Driver.elaborate(dutGen)

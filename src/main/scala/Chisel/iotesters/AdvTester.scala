@@ -107,7 +107,7 @@ abstract class AdvTester[+T <: Module](
     max_count: Option[Int] = None ) extends Processable
   {
     val outputs = new scala.collection.mutable.Queue[R]()
-    private var amReady = false
+    private var amReady = true
     private def isValid = peek(socket.valid) == 1
 
     def process() = {
@@ -121,7 +121,7 @@ abstract class AdvTester[+T <: Module](
     }
 
     // Initialize
-    wire_poke(socket.ready, 0)
+    wire_poke(socket.ready, 1)
     preprocessors += this
   }
   object DecoupledSink {

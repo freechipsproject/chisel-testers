@@ -54,8 +54,12 @@ abstract class PeekPokeTester[+T <: Module](
     case None    => Nil
     case Some(f) => logger println s"Waveform: $f" ; List(s"+waveform=$f")
   })
-  val backend = _backend getOrElse(new VerilatorBackend(
-    dut, cmd, verbose, logger, _base, _seed))
+  val backend = _backend getOrElse (
+    if (chiselMain.context.isVCS)
+      new VCSBackend(dut, cmd, verbose, logger, _base, _seed)
+    else
+      new VerilatorBackend(dut, cmd, verbose, logger, _base, _seed)
+  )
 
   /********************************/
   /*** Classic Tester Interface ***/

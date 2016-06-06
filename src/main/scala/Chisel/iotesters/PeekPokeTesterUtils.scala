@@ -4,7 +4,7 @@ package Chisel.iotesters
 
 import Chisel._
 import Chisel.internal.firrtl._
-
+import scala.sys.process._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 
 private[iotesters] object getDataNames {
@@ -141,6 +141,32 @@ private[iotesters] object bigIntToStr {
     case 2  => s"0b${x.toString(base)}"
     case 16 => s"0x${x.toString(base)}"
     case _ => x.toString(base)
+  }
+}
+
+private[iotesters] object verilogToVCS {
+  def apply(
+    topModule: String,
+    dir: java.io.File,
+    vcsHarness: java.io.File
+                ): ProcessBuilder = {
+    val ccFlags = Seq("-I$VCS_HOME/include", "-I$dir", "-fPIC", "-std=c++11")
+    val vcsFlags = Seq("-full64",
+      "-quiet",
+      "-timescale=1ns/1ps",
+      "-debug_pp",
+      s"-Mdir=$topModule.csrc",
+      "+v2k", "+vpi",
+      "+vcs+lic+wait",
+      "+vcs+initreg+random",
+      "+define+CLOCK_PERIOD=1",
+      "-P", "vpi.tab",
+      "-cpp", "g++", "-O2", "-LDFLAGS", "-lstdc++",
+      "-CFLAGS", "\"%s\"".format(ccFlags mkString " "))
+    val cmd = Seq("cd", dir.toString, "&&", "vcs") ++ vcsFlags ++ Seq(
+      "-o", topModule, s"${topModule}.v", vcsHarness.toString, "vpi.cpp") mkString " "
+    println(s"$cmd")
+    Seq("bash", "-c", cmd)
   }
 }
 
