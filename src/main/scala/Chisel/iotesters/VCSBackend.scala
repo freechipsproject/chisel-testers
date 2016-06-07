@@ -50,7 +50,7 @@ object genVCSVerilogHarness {
     writer write "module test;\n"
     writer write "  reg clk = 1;\n"
     writer write "  reg rst = 1;\n"
-    val delay = if (chiselMain.context.isUpdate) "" else "#0.1"
+    val delay = if (chiselMain.context.isPropagation) "" else "#0.1"
     inputs foreach { case (node, name) =>
       writer write s"  reg[${node.getWidth-1}:0] $name = 0;\n"
       writer write s"  wire[${node.getWidth-1}:0] ${name}_delay;\n"
@@ -98,7 +98,7 @@ object genVCSVerilogHarness {
     writer write "    $vcdplusautoflushon;\n"
     writer write "  end\n\n"
 
-    writer write "  always @(%s clk) begin\n".format(if (chiselMain.context.isUpdate) "negedge" else "posedge")
+    writer write "  always @(%s clk) begin\n".format(if (chiselMain.context.isPropagation) "negedge" else "posedge")
     writer write "    if (vcdfile && rst) begin\n"
     writer write "      $dumpoff;\n"
     writer write "      vcdon = 0;\n"

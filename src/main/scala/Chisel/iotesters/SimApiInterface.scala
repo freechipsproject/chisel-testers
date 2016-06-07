@@ -238,7 +238,7 @@ private[iotesters] class SimApiInterface(
   }
 
   def peek(signal: String): Option[BigInt] = {
-    if (isStale && chiselMain.context.isUpdate) update
+    if (isStale && chiselMain.context.isPropagation) update
     if (outputsNameToChunkSizeMap contains signal) _peekMap get signal
     else if (inputsNameToChunkSizeMap contains signal) _pokeMap get signal
     else {

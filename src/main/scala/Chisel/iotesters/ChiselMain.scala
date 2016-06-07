@@ -16,7 +16,7 @@ private[iotesters] class TesterContext {
   var isGenHarness = false
   var isCompiling = false
   var isRunTest = false
-  var isUpdate = true
+  var isPropagation = true
   var testerSeed = System.currentTimeMillis
   val testCmd = ArrayBuffer[String]()
   var targetDir = new File("test_run_dir").getCanonicalPath
@@ -45,7 +45,7 @@ object chiselMain {
         case "--testCommand" => context.testCmd ++= args(i+1) split ' '
         case "--testerSeed" => context.testerSeed = args(i+1).toLong
         case "--targetDir" => context.targetDir = args(i+1)
-        case "--noUpdate" => context.isUpdate = false
+        case "--noPropagation" => context.isPropagation = false
         case "--logFile" => context.logFile = Some(args(i+1))
         case "--waveform" => context.waveform = Some(args(i+1))
         case _ =>
