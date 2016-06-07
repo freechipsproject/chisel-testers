@@ -22,7 +22,7 @@ private[iotesters] class FirrtlTerpBackend(
 
   val portNames = getDataNames(dut).toMap
 
-  def poke(signal: HasId, value: BigInt, off: Option[Int] = None): Unit = {
+  def poke(signal: HasId, value: BigInt, off: Option[Int]): Unit = {
     signal match {
       case port: Bits =>
         val name = portNames(port)
@@ -32,7 +32,7 @@ private[iotesters] class FirrtlTerpBackend(
     }
   }
 
-  def peek(signal: HasId, off: Option[Int] = None): BigInt = {
+  def peek(signal: HasId, off: Option[Int]): BigInt = {
     signal match {
       case port: Bits =>
         val name = portNames(port)
@@ -41,6 +41,15 @@ private[iotesters] class FirrtlTerpBackend(
         result
       case _ => BigInt(rnd.nextInt)
     }
+  }
+
+  def poke(path: String, value: BigInt): Unit = {
+    assert(false)
+  }
+
+  def peek(path: String): BigInt = {
+    assert(false)
+    BigInt(rnd.nextInt)
   }
 
   def expect(signal: HasId, expected: BigInt, msg: => String = "") : Boolean = {

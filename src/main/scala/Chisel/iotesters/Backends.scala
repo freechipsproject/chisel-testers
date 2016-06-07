@@ -10,9 +10,13 @@ import Chisel.internal.HasId
 abstract class Backend(_seed: Long = System.currentTimeMillis) {
   val rnd = new scala.util.Random(_seed)
 
-  def poke(data: HasId, value: BigInt, off: Option[Int] = None): Unit
+  def poke(signal: HasId, value: BigInt, off: Option[Int]): Unit
 
-  def peek(data: HasId, off: Option[Int] = None): BigInt
+  def peek(signal: HasId, off: Option[Int]): BigInt
+
+  def poke(path: String, value: BigInt): Unit
+
+  def peek(path: String): BigInt
 
   def expect(signal: HasId, expected: BigInt, msg: => String = "") : Boolean
 

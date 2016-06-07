@@ -17,12 +17,14 @@ trait PeekPokeTests {
   def println(msg: String = ""): Unit
   def reset(n: Int): Unit
   def step(n: Int): Unit
-  def poke(data: Bits, x: BigInt): Unit
-  def pokeAt[T <: Bits](data: Mem[T], x: BigInt, off: Int): Unit
-  def peek(data: Bits): BigInt
-  def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt
+  def poke(path: String, x: BigInt): Unit
+  def peek(path: String): BigInt
+  def poke(signal: Bits, x: BigInt): Unit
+  def pokeAt[T <: Bits](signal: Mem[T], x: BigInt, off: Int): Unit
+  def peek(signal: Bits): BigInt
+  def peekAt[T <: Bits](signal: Mem[T], off: Int): BigInt
   def expect(good: Boolean, msg: => String): Boolean
-  def expect(data: Bits, expected: BigInt, msg: => String = ""): Boolean
+  def expect(signal: Bits, expected: BigInt, msg: => String = ""): Boolean
   def finish: Boolean
 }
 
@@ -98,8 +100,12 @@ abstract class PeekPokeTester[+T <: Module](
     incTime(n)
   }
 
+  def poke(path: String, value: BigInt) = backend.poke(path, value)
+
+  def peek(path: String) = backend.peek(path)
+
   def poke(signal: Bits, value: BigInt) {
-    if (!signal.isLit) backend.poke(signal, value)
+    if (!signal.isLit) backend.poke(signal, value, None)
   }
 
   def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int): Unit = {
@@ -107,7 +113,7 @@ abstract class PeekPokeTester[+T <: Module](
   }
 
   def peek(signal: Bits) = {
-    if (!signal.isLit) backend.peek(signal) else signal.litValue()
+    if (!signal.isLit) backend.peek(signal, None) else signal.litValue()
   }
 
   def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt = {

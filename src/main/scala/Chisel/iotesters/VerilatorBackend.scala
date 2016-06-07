@@ -335,18 +335,26 @@ private[iotesters] class VerilatorBackend(
 
   val simApiInterface = new SimApiInterface(dut, cmd, logger)
 
-  def poke(signal: HasId, value: BigInt, off: Option[Int] = None) {
+  def poke(signal: HasId, value: BigInt, off: Option[Int]) {
     val idx = off map (x => s"[$x]") getOrElse ""
-    val name = "%s%s".format(CircuitGraph getPathName (signal, "."), idx)
-    if (verbose) logger println s"  POKE ${name} <- ${bigIntToStr(value, _base)}"
-    simApiInterface.poke(name, value)
+    val path = "%s%s".format(CircuitGraph getPathName (signal, "."), idx)
+    poke(path, value)
   }
 
-  def peek(signal: HasId, off: Option[Int] = None) = {
+  def peek(signal: HasId, off: Option[Int]) = {
     val idx = off map (x => s"[$x]") getOrElse ""
-    val name = "%s%s".format(CircuitGraph getPathName (signal, "."), idx)
-    val result = simApiInterface.peek(name) getOrElse BigInt(rnd.nextInt)
-    if (verbose) logger println s"  PEEK ${name} -> ${bigIntToStr(result, _base)}"
+    val path = "%s%s".format(CircuitGraph getPathName (signal, "."), idx)
+    peek(path)
+  }
+
+  def poke(path: String, value: BigInt) {
+    if (verbose) logger println s"  POKE ${path} <- ${bigIntToStr(value, _base)}"
+    simApiInterface.poke(path, value)
+  }
+
+  def peek(path: String) = {
+    val result = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
+    if (verbose) logger println s"  PEEK ${path} -> ${bigIntToStr(result, _base)}"
     result
   }
 
