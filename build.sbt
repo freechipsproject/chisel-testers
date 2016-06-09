@@ -15,7 +15,7 @@ val defaultVersions = Map(
 libraryDependencies ++= (Seq("chisel3","firrtl","firrtl-interpreter").map {
   dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep)) })
 
-libraryDependencies ++= Seq("org.scalatest" % "scalatest_2.11" % "2.2.4",
+libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
                            "org.scalacheck" %% "scalacheck" % "1.12.4")
     
 publishMavenStyle := true
