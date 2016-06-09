@@ -1,9 +1,9 @@
 // See LICENSE for license details.
-package Chisel.iotesters
+package chisel.iotesters
 
 import java.io.File
 
-import Chisel._
+import chisel._
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,18 +14,18 @@ import scala.util.Random
 import java.nio.channels.FileChannel
 
 private[iotesters] object setupVerilatorBackend {
-  def apply(dutGen: ()=> Chisel.Module): Backend = {
+  def apply(dutGen: ()=> chisel.Module): Backend = {
     val rootDirPath = new File(".").getCanonicalPath()
     val testDirPath = s"${rootDirPath}/test_run_dir"
     val dir = new File(testDirPath)
     dir.mkdirs()
 
-    val circuit = Chisel.Driver.elaborate(dutGen)
+    val circuit = chisel.Driver.elaborate(dutGen)
     // Dump FIRRTL for debugging
     val firrtlIRFilePath = s"${testDirPath}/${circuit.name}.ir"
-    Chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
+    chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
     // Parse FIRRTL
-    //val ir = firrtl.Parser.parse(Chisel.Driver.emit(dutGen) split "\n")
+    //val ir = firrtl.Parser.parse(chisel.Driver.emit(dutGen) split "\n")
     // Generate Verilog
     val verilogFilePath = s"${testDirPath}/${circuit.name}.v"
     //val v = new PrintWriter(new File(s"${dir}/${circuit.name}.v"))
@@ -43,8 +43,8 @@ private[iotesters] object setupVerilatorBackend {
     Driver.elaborate(() => dut)
 
     genVerilatorCppHarness(dutGen, verilogFileName, cppHarnessFilePath, vcdFilePath)
-    Chisel.Driver.verilogToCpp(verilogFileName.split("\\.")(0), dut.name, new File(testDirPath), Seq(), new File(cppHarnessFilePath)).!
-    Chisel.Driver.cppToExe(verilogFileName.split("\\.")(0), new File(testDirPath)).!
+    chisel.Driver.verilogToCpp(verilogFileName.split("\\.")(0), dut.name, new File(testDirPath), Seq(), new File(cppHarnessFilePath)).!
+    chisel.Driver.cppToExe(verilogFileName.split("\\.")(0), new File(testDirPath)).!
 
     new VerilatorBackend(dut, cppBinaryPath)
   }

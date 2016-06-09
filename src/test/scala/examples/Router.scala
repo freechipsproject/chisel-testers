@@ -2,8 +2,9 @@
 
 package examples
 
-import Chisel._
-import Chisel.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import chisel._
+import chisel.util._
+import chisel.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object Router {
   val addressWidth    = 32

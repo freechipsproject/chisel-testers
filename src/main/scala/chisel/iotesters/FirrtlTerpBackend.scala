@@ -1,9 +1,9 @@
 // See LICENSE for license details.
-package Chisel.iotesters
+package chisel.iotesters
 
 import java.io.File
 
-import Chisel._
+import chisel._
 
 import scala.collection.mutable.HashMap
 
@@ -60,17 +60,17 @@ private[iotesters] class FirrtlTerpBackend(dut: Module, firrtlIR: String, verbos
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply(dutGen: ()=> Chisel.Module): Backend = {
+  def apply(dutGen: ()=> chisel.Module): Backend = {
     val rootDirPath = new File(".").getCanonicalPath()
     val testDirPath = s"${rootDirPath}/test_run_dir"
     val dir = new File(testDirPath)
     dir.mkdirs()
 
-    val circuit = Chisel.Driver.elaborate(dutGen)
+    val circuit = chisel.Driver.elaborate(dutGen)
     // Dump FIRRTL for debugging
     val firrtlIRFilePath = s"${testDirPath}/${circuit.name}.ir"
-    Chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
-    val firrtlIR = Chisel.Driver.emit(dutGen)
+    chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
+    val firrtlIR = chisel.Driver.emit(dutGen)
 
     lazy val dut = dutGen() //HACK to get Module instance for now; DO NOT copy
     Driver.elaborate(() => dut)
