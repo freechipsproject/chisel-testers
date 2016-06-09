@@ -1,8 +1,8 @@
 // See LICENSE for license details.
 
-package Chisel.iotesters
+package chisel.iotesters
 
-import Chisel._
+import chisel._
 
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING

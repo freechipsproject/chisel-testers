@@ -2,8 +2,8 @@
 
 package examples
 
-import Chisel._
-import Chisel.iotesters.SteppedHWIOTester
+import chisel._
+import chisel.iotesters.SteppedHWIOTester
 
 class VecShiftRegister extends Module {
   val io = new Bundle {
