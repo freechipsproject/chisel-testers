@@ -1,8 +1,8 @@
 // See LICENSE for license details.
-package Chisel.iotesters
+package chisel.iotesters
 
 
-import Chisel._
+import chisel._
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.collection.immutable.ListMap

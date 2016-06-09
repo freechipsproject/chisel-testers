@@ -1,7 +1,7 @@
 // See LICENSE for license details.
-package Chisel.iotesters
+package chisel.iotesters
 
-import Chisel.internal.HasId
+import chisel.internal.HasId
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
@@ -43,9 +43,9 @@ object copyVpiFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object genVCSVerilogHarness {
-  def apply(dut: Chisel.Module, writer: Writer, vpdFilePath: String) {
+  def apply(dut: chisel.Module, writer: Writer, vpdFilePath: String) {
     val dutName = dut.name
-    val (inputs, outputs) = getDataNames(dut) partition (_._1.dir == Chisel.INPUT)
+    val (inputs, outputs) = getDataNames(dut) partition (_._1.dir == chisel.INPUT)
 
     writer write "module test;\n"
     writer write "  reg clk = 1;\n"
@@ -115,19 +115,19 @@ object genVCSVerilogHarness {
 }
 
 private[iotesters] object setupVCSBackend {
-  def apply(dutGen: () => Chisel.Module): Backend = {
+  def apply(dutGen: () => chisel.Module): Backend = {
     val rootDirPath = new File(".").getCanonicalPath()
     val testDirPath = s"${rootDirPath}/test_run_dir"
     val dir = new File(testDirPath)
     dir.mkdirs()
 
     CircuitGraph.clear
-    val circuit = Chisel.Driver.elaborate(dutGen)
+    val circuit = chisel.Driver.elaborate(dutGen)
     val dut = CircuitGraph construct circuit
 
     // Dump FIRRTL for debugging
     val firrtlIRFilePath = s"${testDirPath}/${circuit.name}.ir"
-    Chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
+    chisel.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
     // Generate Verilog
     val verilogFilePath = s"${testDirPath}/${circuit.name}.v"
     firrtl.Driver.compile(firrtlIRFilePath, verilogFilePath, new firrtl.VerilogCompiler)
@@ -148,7 +148,7 @@ private[iotesters] object setupVCSBackend {
 }
 
 private[iotesters] class VCSBackend(
-                                    dut: Chisel.Module, 
+                                    dut: chisel.Module, 
                                     cmd: List[String],
                                     verbose: Boolean = true,
                                     logger: PrintStream = System.out,

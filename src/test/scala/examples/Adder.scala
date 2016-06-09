@@ -2,8 +2,8 @@
 
 package examples
 
-import Chisel._
-import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
+import chisel._
+import chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
 
 class Adder(val w: Int) extends Module {
   val io = new Bundle {

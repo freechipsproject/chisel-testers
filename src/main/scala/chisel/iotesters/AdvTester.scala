@@ -1,9 +1,11 @@
 // See LICENSE for license details.
 
-package Chisel.iotesters
+package chisel.iotesters
 
 /* Written by Stephen Twigg, Eric Love */
-import Chisel._
+import chisel._
+import chisel.util._
+
 import scala.collection.mutable.ArrayBuffer
 
 // Provides a template to define advanced tester transactions

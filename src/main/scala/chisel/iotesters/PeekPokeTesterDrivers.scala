@@ -1,8 +1,8 @@
 // See LICENSE for license details.
 
-package Chisel.iotesters
+package chisel.iotesters
 
-import Chisel._
+import chisel._
 
 /**
   * Runs the ClassicTester and returns a Boolean indicating test success or failure

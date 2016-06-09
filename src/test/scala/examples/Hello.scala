@@ -2,9 +2,9 @@
 
 package examples
 
-import Chisel._
-import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
-import Chisel.testers.TesterDriver
+import chisel._
+import chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
+import chisel.testers.TesterDriver
 
 class Hello extends Module {
   val io = new Bundle {
