@@ -43,7 +43,7 @@ class IOAccessor(val device_io: Bundle, verbose: Boolean = true) {
     }
 
     def parseBundle(b: Bundle, name: String = ""): Unit = {
-      for ((n, e) <- b.namedElts) {
+      for ((n, e) <- b.elements) {
         val new_name = name + (if(name.length > 0 ) "." else "" ) + n
         port_to_name_accumulator(e) = new_name
         add_to_ports_by_direction(e)
