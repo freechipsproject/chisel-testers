@@ -1,28 +1,28 @@
 // See LICENSE for license details.
 package chisel.iotesters
 
-import java.io.File
 
 import chisel._
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
+import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Future, _}
 import scala.sys.process.{Process, ProcessLogger}
-import scala.util.Random
 import java.nio.channels.FileChannel
 
-private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
+private[iotesters] class SimApiInterface(
+                                         dut: Module,
+                                         cmd: List[String],
+                                         logger: java.io.PrintStream) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
-    def genChunk(arg: (Bits, (String, String))) = arg match {case (io, (_, name)) =>
-      name -> ((io.getWidth-1)/64 + 1)
-    }
-    val (inputMap, outputMap) = getPortNameMaps(dut)
-    (inputMap map genChunk, outputMap map genChunk)
+    def genChunk(io: Data) = (CircuitGraph getPathName (io, ".")) -> ((io.getWidth-1)/64 + 1)
+    val (inputs, outputs) = getPorts(dut)
+    (ListMap((inputs map genChunk): _*), ListMap((outputs map genChunk): _*))
   }
   private object SIM_CMD extends Enumeration {
-    val RESET, STEP, UPDATE, POKE, PEEK, FORCE, GETID, GETCHK, SETCLK, FIN = Value }
+    val RESET, STEP, UPDATE, POKE, PEEK, FORCE, GETID, GETCHK, FIN = Value }
   implicit def cmdToId(cmd: SIM_CMD.Value) = cmd.id
   implicit def int(x: Int):  BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
   implicit def int(x: Long): BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
@@ -33,6 +33,11 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
   private val _chunks = HashMap[String, Int]()
   private val _logs = ArrayBuffer[String]()
 
+  private def dumpLogs {
+    _logs foreach logger.println
+    _logs.clear
+  }
+
   private def throwExceptionIfDead(exitValue: Future[Int]) {
     if (exitValue.isCompleted) {
       val exitCode = Await.result(exitValue, Duration(-1, SECONDS))
@@ -42,6 +47,7 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
       } else {
         "test application exit"
       } + " - exit code %d".format(exitCode)
+      dumpLogs
       throw new TestApplicationException(exitCode, errorString)
     }
   }
@@ -153,7 +159,8 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
     mwhile(!sendCmd(SIM_CMD.STEP)) { }
     mwhile(!sendInputs) { }
     mwhile(!recvOutputs) { }
-    isStale = false
+    dumpLogs
+    isStale = true
   }
 
   private def getId(path: String) = {
@@ -189,9 +196,10 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
     mwhile(!sendCmd(cmd)) { }
     mwhile(!sendCmd(id)) { }
     mwhile(!sendValue(v, chunk)) { }
+    isStale = true
   }
 
-  private def peek(id: Int, chunk: Int) = {
+  private def peek(id: Int, chunk: Int): BigInt = {
     mwhile(!sendCmd(SIM_CMD.PEEK)) { }
     mwhile(!sendCmd(id)) { }
     if (exitValue.isCompleted) {
@@ -206,7 +214,7 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
   }
 
   private def start {
-    println(s"STARTING ${cmd}")
+    println(s"""STARTING ${cmd mkString " "}""")
     mwhile(!recvOutputs) { }
     // reset(5)
     for (i <- 0 until 5) {
@@ -215,18 +223,33 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
     }
   }
 
-  def poke(signal: String, value: BigInt) = {
+  def poke(signal: String, value: BigInt) {
     if (inputsNameToChunkSizeMap contains signal) {
       _pokeMap(signal) = value
       isStale = true
-    } // else ...
+    } else {
+      val id = _signalMap getOrElse (signal, getId(signal))
+      if (id >= 0) {
+        poke(id, _chunks getOrElseUpdate (signal, getChunk(id)), value)
+      } else {
+        logger println s"Can't find $signal in the emulator..."
+      }
+    }
   }
 
-  def peek(signal: String) = {
-    if (isStale) update
+  def peek(signal: String): Option[BigInt] = {
+    if (isStale && chiselMain.context.isPropagation) update
     if (outputsNameToChunkSizeMap contains signal) _peekMap get signal
     else if (inputsNameToChunkSizeMap contains signal) _pokeMap get signal
-    else None
+    else {
+      val id = _signalMap getOrElse (signal, getId(signal))
+      if (id >= 0) {
+        Some(peek(id, _chunks getOrElse (signal, getChunk(id))))
+      } else {
+        logger println s"Can't find $signal in the emulator..."
+        None
+      }
+    }
   }
 
   def step(n: Int) {
@@ -243,16 +266,17 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
   def finish {
     mwhile(!sendCmd(SIM_CMD.FIN)) { }
     while(!exitValue.isCompleted) { }
-    _logs.clear
+    dumpLogs
     inChannel.close
     outChannel.close
     cmdChannel.close
+    chiselMain.context.processes -= process
   }
 
   //initialize cpp process and memory mapped channels
   private val (process: Process, exitValue: Future[Int], inChannel, outChannel, cmdChannel) = {
-    require(new java.io.File(cmd).exists, s"${cmd} doesn't exists")
-    val processBuilder = Process(cmd)
+    require(new java.io.File(cmd.head).exists, s"${cmd.head} doesn't exists")
+    val processBuilder = Process(cmd mkString " ")
     val processLogger = ProcessLogger(println, _logs += _) // don't log stdout
     val process = processBuilder run processLogger
 
@@ -270,7 +294,7 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
     while (!_logs.isEmpty && !_logs.head.startsWith(simStartupMessageStart)) {
       println(_logs.remove(0))
     }
-    if (!_logs.isEmpty) println(_logs.remove(0)) else println("<no startup message>")
+    println(if (!_logs.isEmpty) _logs.remove(0) else "<no startup message>")
     while (_logs.size < 3) {
       // If the test application died, throw a run-time error.
       throwExceptionIfDead(exitValue)
@@ -292,6 +316,7 @@ private[iotesters] class SimApiInterface(dut: Module, cmd: String) {
     in_channel.release
     out_channel.release
     cmd_channel.release
+    chiselMain.context.processes += process
 
     (process, exitValue, in_channel, out_channel, cmd_channel)
   }
