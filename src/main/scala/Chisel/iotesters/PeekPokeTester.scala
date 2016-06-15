@@ -77,30 +77,29 @@ abstract class PeekPokeTester[+T <: Module](
     incTime(n)
   }
 
-  def poke(signal: Bits, value: BigInt) {
+  def poke(signal: Bits, value: BigInt): Unit = {
     backend.poke(signal, value)
   }
 
-  def poke(signal: Aggregate, value: Array[BigInt]) =  {
-    assert(false)
+  def poke(signal: Aggregate, value: IndexedSeq[BigInt]): Unit =  {
+    (signal.flatten zip value.reverse).foreach(x => poke(x._1, x._2))
   }
 
   def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int): Unit = {
-    assert(false)
+    assert(false, "not yet implemented")
   }
 
-  def peek(signal: Bits) = {
+  def peek(signal: Bits):BigInt = {
     val result = backend.peek(signal)
     result
   }
 
-  def peek(signal: Aggregate): Array[BigInt] =  {
-    assert(false)
-    Array(0)
+  def peek(signal: Aggregate): IndexedSeq[BigInt] =  {
+    signal.flatten map (x => backend.peek(x))
   }
 
   def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt = {
-    assert(false)
+    assert(false, "not yet implemented")
     BigInt(0)
   }
 
@@ -110,10 +109,14 @@ abstract class PeekPokeTester[+T <: Module](
     good
   }
 
-  def expect(signal: Bits, expected: BigInt, msg: => String = "") = {
+  def expect(signal: Bits, expected: BigInt, msg: => String = ""): Boolean = {
     val good = backend.expect(signal, expected, msg)
     if (!good) fail
     good
+  }
+
+  def expect (signal: Aggregate, expected: IndexedSeq[BigInt]): Boolean = {
+    (signal.flatten, expected.reverse).zipped.foldLeft(true) { (result, x) => result && expect(x._1, x._2)}
   }
 
   def finish: Boolean = {
