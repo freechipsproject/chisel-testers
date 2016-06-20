@@ -2,9 +2,9 @@
 
 package examples
 
-import chisel._
-import chisel.util._
-import chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
+import chisel3._
+import chisel3.util._
+import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
 
 class DynamicMemorySearch(val n: Int, val w: Int) extends Module {
   val io = new Bundle {
