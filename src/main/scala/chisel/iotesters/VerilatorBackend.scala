@@ -38,6 +38,7 @@ object copyVerilatorHeaderFiles {
   */
 class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module, vcdFilePath: String) extends firrtl.Transform {
   import firrtl._
+  import firrtl.ir._
   import firrtl.Mappers._
 
   def loweredName(e: Expression): String = e match {
@@ -49,19 +50,19 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module, vcdFilePath: St
   private def getWidth(tpe: Type): Int = tpe match {
     case UIntType(w) => w match {
       case IntWidth(width) => width.toInt
-      case UnknownWidth() => throw new Exception("Can't be unknown width")
+      case UnknownWidth => throw new Exception("Can't be unknown width")
     }
     case SIntType(w) => w match {
       case IntWidth(width) => width.toInt
-      case UnknownWidth() => throw new Exception("Can't be unknown width")
+      case UnknownWidth => throw new Exception("Can't be unknown width")
     }
     case BundleType(fields) => (fields foldLeft 0)((w, f) => w + getWidth(f.tpe))
     case VectorType(tpe, size) => size * getWidth(tpe)
-    case ClockType() => 1
-    case UnknownType() => throw new Exception("Can't be unknown type")
+    case ClockType => 1
+    case UnknownType => throw new Exception("Can't be unknown type")
   }
 
-  private def findWidths(m: Module) = {
+  private def findWidths(m: DefModule) = {
     val nodes = CircuitGraph getNodes m.name
     val widthMap = HashMap[HasId, Int]()
 
@@ -74,7 +75,7 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module, vcdFilePath: St
     } 
     */
 
-    def loop(s: Stmt): Stmt = s map loop match {
+    def loop(s: Statement): Statement = s map loop match {
       /* Sadly, wires disappear in verilator...
       case wire: DefWire if wire.name.slice(0, 2) != "T_" && wire.name.slice(0, 4) != "GEN_" =>
         Utils.create_exps(wire.name, wire.tpe) map { exp =>
@@ -99,11 +100,11 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module, vcdFilePath: St
           case Some(node) => widthMap(node) = getWidth(Utils.tpe(prim.value))
         }
         prim
-      case mem: DefMemory if mem.name.slice(0, 2) != "T_" && mem.name.slice(0, 4) != "GEN_" => mem.data_type match {
+      case mem: DefMemory if mem.name.slice(0, 2) != "T_" && mem.name.slice(0, 4) != "GEN_" => mem.dataType match {
         case _: UIntType | _: SIntType =>
           nodes find (x => (CircuitGraph getName x) == validName(mem.name)) match {
             case None =>
-            case Some(node) => widthMap(node) = getWidth(mem.data_type)
+            case Some(node) => widthMap(node) = getWidth(mem.dataType)
           }
           mem
         case _ => mem
@@ -112,8 +113,8 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module, vcdFilePath: St
     }
 
     m match {
-      case m: ExModule =>
-      case m: InModule => loop(m.body)
+      case m: ExtModule =>
+      case m: Module => loop(m.body)
     }
 
     widthMap.toMap
