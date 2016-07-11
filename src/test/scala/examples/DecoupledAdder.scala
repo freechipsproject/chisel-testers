@@ -2,9 +2,9 @@
 
 package examples
 
-import chisel._
-import chisel.util._
-import chisel.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import chisel3._
+import chisel3.util._
+import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 /**
   * Implements an adder that used decoupledIO for both input and output
