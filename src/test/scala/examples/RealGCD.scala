@@ -2,8 +2,9 @@
 
 package examples
 
-import Chisel._
-import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import chisel3._
+import chisel3.util._
+import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object RealGCD {
   val num_width = 16

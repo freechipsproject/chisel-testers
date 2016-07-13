@@ -1,13 +1,15 @@
 // See LICENSE for license details.
 
-package Chisel.iotesters
+package chisel3.iotesters
 
 /* Written by Stephen Twigg, Eric Love */
-import Chisel._
+import chisel3._
+import chisel3.util._
+
 import scala.collection.mutable.ArrayBuffer
 
 // Provides a template to define advanced tester transactions
-trait AdvTests extends ClassicTests {
+trait AdvTests extends PeekPokeTests {
   def cycles: Long
   def wire_poke(port: Bits, target: BigInt):  Unit
   def reg_poke(port: Bits, target: BigInt):   Unit
@@ -18,8 +20,13 @@ trait AdvTests extends ClassicTests {
   def do_until(work: =>Unit)(pred: =>Boolean, maxCycles: Long = 0L): Boolean
 }
 
-abstract class AdvTester[+T <: Module](dut: T, isTrace: Boolean = false)
-    extends PeekPokeTester(dut, isTrace) {
+abstract class AdvTester[+T <: Module](
+                                       dut: T,
+                                       verbose: Boolean = false,
+                                       _base: Int = 16,
+                                       logFile: Option[String] = chiselMain.context.logFile,
+                                       waveform: Option[String] = chiselMain.context.waveform)
+                extends PeekPokeTester(dut, verbose, _base, logFile, waveform) {
   val defaultMaxCycles = 1024L
   var _cycles = 0L
   def cycles = _cycles
@@ -62,9 +69,13 @@ abstract class AdvTester[+T <: Module](dut: T, isTrace: Boolean = false)
       postprocessors.foreach(_.process())
     } catch {
       case e: java.lang.AssertionError =>
-        assert(false, e.toString) // catch assert
+        // catch assert
+        if (verbose) logger println e.toString
+        assert(false, e.toString)
       case e: java.lang.IllegalArgumentException =>
-        assert(false, e.toString) // catch require
+        // catch require
+        if (verbose) logger println e.toString
+        assert(false, e.toString)
     }
   }
   def takesteps(n: Int)(work: =>Unit = {}): Unit = {
@@ -95,24 +106,24 @@ abstract class AdvTester[+T <: Module](dut: T, isTrace: Boolean = false)
   }
 
   class DecoupledSink[T <: Data, R]( socket: DecoupledIO[T], cvt: T=>R, 
-    max_count: Int = -1 ) extends Processable
+    max_count: Option[Int] = None ) extends Processable
   {
     val outputs = new scala.collection.mutable.Queue[R]()
-    private var amReady = false
-    private def isValid = () => (peek(socket.valid) == 1)
+    private var amReady = true
+    private def isValid = peek(socket.valid) == 1
 
     def process() = {
       // Handle this cycle
-      if(isValid() && amReady) {
+      if(isValid && amReady) {
         outputs.enqueue(cvt(socket.bits))
       }
       // Decide what to do next cycle and post onto register
-      amReady = max_count < 1 || outputs.length < max_count
+      amReady = max_count match { case None => true case Some(p) => outputs.length <= p }
       reg_poke(socket.ready, amReady)
     }
 
     // Initialize
-    wire_poke(socket.ready, 0)
+    wire_poke(socket.ready, 1)
     preprocessors += this
   }
   object DecoupledSink {

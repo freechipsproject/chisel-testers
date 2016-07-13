@@ -1,8 +1,9 @@
 // See LICENSE for license details.
 
-package Chisel.iotesters
+package chisel3.iotesters
 
-import Chisel._
+import chisel3._
+import chisel3.util._
 
 import scala.collection.mutable
 import scala.util.matching.Regex
@@ -42,7 +43,7 @@ class IOAccessor(val device_io: Bundle, verbose: Boolean = true) {
     }
 
     def parseBundle(b: Bundle, name: String = ""): Unit = {
-      for ((n, e) <- b.namedElts) {
+      for ((n, e) <- b.elements) {
         val new_name = name + (if(name.length > 0 ) "." else "" ) + n
         port_to_name_accumulator(e) = new_name
         add_to_ports_by_direction(e)

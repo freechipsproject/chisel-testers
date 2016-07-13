@@ -2,8 +2,9 @@
 
 package examples
 
-import Chisel._
-import Chisel.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
+import chisel3._
+import chisel3.util._
+import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
 
 class GCD extends Module {
   val int_width = 16

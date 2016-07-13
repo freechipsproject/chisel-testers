@@ -1,8 +1,9 @@
 // See LICENSE for license details.
 
-package Chisel.iotesters
+package chisel3.iotesters
 
-import Chisel._
+import chisel3._
+import chisel3.util._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

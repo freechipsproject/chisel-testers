@@ -2,7 +2,7 @@
 
 package examples
 
-import Chisel.testers.TesterDriver
+import chisel3.testers.TesterDriver
 
 object Solutions {
   def main(args: Array[String]) {
