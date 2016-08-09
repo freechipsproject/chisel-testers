@@ -4,12 +4,10 @@ package chisel3.iotesters
 
 import chisel3._
 
-import scala.util.Random
-
 // Provides a template to define tester transactions
 trait PeekPokeTests {
   def t: Long
-  def rnd: Random
+  def rnd: scala.util.Random
   implicit def int(x: Boolean): BigInt
   implicit def int(x: Int):     BigInt
   implicit def int(x: Long):    BigInt
@@ -35,9 +33,8 @@ abstract class PeekPokeTester[+T <: Module](
                                             logFile: Option[String] = chiselMain.context.logFile,
                                             waveform: Option[String] = chiselMain.context.waveform,
                                             testCmd: List[String] = Nil,
-                                            _seed: Long = chiselMain.context.testerSeed,
                                             isPropagation: Boolean = chiselMain.context.isPropagation,
-                                            _backend: Option[Backend] = None) {
+                                            _seed: Long = chiselMain.context.testerSeed) {
 
   implicit def longToInt(x: Long) = x.toInt
 
@@ -58,12 +55,16 @@ abstract class PeekPokeTester[+T <: Module](
     case None    => Nil
     case Some(f) => logger println s"Waveform: $f" ; List(s"+waveform=$f")
   })
-  val backend = _backend getOrElse (
+  val backend = Driver.backend getOrElse {
+    val graph = Driver.graph match {
+      case Some(g) => g
+      case None => chiselMain.context.graph
+    }
     if (chiselMain.context.isVCS)
-      new VCSBackend(dut, cmd, verbose, logger, _base, _seed, isPropagation)
+      new VCSBackend(dut, graph, cmd, verbose, logger, _base, _seed, isPropagation)
     else
-      new VerilatorBackend(dut, cmd, verbose, logger, _base, _seed, isPropagation)
-  )
+      new VerilatorBackend(dut, graph, cmd, verbose, logger, _base, _seed, isPropagation)
+  }
 
   /********************************/
   /*** Classic Tester Interface ***/

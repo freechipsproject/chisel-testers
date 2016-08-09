@@ -28,7 +28,7 @@ abstract class AdvTester[+T <: Module](
                                        waveform: Option[String] = chiselMain.context.waveform,
                                        testCmd: List[String] = Nil,
                                        isPropagation: Boolean = chiselMain.context.isPropagation)
-                extends PeekPokeTester(dut, verbose, _base, logFile, waveform, testCmd, isPropagation=isPropagation) {
+                extends PeekPokeTester(dut, verbose, _base, logFile, waveform, testCmd, isPropagation) {
   val defaultMaxCycles = 1024L
   var _cycles = 0L
   def cycles = _cycles

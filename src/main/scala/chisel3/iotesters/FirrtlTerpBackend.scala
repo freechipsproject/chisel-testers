@@ -43,16 +43,7 @@ private[iotesters] class FirrtlTerpBackend(
     }
   }
 
-  def poke(path: String, value: BigInt): Unit = {
-    assert(false)
-  }
-
-  def peek(path: String): BigInt = {
-    assert(false)
-    BigInt(rnd.nextInt)
-  }
-
-  def expect(signal: HasId, expected: BigInt, msg: => String = "") : Boolean = {
+  def expect(signal: HasId, expected: BigInt, msg: => String) : Boolean = {
     signal match {
       case port: Bits =>
         val name = portNames(port)
@@ -62,6 +53,20 @@ private[iotesters] class FirrtlTerpBackend(
         good
       case _ => false
     }
+  }
+
+  def poke(path: String, value: BigInt): Unit = {
+    assert(false)
+  }
+
+  def peek(path: String): BigInt = {
+    assert(false)
+    BigInt(rnd.nextInt)
+  }
+
+  def expect(path: String, expected: BigInt, msg: => String) : Boolean = {
+    assert(false)
+    false
   }
 
   def step(n: Int): Unit = {
@@ -78,21 +83,17 @@ private[iotesters] class FirrtlTerpBackend(
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply(dutGen: ()=> chisel3.Module): Backend = {
-    val rootDirPath = new File(".").getCanonicalPath()
-    val testDirPath = s"${rootDirPath}/test_run_dir"
-    val dir = new File(testDirPath)
-    dir.mkdirs()
-
-    CircuitGraph.clear
+  def apply[T <: chisel3.Module](dutGen: () => T): (T, Backend) = {
+    val graph = new CircuitGraph
     val circuit = chisel3.Driver.elaborate(dutGen)
-    val dut = CircuitGraph construct circuit
+    val dut = (graph construct circuit).asInstanceOf[T]
+    val dir = new File(s"test_run_dir/${dut.getClass.getName}") ; dir.mkdirs()
 
     // Dump FIRRTL for debugging
-    val firrtlIRFilePath = s"${testDirPath}/${circuit.name}.ir"
-    chisel3.Driver.dumpFirrtl(circuit, Some(new File(firrtlIRFilePath)))
+    val firrtlIRFile = new File(dir, s"${circuit.name}.ir")
+    chisel3.Driver.dumpFirrtl(circuit, Some(firrtlIRFile))
     val firrtlIR = chisel3.Driver.emit(dutGen)
 
-    new FirrtlTerpBackend(dut, firrtlIR)
+    (dut, new FirrtlTerpBackend(dut, firrtlIR))
   }
 }

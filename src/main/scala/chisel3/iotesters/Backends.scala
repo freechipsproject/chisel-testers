@@ -7,7 +7,7 @@ import chisel3.internal.HasId
   * define interface for ClassicTester backend implementations such as verilator and firrtl interpreter
   */
 
-abstract class Backend(_seed: Long = System.currentTimeMillis) {
+private[iotesters] abstract class Backend(_seed: Long = System.currentTimeMillis) {
   val rnd = new scala.util.Random(_seed)
 
   def poke(signal: HasId, value: BigInt, off: Option[Int]): Unit
@@ -18,7 +18,13 @@ abstract class Backend(_seed: Long = System.currentTimeMillis) {
 
   def peek(path: String): BigInt
 
-  def expect(signal: HasId, expected: BigInt, msg: => String = "") : Boolean
+  def expect(signal: HasId, expected: BigInt) : Boolean = expect(signal, expected, "")
+
+  def expect(signal: HasId, expected: BigInt, msg: => String) : Boolean
+
+  def expect(path: String, expected: BigInt) : Boolean = expect(path, expected, "")
+
+  def expect(path: String, expected: BigInt, msg: => String) : Boolean
 
   def step(n: Int): Unit
 

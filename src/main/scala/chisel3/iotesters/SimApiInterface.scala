@@ -14,11 +14,12 @@ import java.nio.channels.FileChannel
 
 private[iotesters] class SimApiInterface(
                                          dut: Module,
-                                         cmd: List[String],
+                                         graph: CircuitGraph,
+                                         cmd: Seq[String],
                                          logger: java.io.PrintStream,
                                          isPropagation: Boolean) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
-    def genChunk(io: Data) = (CircuitGraph getPathName (io, ".")) -> ((io.getWidth-1)/64 + 1)
+    def genChunk(io: Data) = (graph getPathName (io, ".")) -> ((io.getWidth-1)/64 + 1)
     val (inputs, outputs) = getPorts(dut)
     (ListMap((inputs map genChunk): _*), ListMap((outputs map genChunk): _*))
   }
@@ -271,22 +272,19 @@ private[iotesters] class SimApiInterface(
     inChannel.close
     outChannel.close
     cmdChannel.close
-    chiselMain.context.processes -= process
+    TesterProcess.finish(process)
   }
 
-  //initialize cpp process and memory mapped channels
-  private val (process: Process, exitValue: Future[Int], inChannel, outChannel, cmdChannel) = {
-    require(new java.io.File(cmd.head).exists, s"${cmd.head} doesn't exists")
-    val processBuilder = Process(cmd mkString " ")
-    val processLogger = ProcessLogger(println, _logs += _) // don't log stdout
-    val process = processBuilder run processLogger
-
-    // Set up a Future to wait for (and signal) the test process exit.
-    val exitValue: Future[Int] = Future {
-      blocking {
-        process.exitValue
-      }
-    }
+  //initialize cpp process
+  private val process = TesterProcess(cmd, _logs)
+  // Set up a Future to wait for (and signal) the test process exit.
+  private val exitValue: Future[Int] = Future {
+    blocking {
+      process.exitValue
+     }
+  }
+  // memory mapped channels
+  private val (inChannel, outChannel, cmdChannel) = {
     // Wait for the startup message
     // NOTE: There may be several messages before we see our startup message.
     val simStartupMessageStart = "sim start on "
@@ -317,9 +315,8 @@ private[iotesters] class SimApiInterface(
     in_channel.release
     out_channel.release
     cmd_channel.release
-    chiselMain.context.processes += process
 
-    (process, exitValue, in_channel, out_channel, cmd_channel)
+    (in_channel, out_channel, cmd_channel)
   }
 
   // Once everything has been prepared, we can start the communications.
