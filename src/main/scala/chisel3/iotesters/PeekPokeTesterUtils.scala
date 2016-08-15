@@ -37,6 +37,9 @@ private[iotesters] class CircuitGraph {
     val component = (components find (_.name == modN)).get
     val mod = component.id
 
+    _nodeParent(mod.reset) = mod
+    _nodeToName(mod.reset) = validName("reset")
+
     getDataNames(mod) foreach {case (port, name) =>
       // _nodes += port
       _nodeParent(port) = mod
@@ -157,7 +160,11 @@ private[iotesters] object verilogToVCS {
   }
 }
 
-private[iotesters] case class TestApplicationException(exitVal: Int, lastMessage: String) extends RuntimeException(lastMessage)
+private[iotesters] case class BackendException(b: String)
+  extends Exception(s"Unknown backend: $b. Backend shoule be firrtl, verilator, vcs, or glsim")
+
+private[iotesters] case class TestApplicationException(exitVal: Int, lastMessage: String)
+  extends RuntimeException(lastMessage)
 
 private[iotesters] object TesterProcess {
   val processes = ArrayBuffer[Process]()

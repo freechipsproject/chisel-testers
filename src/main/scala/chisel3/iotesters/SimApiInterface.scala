@@ -16,8 +16,7 @@ private[iotesters] class SimApiInterface(
                                          dut: Module,
                                          graph: CircuitGraph,
                                          cmd: Seq[String],
-                                         logger: java.io.PrintStream,
-                                         isPropagation: Boolean) {
+                                         logger: java.io.PrintStream) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
     def genChunk(io: Data) = (graph getPathName (io, ".")) -> ((io.getWidth-1)/64 + 1)
     val (inputs, outputs) = getPorts(dut)
@@ -162,7 +161,6 @@ private[iotesters] class SimApiInterface(
     mwhile(!sendInputs) { }
     mwhile(!recvOutputs) { }
     dumpLogs
-    isStale = true
   }
 
   private def getId(path: String) = {
@@ -198,7 +196,6 @@ private[iotesters] class SimApiInterface(
     mwhile(!sendCmd(cmd)) { }
     mwhile(!sendCmd(id)) { }
     mwhile(!sendValue(v, chunk)) { }
-    isStale = true
   }
 
   private def peek(id: Int, chunk: Int): BigInt = {
@@ -230,9 +227,10 @@ private[iotesters] class SimApiInterface(
       _pokeMap(signal) = value
       isStale = true
     } else {
-      val id = _signalMap getOrElse (signal, getId(signal))
+      val id = _signalMap getOrElseUpdate (signal, getId(signal))
       if (id >= 0) {
         poke(id, _chunks getOrElseUpdate (signal, getChunk(id)), value)
+        isStale = true
       } else {
         logger println s"Can't find $signal in the emulator..."
       }
@@ -240,11 +238,11 @@ private[iotesters] class SimApiInterface(
   }
 
   def peek(signal: String): Option[BigInt] = {
-    if (isStale && isPropagation) update
+    if (isStale) update
     if (outputsNameToChunkSizeMap contains signal) _peekMap get signal
     else if (inputsNameToChunkSizeMap contains signal) _pokeMap get signal
     else {
-      val id = _signalMap getOrElse (signal, getId(signal))
+      val id = _signalMap getOrElseUpdate (signal, getId(signal))
       if (id >= 0) {
         Some(peek(id, _chunks getOrElse (signal, getChunk(id))))
       } else {
@@ -255,6 +253,7 @@ private[iotesters] class SimApiInterface(
   }
 
   def step(n: Int) {
+    update
     (0 until n) foreach (_ => takeStep)
   }
 

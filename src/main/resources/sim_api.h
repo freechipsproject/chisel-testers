@@ -162,43 +162,21 @@ public:
     delete cmd_channel;
   }
   virtual void tick() {
-    static bool is_reset = false;
-    static bool is_step = true;
-     if (is_step) {
-       // First, Send output tokens
-       clock_lo();
-       while(!send_tokens());
-       clock_hi();
-       if (is_reset) {
-         start();
-         is_reset = false;
-       }
-     } else {
-       while(!send_tokens());
-       is_step = true;
-    }
-    
+    static bool is_reset;
+    // First, Send output tokens
+    while(!send_tokens());
+    if (is_reset) start();
+    is_reset = false;
+
     // Next, handle commands from the testers
     bool is_exit = false;
     do {
       size_t cmd;
       while(!recv_cmd(cmd));
       switch ((SIM_CMD) cmd) {
-        case RESET: 
-           reset();
-           is_reset = true;
-           is_exit = true;
-           break;
-         case STEP:
-           while(!recv_tokens());
-           is_exit = true;
-           break;
-         case UPDATE:
-           while(!recv_tokens());
-           update();
-           is_step = false;
-           is_exit = true;
-           break;
+        case RESET: reset(); is_reset = true; is_exit = true; break;
+        case STEP: while(!recv_tokens()); step(); is_exit = true; break;
+        case UPDATE: while(!recv_tokens()); update(); is_exit = true; break;
         case POKE: poke(); break; 
         case PEEK: peek(); break;
         case FORCE: poke(true); break;
@@ -221,9 +199,8 @@ private:
   virtual void reset() = 0;
   virtual void start() = 0; 
   virtual void finish() = 0;
+  virtual void step() = 0;
   virtual void update() = 0; 
-  virtual void clock_hi() = 0;
-  virtual void clock_lo() = 0;
   // Consumes input tokens 
   virtual size_t put_value(T& sig, uint64_t* data, bool force = false) = 0;
   // Generate output tokens

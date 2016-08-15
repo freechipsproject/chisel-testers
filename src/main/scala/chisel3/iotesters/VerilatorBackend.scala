@@ -210,7 +210,9 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module,
       val pathName = graph getPathName (node, "->") replace (dutName, "dut") replace ("$", "__024")  
       pushBack("outputs", pathName, node.getWidth)
     }
-    (graph.nodes foldLeft 0){ (id, node) =>
+    pushBack("signals", "dut->reset", 1)
+    writer.write(s"""        sim_data.signal_map["%s"] = 0;\n""".format(graph getPathName (dut.reset, ".")))
+    (graph.nodes foldLeft 1){ (id, node) =>
       val pathName = graph getPathName (node, "__DOT__") replace (dutName, "v") replace ("$", "__024")
       val signalName = graph getPathName (node, ".")
       try {
@@ -258,6 +260,7 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module,
     writer.write("    } \n")
     writer.write("    virtual inline void reset() {\n")
     writer.write("        dut->reset = 1;\n")
+    writer.write("        step();\n")
     writer.write("    }\n")
     writer.write("    virtual inline void start() {\n")
     writer.write("        dut->reset = 0;\n")
@@ -266,15 +269,13 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module,
     writer.write("        dut->eval();\n")
     writer.write("        is_exit = true;\n")
     writer.write("    }\n")
-    writer.write("    virtual inline void clock_lo() {\n")
+    writer.write("    virtual inline void step() {\n")
     writer.write("        dut->clk = 0;\n")
     writer.write("        dut->eval();\n")
     writer.write("#if VM_TRACE\n")
     writer.write("        if (tfp) tfp->dump(main_time);\n")
     writer.write("#endif\n")
     writer.write("        main_time++;\n")
-    writer.write("    }\n")
-    writer.write("    virtual inline void clock_hi() {\n")
     writer.write("        dut->clk = 1;\n")
     writer.write("        dut->eval();\n")
     writer.write("#if VM_TRACE\n")
@@ -283,8 +284,7 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module,
     writer.write("        main_time++;\n")
     writer.write("    }\n")
     writer.write("    virtual inline void update() {\n")
-    writer.write("        dut->clk = 0;\n")
-    writer.write("        dut->eval();\n")
+    writer.write("        dut->_eval_settle(dut->__VlSymsp);\n")
     writer.write("    }\n")
     writer.write("};\n")
     writer.write("int main(int argc, char **argv, char **env) {\n")
@@ -340,7 +340,7 @@ private[iotesters] object setupVerilatorBackend {
     val dir = new File(s"test_run_dir/${dut.getClass.getName}"); dir.mkdirs()
 
     // Generate CHIRRTL
-    val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(dutGen) split "\n")
+    val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(dutGen))
     // Generate Verilog
     val verilogFile = new File(dir, s"${circuit.name}.v")
     val verilogWriter = new FileWriter(verilogFile)
@@ -370,10 +370,9 @@ private[iotesters] class VerilatorBackend(
                                           verbose: Boolean = true,
                                           logger: PrintStream = System.out,
                                           _base: Int = 16,
-                                          _seed: Long = System.currentTimeMillis,
-                                          isPropagation: Boolean = true) extends Backend(_seed) {
+                                          _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 
-  val simApiInterface = new SimApiInterface(dut, graph, cmd, logger, isPropagation)
+  val simApiInterface = new SimApiInterface(dut, graph, cmd, logger)
 
   def poke(signal: HasId, value: BigInt, off: Option[Int]) {
     val idx = off map (x => s"[$x]") getOrElse ""
