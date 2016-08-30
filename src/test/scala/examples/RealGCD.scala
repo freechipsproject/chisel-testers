@@ -5,6 +5,7 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import chisel3.Strict.CompileOptions
 
 object RealGCD {
   val num_width = 16
