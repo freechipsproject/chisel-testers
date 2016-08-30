@@ -9,13 +9,13 @@ import chisel3.Strict.CompileOptions
 
 class GCD extends Module {
   val int_width = 16
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val a  = UInt(INPUT,  width = int_width)
     val b  = UInt(INPUT,  width = int_width)
     val e  = Bool(INPUT)
     val z  = UInt(OUTPUT, width = int_width)
     val v  = Bool(OUTPUT)
-  }
+  })
   val x  = Reg(UInt(width = int_width))
   val y  = Reg(UInt(width = int_width))
   when   (x > y) { x := x - y }

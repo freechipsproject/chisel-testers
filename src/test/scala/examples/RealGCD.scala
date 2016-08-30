@@ -28,10 +28,10 @@ class RealGCDInput extends Bundle {
 }
 
 class RealGCD extends Module {
-  val io  = new Bundle {
+  val io  = IO(new Bundle {
     val in  = Decoupled(new RealGCDInput()).flip()
     val out = Valid(UInt(width = RealGCD.num_width))
-  }
+  })
 
   val x = Reg(UInt(width = RealGCD.num_width))
   val y = Reg(UInt(width = RealGCD.num_width))
