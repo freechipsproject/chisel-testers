@@ -8,9 +8,9 @@ import chisel3.testers.TesterDriver
 import chisel3.Strict.CompileOptions
 
 class Hello extends Module {
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val out = UInt(OUTPUT, 8)
-  }
+  })
   io.out := UInt(42)
 }
 

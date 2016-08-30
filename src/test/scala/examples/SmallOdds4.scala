@@ -15,7 +15,7 @@ class SmallOdds4(filter_width: Int) extends Module {
   }
 
   class Filter(isOk: UInt => Bool) extends Module {
-    val io = new FilterIO
+    val io = IO(new FilterIO)
 
     io.in.ready := io.out.ready
     io.out.bits := io.in.bits
@@ -23,7 +23,7 @@ class SmallOdds4(filter_width: Int) extends Module {
     io.out.valid := io.out.ready && io.in.valid && isOk(io.in.bits)
   }
 
-  val io = new FilterIO()
+  val io = IO(new FilterIO())
 
   def buildFilter(): Unit = {
     val smalls = Module(new Filter(_ < UInt(10)))
