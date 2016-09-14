@@ -20,13 +20,11 @@ trait AdvTests extends PeekPokeTests {
   def do_until(work: =>Unit)(pred: =>Boolean, maxCycles: Long = 0L): Boolean
 }
 
-abstract class AdvTester[+T <: Module](
-                                       dut: T,
+abstract class AdvTester[+T <: Module](dut: T,
                                        verbose: Boolean = false,
-                                       _base: Int = 16,
-                                       logFile: Option[String] = chiselMain.context.logFile,
-                                       waveform: Option[String] = chiselMain.context.waveform)
-                extends PeekPokeTester(dut, verbose, _base, logFile, waveform) {
+                                       base: Int = 16,
+                                       logFile: Option[java.io.File] = chiselMain.context.logFile)
+                extends PeekPokeTester(dut, verbose, base, logFile) {
   val defaultMaxCycles = 1024L
   var _cycles = 0L
   def cycles = _cycles

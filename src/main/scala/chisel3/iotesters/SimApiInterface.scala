@@ -7,18 +7,18 @@ import chisel3._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, Await, blocking}
 import scala.concurrent.duration._
-import scala.concurrent.{Future, _}
 import scala.sys.process.{Process, ProcessLogger}
+import java.io.{File, PrintStream}
 import java.nio.channels.FileChannel
 
-private[iotesters] class SimApiInterface(
-                                         dut: Module,
-                                         cmd: List[String],
-                                         logger: java.io.PrintStream) {
+private[iotesters] class SimApiInterface(dut: Module, cmd: Seq[String]) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
-    def genChunk(io: Data) = (CircuitGraph getPathName (io, ".")) -> ((io.getWidth-1)/64 + 1)
     val (inputs, outputs) = getPorts(dut)
+    def genChunk(args: (Data, String)) = args match {
+      case (pin, name) => name -> ((pin.getWidth-1)/64 + 1)
+    }
     (ListMap((inputs map genChunk): _*), ListMap((outputs map genChunk): _*))
   }
   private object SIM_CMD extends Enumeration {
@@ -33,7 +33,7 @@ private[iotesters] class SimApiInterface(
   private val _chunks = HashMap[String, Int]()
   private val _logs = ArrayBuffer[String]()
 
-  private def dumpLogs {
+  private def dumpLogs(implicit logger: PrintStream) {
     _logs foreach logger.println
     _logs.clear
   }
@@ -47,7 +47,7 @@ private[iotesters] class SimApiInterface(
       } else {
         "test application exit"
       } + " - exit code %d".format(exitCode)
-      dumpLogs
+      dumpLogs(System.out)
       throw new TestApplicationException(exitCode, errorString)
     }
   }
@@ -155,12 +155,11 @@ private[iotesters] class SimApiInterface(
     isStale = false
   }
 
-  private def takeStep {
+  private def takeStep(implicit logger: PrintStream) {
     mwhile(!sendCmd(SIM_CMD.STEP)) { }
     mwhile(!sendInputs) { }
     mwhile(!recvOutputs) { }
     dumpLogs
-    isStale = true
   }
 
   private def getId(path: String) = {
@@ -196,7 +195,6 @@ private[iotesters] class SimApiInterface(
     mwhile(!sendCmd(cmd)) { }
     mwhile(!sendCmd(id)) { }
     mwhile(!sendValue(v, chunk)) { }
-    isStale = true
   }
 
   private def peek(id: Int, chunk: Int): BigInt = {
@@ -214,6 +212,7 @@ private[iotesters] class SimApiInterface(
   }
 
   private def start {
+    implicit val logger = System.out // Start dumps to screen
     println(s"""STARTING ${cmd mkString " "}""")
     mwhile(!recvOutputs) { }
     // reset(5)
@@ -223,26 +222,27 @@ private[iotesters] class SimApiInterface(
     }
   }
 
-  def poke(signal: String, value: BigInt) {
+  def poke(signal: String, value: BigInt)(implicit logger: PrintStream) {
     if (inputsNameToChunkSizeMap contains signal) {
       _pokeMap(signal) = value
       isStale = true
     } else {
-      val id = _signalMap getOrElse (signal, getId(signal))
+      val id = _signalMap getOrElseUpdate (signal, getId(signal))
       if (id >= 0) {
         poke(id, _chunks getOrElseUpdate (signal, getChunk(id)), value)
+        isStale = true
       } else {
         logger println s"Can't find $signal in the emulator..."
       }
     }
   }
 
-  def peek(signal: String): Option[BigInt] = {
-    if (isStale && chiselMain.context.isPropagation) update
+  def peek(signal: String)(implicit logger: PrintStream): Option[BigInt] = {
+    if (isStale) update
     if (outputsNameToChunkSizeMap contains signal) _peekMap get signal
     else if (inputsNameToChunkSizeMap contains signal) _pokeMap get signal
     else {
-      val id = _signalMap getOrElse (signal, getId(signal))
+      val id = _signalMap getOrElseUpdate (signal, getId(signal))
       if (id >= 0) {
         Some(peek(id, _chunks getOrElse (signal, getChunk(id))))
       } else {
@@ -252,7 +252,8 @@ private[iotesters] class SimApiInterface(
     }
   }
 
-  def step(n: Int) {
+  def step(n: Int)(implicit logger: PrintStream) {
+    update
     (0 until n) foreach (_ => takeStep)
   }
 
@@ -263,29 +264,26 @@ private[iotesters] class SimApiInterface(
     }
   }
 
-  def finish {
+  def finish(implicit logger: PrintStream) {
     mwhile(!sendCmd(SIM_CMD.FIN)) { }
     while(!exitValue.isCompleted) { }
     dumpLogs
     inChannel.close
     outChannel.close
     cmdChannel.close
-    chiselMain.context.processes -= process
+    TesterProcess.finish(process)
   }
 
-  //initialize cpp process and memory mapped channels
-  private val (process: Process, exitValue: Future[Int], inChannel, outChannel, cmdChannel) = {
-    require(new java.io.File(cmd.head).exists, s"${cmd.head} doesn't exists")
-    val processBuilder = Process(cmd mkString " ")
-    val processLogger = ProcessLogger(println, _logs += _) // don't log stdout
-    val process = processBuilder run processLogger
-
-    // Set up a Future to wait for (and signal) the test process exit.
-    val exitValue: Future[Int] = Future {
-      blocking {
-        process.exitValue
-      }
+  //initialize cpp process
+  private val process = TesterProcess(cmd, _logs)
+  // Set up a Future to wait for (and signal) the test process exit.
+  private val exitValue: Future[Int] = Future {
+    blocking {
+      process.exitValue
     }
+  }
+  // memory mapped channels
+  private val (inChannel, outChannel, cmdChannel) = {
     // Wait for the startup message
     // NOTE: There may be several messages before we see our startup message.
     val simStartupMessageStart = "sim start on "
@@ -316,9 +314,8 @@ private[iotesters] class SimApiInterface(
     in_channel.release
     out_channel.release
     cmd_channel.release
-    chiselMain.context.processes += process
 
-    (process, exitValue, in_channel, out_channel, cmd_channel)
+    (in_channel, out_channel, cmd_channel)
   }
 
   // Once everything has been prepared, we can start the communications.
@@ -367,5 +364,5 @@ private[iotesters] class Channel(name: String) {
   def apply(idx: Int): Long = buffer getLong (8 * idx + channel_data_offset_64bw)
   def close { file.close }
   buffer order java.nio.ByteOrder.nativeOrder
-  new java.io.File(name).delete
+  new File(name).delete
 }

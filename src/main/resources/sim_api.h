@@ -162,36 +162,34 @@ public:
     delete cmd_channel;
   }
   virtual void tick() {
-    static bool is_reset = false;
-    // First, Send output tokens 
+    static bool is_reset;
+    // First, Send output tokens
     while(!send_tokens());
-    if (is_reset) {
-      start();
-      is_reset = false;
-    }
-    
+    if (is_reset) start();
+    is_reset = false;
+
     // Next, handle commands from the testers
-    bool exit = false;
+    bool is_exit = false;
     do {
       size_t cmd;
       while(!recv_cmd(cmd));
       switch ((SIM_CMD) cmd) {
-        case RESET: 
-          reset(); is_reset = true; exit = true; break;
-        case STEP: 
-          while(!recv_tokens()); step(); exit = true; break;
-        case UPDATE: 
-          while(!recv_tokens()); update(); exit = true; break;
+        case RESET: reset(); is_reset = true; is_exit = true; break;
+        case STEP: while(!recv_tokens()); step(); is_exit = true; break;
+        case UPDATE: while(!recv_tokens()); update(); is_exit = true; break;
         case POKE: poke(); break; 
         case PEEK: peek(); break;
         case FORCE: poke(true); break;
         case GETID: getid(); break;
         case GETCHK: getchk(); break;
-        case FIN:  finish(); exit = true; break;
+        case FIN: finish(); is_exit = true; break;
         default: break;
       }
-    } while (!exit);
+    } while (!is_exit);
   }
+
+protected:
+  sim_data_t<T> sim_data;
 
 private:
   channel_t *in_channel;
@@ -201,8 +199,8 @@ private:
   virtual void reset() = 0;
   virtual void start() = 0; 
   virtual void finish() = 0;
-  virtual void update() = 0; 
   virtual void step() = 0;
+  virtual void update() = 0; 
   // Consumes input tokens 
   virtual size_t put_value(T& sig, uint64_t* data, bool force = false) = 0;
   // Generate output tokens
@@ -349,27 +347,6 @@ private:
     }
     out_channel->release();
     return ready;
-  }
-protected:
-  sim_data_t<T> sim_data;
-
-  void read_signal_map(std::string filename) {
-    std::ifstream file(filename.c_str());
-    if (!file) {
-      std::cerr << "Cannot open " << filename << std::endl;
-      finish();
-      exit(2);		// Not a normal exit.
-    } 
-    std::string line;
-    size_t id = 0;
-    while (std::getline(file, line)) {
-      std::istringstream iss(line);
-      std::string path;
-      size_t width, n;
-      iss >> path >> width >> n;
-      sim_data.signal_map[path] = id;
-      id += n;
-    }
   }
 };
 
