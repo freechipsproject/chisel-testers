@@ -95,7 +95,7 @@ object genVCSVerilogHarness {
     writer write "    $vcdpluson(0);\n"
     writer write "  end\n\n"
 
-    writer write "  always @(%s clock) begin\n".format(if (isGateLevel) "posedge" else "negedge")
+    writer write "  always @(%s clock) begin\n".format("posedge")
     writer write "    if (vcdfile && reset) begin\n"
     writer write "      $dumpoff;\n"
     writer write "      vcdon = 0;\n"
