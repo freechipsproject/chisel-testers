@@ -4,7 +4,6 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.SteppedHWIOTester
-import chisel3.Strict.CompileOptions
 
 class VecShiftRegister extends Module {
   val io = new Bundle {

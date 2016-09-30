@@ -6,7 +6,6 @@ import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
-import chisel3.Strict.CompileOptions
 
 object RealGCD2 {
   val num_width = 16
