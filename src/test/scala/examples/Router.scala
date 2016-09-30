@@ -49,7 +49,7 @@ class RouterIO(n: Int) extends Bundle {
 class Router extends Module {
   val depth = Router.routeTableSize
   val n     = Router.numberOfOutputs
-  val io    = new RouterIO(n)
+  val io    = IO(new RouterIO(n))
   val tbl   = Mem(depth, UInt(width = BigInt(n).bitLength))
 
   when(reset) {
