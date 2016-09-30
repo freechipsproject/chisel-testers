@@ -4,7 +4,6 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.{ChiselFlatSpec, SteppedHWIOTester}
-import chisel3.Strict.CompileOptions
 
 class MaxN(val n: Int, val w: Int) extends Module {
 

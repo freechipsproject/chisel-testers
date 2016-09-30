@@ -4,7 +4,6 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
-import chisel3.Strict.CompileOptions
 
 class Adder(val w: Int) extends Module {
   val io = IO(new Bundle {

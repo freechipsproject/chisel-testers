@@ -5,7 +5,6 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
-import chisel3.Strict.CompileOptions
 
 class GCD extends Module {
   val int_width = 16
