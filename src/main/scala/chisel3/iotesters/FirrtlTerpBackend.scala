@@ -8,7 +8,7 @@ import chisel3.internal.InstanceId
 
 import scala.collection.mutable.HashMap
 
-import firrtl_interpreter.InterpretiveTester
+import firrtl_interpreter.{InterpreterOptions, InterpretiveTester}
 
 private[iotesters] class FirrtlTerpBackend(dut: Module,
                                            firrtlIR: String,
@@ -87,7 +87,11 @@ private[iotesters] class FirrtlTerpBackend(dut: Module,
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply[T <: chisel3.Module](dutGen: () => T): (T, Backend) = {
+  def apply[T <: chisel3.Module](
+                                  dutGen: () => T,
+                                  testerOptions: TesterOptions = new TesterOptions,
+                                  interpreterOptions: InterpreterOptions = new InterpreterOptions()
+                                ): (T, Backend) = {
     val circuit = chisel3.Driver.elaborate(dutGen)
     val dut = getTopModule(circuit).asInstanceOf[T]
     val dir = new File(s"test_run_dir/${dut.getClass.getName}") ; dir.mkdirs()

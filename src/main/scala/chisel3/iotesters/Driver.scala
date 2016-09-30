@@ -3,29 +3,34 @@
 package chisel3.iotesters
 
 import chisel3.{ChiselExecutionOptions, Module}
+import firrtl_interpreter.InterpreterOptions
 import scopt.OptionParser
 import scala.util.DynamicVariable
 import java.io.File
 import scala.collection.mutable
 
-import firrtl.{CommonOptions, FirrtlExecutionOptions}
+class TesterOptions extends ChiselExecutionOptions {
+  var isGenVerilog:    Boolean = false
+  var isGenHarness:    Boolean = false
+  var isCompiling:     Boolean = false
+  var isRunTest:       Boolean = false
+  var testerSeed:      Long    = System.currentTimeMillis
+  var testCmd:         mutable.ArrayBuffer[String]= mutable.ArrayBuffer[String]()
+  var backendName:     String  = "firrtl"
+  var logFileName:     String  = ""
+  var waveform:        Option[File] = None
 
-class TesterOptions(
-                     var chiselOptions:   ChiselExecutionOptions,
-                     var isGenVerilog:    Boolean = false,
-                     var isGenHarness:    Boolean = false,
-                     var isCompiling:     Boolean = false,
-                     var isRunTest:       Boolean = false,
-                     var testerSeed:      Long    = System.currentTimeMillis,
-                     var testCmd:         mutable.ArrayBuffer[String]= mutable.ArrayBuffer[String](),
-                     var backendName:     String  = "verilator",
-                     var logFileName:     String  = "",
-                     var waveform:        Option[File] = None
-                   ) {
-  trait ParserOptions {
-    self: OptionParser[Unit] =>
+  override def addOptions(parser: OptionParser[Unit]) {
+
+    super.addOptions(parser)
+
+    import parser._
+
 
     note("tester options")
+
+    opt[String]("backend-name").abbr("tbn").foreach { x => backendName = x }
+      .text("run this as test command")
 
     opt[Unit]("is-gen-verilog").abbr("tigv").foreach { _ => isGenVerilog = true }
       .text("has verilog already been generated")
@@ -49,39 +54,54 @@ class TesterOptions(
     opt[Long]("test-seed").abbr("tts").foreach { x => testerSeed = x }
       .text("provides a seed for random number generator")
   }
-
-  def commonOptions: CommonOptions = chiselOptions.firrtlExecutionOptions.commonOptions
-  def firrtlOptions: FirrtlExecutionOptions = chiselOptions.firrtlExecutionOptions
 }
 
 object Driver {
   private val backendVar = new DynamicVariable[Option[Backend]](None)
   private[iotesters] def backend = backendVar.value
 
-  def execute[T <: Module](testerOptions: TesterOptions, dut: () => T): Boolean = {
-    testerOptions.backendName match {
+  def execute[T <: Module](
+                            dutGenerator: () => T,
+                            testerOptions: TesterOptions,
+                            interpreterOptions: InterpreterOptions
+                          )
+                          (
+                            testerGen: T => PeekPokeTester[T]
+                          ): Boolean = {
+    val (dut, backend) = testerOptions.backendName match {
       case "firrtl"    =>
+        setupFirrtlTerpBackend(dutGenerator)
       case "verilator" =>
+        setupVerilatorBackend(dutGenerator)
       case "vcs"       =>
+        setupVCSBackend(dutGenerator)
       case _ =>
         throw new Exception(s"Unrecognized backend name ${testerOptions.backendName}")
     }
-    false
+    backendVar.withValue(Some(backend)) {
+      try {
+        testerGen(dut).finish
+      } catch { case e: Throwable =>
+        e.printStackTrace()
+        TesterProcess.killall
+        throw e
+      }
+    }
   }
 
-  def execute[T <: Module](args: Array[String], dut: () => T): Boolean = {
-    val commonOptions = new CommonOptions
-    val firrtlExecutionOptions = new FirrtlExecutionOptions(commonOptions = commonOptions)
-    val chiselExecutionOptions = new ChiselExecutionOptions(firrtlExecutionOptions = firrtlExecutionOptions)
-    val testerOptions          = new TesterOptions(chiselOptions = chiselExecutionOptions)
-    val parser = new OptionParser[Unit]("chisel-tester")
-      with commonOptions.ParserOptions
-      with testerOptions.ParserOptions
-      with chiselExecutionOptions.ParserOptions
-      with firrtlExecutionOptions.ParserOptions
+  def execute[T <: Module](args: Array[String], dut: () => T)(
+    testerGen: T => PeekPokeTester[T]
+  ): Boolean = {
+    val interpreterOptions = new InterpreterOptions()
+    val testerOptions          = new TesterOptions()
+
+    val parser = new OptionParser[Unit]("chisel-tester") {}
+    testerOptions.addOptions(parser)
+    interpreterOptions.addOptions(parser)
 
     parser.parse(args) match {
       case true =>
+        execute(dut, testerOptions, interpreterOptions)(testerGen)
         true
       case _ =>
         false
@@ -104,7 +124,7 @@ object Driver {
       try {
         testerGen(dut).finish
       } catch { case e: Throwable =>
-        e.printStackTrace
+        e.printStackTrace()
         TesterProcess.killall
         throw e
       }
@@ -123,7 +143,7 @@ object Driver {
       try {
         testerGen(dut).finish
       } catch { case e: Throwable =>
-        e.printStackTrace
+        e.printStackTrace()
         TesterProcess.killall
         throw e
       }
