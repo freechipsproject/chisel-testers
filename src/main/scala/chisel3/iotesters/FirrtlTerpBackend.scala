@@ -3,7 +3,7 @@ package chisel3.iotesters
 
 import java.io.{File, PrintStream}
 
-import chisel3.{Module, Bits}
+import chisel3.{ChiselExecutionResult, Module, Bits}
 import chisel3.internal.InstanceId
 
 import scala.collection.mutable.HashMap
@@ -92,14 +92,22 @@ private[iotesters] object setupFirrtlTerpBackend {
                                   testerOptions: TesterOptions = new TesterOptions,
                                   interpreterOptions: InterpreterOptions = new InterpreterOptions()
                                 ): (T, Backend) = {
-    chisel3.Driver.execute(testerOptions, dutGen)
 
-    val circuit = chisel3.Driver.elaborate(dutGen)
-    val dut = getTopModule(circuit).asInstanceOf[T]
-    val dir = new File(s"test_run_dir/${dut.getClass.getName}") ; dir.mkdirs()
-
-    // Dump FIRRTL for debugging
-    chisel3.Driver.dumpFirrtl(circuit, Some(new File(dir, s"${circuit.name}.fir")))
-    (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen)))
+    chisel3.Driver.execute(testerOptions, dutGen) match {
+      case ChiselExecutionResult(Some(circuit), firrtlText, Some(firrtlExecutionResult), true) =>
+        val dut = getTopModule(circuit).asInstanceOf[T]
+        (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen)))
+      case _ =>
+        throw new Exception("Problem with compilation")
+    }
+//
+//
+//    val circuit = chisel3.Driver.elaborate(dutGen)
+//    val dut = getTopModule(circuit).asInstanceOf[T]
+//    val dir = new File(s"test_run_dir/${dut.getClass.getName}") ; dir.mkdirs()
+//
+//    // Dump FIRRTL for debugging
+//    chisel3.Driver.dumpFirrtl(circuit, Some(new File(dir, s"${circuit.name}.fir")))
+//    (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen)))
   }
 }

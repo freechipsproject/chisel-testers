@@ -78,6 +78,11 @@ object Driver {
       case _ =>
         throw new Exception(s"Unrecognized backend name ${testerOptions.backendName}")
     }
+
+    if(testerOptions.topName.isEmpty) {
+      testerOptions.targetDirName = s"${testerOptions.targetDirName}/${testerGen.getClass.getName}"
+    }
+
     backendVar.withValue(Some(backend)) {
       try {
         testerGen(dut).finish
