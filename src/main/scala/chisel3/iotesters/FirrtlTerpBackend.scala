@@ -92,6 +92,8 @@ private[iotesters] object setupFirrtlTerpBackend {
                                   testerOptions: TesterOptions = new TesterOptions,
                                   interpreterOptions: InterpreterOptions = new InterpreterOptions()
                                 ): (T, Backend) = {
+    chisel3.Driver.execute(testerOptions, dutGen)
+
     val circuit = chisel3.Driver.elaborate(dutGen)
     val dut = getTopModule(circuit).asInstanceOf[T]
     val dir = new File(s"test_run_dir/${dut.getClass.getName}") ; dir.mkdirs()

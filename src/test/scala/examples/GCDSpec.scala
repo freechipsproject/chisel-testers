@@ -58,7 +58,7 @@ class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
     i <- 1 to 10
     j <- 1 to 10
   } {
-    val (gcd_value, cycles) = GCDCalculator.computeGcdResultsAndCycles(i, j)
+    val (gcd_value, _) = GCDCalculator.computeGcdResultsAndCycles(i, j)
 
     poke(c.io.in.bits.a, i)
     poke(c.io.in.bits.b, j)
@@ -77,6 +77,7 @@ class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
     step(1)
   }
 }
+
 class GCDSpec extends FlatSpec with Matchers {
   behavior of "GCDSpec"
 

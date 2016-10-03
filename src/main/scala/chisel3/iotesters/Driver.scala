@@ -70,7 +70,7 @@ object Driver {
                           ): Boolean = {
     val (dut, backend) = testerOptions.backendName match {
       case "firrtl"    =>
-        setupFirrtlTerpBackend(dutGenerator)
+        setupFirrtlTerpBackend(dutGenerator, testerOptions, interpreterOptions)
       case "verilator" =>
         setupVerilatorBackend(dutGenerator)
       case "vcs"       =>
