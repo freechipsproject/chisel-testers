@@ -113,6 +113,15 @@ object Driver {
     }
   }
   /**
+    * This is just here as command line way to see what the options are
+    * It will not successfully run
+    * TODO: Look into dynamic class loading as way to make this main useful
+    * @param args unused args
+    */
+  def main(args: Array[String]) {
+    execute(Array("--help"), null)(null)
+  }
+  /**
     * Runs the ClassicTester and returns a Boolean indicating test success or failure
     * @@backendType determines whether the ClassicTester uses verilator or the firrtl interpreter to simulate the circuit
     * Will do intermediate compliation steps to setup the backend specified, including cpp compilation for the verilator backend and firrtl IR compilation for the firrlt backend

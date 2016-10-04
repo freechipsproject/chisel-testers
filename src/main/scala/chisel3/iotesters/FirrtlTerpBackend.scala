@@ -3,7 +3,7 @@ package chisel3.iotesters
 
 import java.io.{File, PrintStream}
 
-import chisel3.{ChiselExecutionResult, Module, Bits}
+import chisel3.{ChiselExecutionSucccess, ChiselExecutionResult, Module, Bits}
 import chisel3.internal.InstanceId
 
 import scala.collection.mutable.HashMap
@@ -98,7 +98,7 @@ private[iotesters] object setupFirrtlTerpBackend {
                                 ): (T, Backend) = {
 
     chisel3.Driver.execute(testerOptions, dutGen) match {
-      case ChiselExecutionResult(Some(circuit), firrtlText, Some(firrtlExecutionResult), true) =>
+      case ChiselExecutionSucccess(Some(circuit), firrtlText, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
         (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen), interpreterOptions = interpreterOptions))
       case _ =>
