@@ -12,8 +12,10 @@ import firrtl_interpreter.{InterpreterOptions, InterpretiveTester}
 
 private[iotesters] class FirrtlTerpBackend(dut: Module,
                                            firrtlIR: String,
-                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
-  val interpretiveTester = new InterpretiveTester(firrtlIR)
+                                           _seed: Long = System.currentTimeMillis,
+                                           interpreterOptions: InterpreterOptions = new InterpreterOptions
+                                          ) extends Backend(_seed) {
+  val interpretiveTester = new InterpretiveTester(firrtlIR, interpreterOptions)
   reset(5) // reset firrtl interpreter on construction
 
   val portNames = getDataNames("io", dut.io).toMap
@@ -83,7 +85,9 @@ private[iotesters] class FirrtlTerpBackend(dut: Module,
     interpretiveTester.poke("reset", 0)
   }
 
-  def finish(implicit logger: PrintStream): Unit = Unit
+  def finish(implicit logger: PrintStream): Unit = {
+    interpretiveTester.report()
+  }
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
@@ -96,7 +100,7 @@ private[iotesters] object setupFirrtlTerpBackend {
     chisel3.Driver.execute(testerOptions, dutGen) match {
       case ChiselExecutionResult(Some(circuit), firrtlText, Some(firrtlExecutionResult), true) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
-        (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen)))
+        (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen), interpreterOptions = interpreterOptions))
       case _ =>
         throw new Exception("Problem with compilation")
     }

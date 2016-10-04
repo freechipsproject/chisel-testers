@@ -42,8 +42,8 @@ class RealGCD2 extends Module {
       .otherwise    { y := y - x }
   }
 
-  printf("ti %d  x %d y %d  in_ready %d  in_valid %d  out %d out_valid %d==============\n",
-    ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.valid)
+//  printf("ti %d  x %d y %d  in_ready %d  in_valid %d  out %d out_valid %d==============\n",
+//    ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.valid)
   //      ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.ready, io.out.valid)
 
   io.out.bits  := x
@@ -70,7 +70,7 @@ class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
       count += 1
     }
     if(count > 30) {
-      println(s"Waited $count cycles on gcd inputs $i, $j, giving up")
+      // println(s"Waited $count cycles on gcd inputs $i, $j, giving up")
       System.exit(0)
     }
     expect(c.io.out.bits, gcd_value)
@@ -96,7 +96,7 @@ class GCDSpec extends FlatSpec with Matchers {
   }
   it should "run firrtl via command line arguments" in {
     // val args = Array.empty[String]
-    val args = Array("--backend-name", "firrtl")
+    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
     iotesters.Driver.execute(args, () => new RealGCD2) { c =>
       new GCDPeekPokeTester(c)
     }
