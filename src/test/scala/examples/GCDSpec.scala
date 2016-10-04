@@ -92,14 +92,14 @@ class GCDSpec extends FlatSpec with Matchers {
     val args = Array("--backend-name", "verilator")
     iotesters.Driver.execute(args, () => new RealGCD2) { c =>
       new GCDPeekPokeTester(c)
-    }
+    } should be (true)
   }
   it should "run firrtl via command line arguments" in {
     // val args = Array.empty[String]
     val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
     iotesters.Driver.execute(args, () => new RealGCD2) { c =>
       new GCDPeekPokeTester(c)
-    }
+    } should be (true)
   }
 }
 

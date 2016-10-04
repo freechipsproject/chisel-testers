@@ -52,7 +52,7 @@ private[iotesters] class FirrtlTerpBackend(dut: Module,
         val good = got == expected
         if (verbose) logger println
            s"""$msg  EXPECT $name -> ${bigIntToStr(got, base)} == ${bigIntToStr(expected, base)}""" +
-           s"""${if (good) "PASS" else "FAIL"}"""
+           s""" ${if (good) "PASS" else "FAIL"}"""
         good
       case _ => false
     }
