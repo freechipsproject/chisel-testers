@@ -104,7 +104,7 @@ object genVCSVerilogHarness {
     writer write "      $dumpon;\n"
     writer write "      vcdon = 1;\n"
     writer write "    end\n"
-    writer write "    %s $tick();\n".format(if (isGateLevel) "#0.05" else "")
+    writer write "    %s $tick();\n".format("#0.0")
     writer write "    $vcdplusflush;\n"
     writer write "  end\n\n"
     writer write "endmodule\n"
