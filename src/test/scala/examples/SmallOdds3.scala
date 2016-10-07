@@ -3,14 +3,14 @@
 package examples
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{EnqIO, DeqIO, Queue}
 import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 class SmallOdds3(filter_width: Int) extends Module {
 
   class FilterIO extends Bundle {
-    val in = new DeqIO(UInt(width = filter_width))
-    val out = new EnqIO(UInt(width = filter_width))
+    val in = DeqIO(UInt(width = filter_width))
+    val out = EnqIO(UInt(width = filter_width))
   }
 
   class Filter(isOk: UInt => Bool) extends Module {
