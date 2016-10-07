@@ -22,10 +22,10 @@ class SlowDecoupledAdderOut extends Bundle {
 
 class SlowDecoupledAdder extends Module {
   val delay_value = 10
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val in  = Decoupled(new SlowDecoupledAdderIn).flip()
     val out = Decoupled(new SlowDecoupledAdderOut)
-  }
+  })
   val busy    = Reg(init=Bool(false))
   val a_reg   = Reg(init=UInt(0, width = 16))
   val b_reg   = Reg(init=UInt(0, width = 16))

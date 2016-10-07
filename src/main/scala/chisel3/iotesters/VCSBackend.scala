@@ -46,8 +46,8 @@ object genVCSVerilogHarness {
     val (inputs, outputs) = getDataNames("io", dut.io) partition (_._1.dir == chisel3.INPUT)
 
     writer write "module test;\n"
-    writer write "  reg clk = 1;\n"
-    writer write "  reg rst = 1;\n"
+    writer write "  reg clock = 1;\n"
+    writer write "  reg reset = 1;\n"
     val delay = if (isGateLevel) "#0.1" else ""
     inputs foreach { case (node, name) =>
       writer write s"  reg[${node.getWidth-1}:0] $name = 0;\n"
@@ -60,20 +60,20 @@ object genVCSVerilogHarness {
       writer write s"  assign $delay $name = ${name}_delay;\n"
     }
 
-    writer write "  always #`CLOCK_PERIOD clk = ~clk;\n"
+    writer write "  always #`CLOCK_PERIOD clock = ~clock;\n"
     writer write "  reg vcdon = 0;\n"
     writer write "  reg [1023:0] vcdfile = 0;\n"
     writer write "  reg [1023:0] vpdfile = 0;\n"
 
     writer write "\n  /*** DUT instantiation ***/\n"
     writer write s"  ${dutName} ${dutName}(\n"
-    writer write "    .clk(clk),\n"
-    writer write "    .reset(rst),\n"
+    writer write "    .clock(clock),\n"
+    writer write "    .reset(reset),\n"
     writer write ((inputs ++ outputs).unzip._2 map (name => s"    .${name}(${name}_delay)") mkString ",\n")
     writer write "  );\n\n"
 
     writer write "  initial begin\n"
-    writer write "    $init_rsts(rst);\n"
+    writer write "    $init_rsts(reset);\n"
     writer write "    $init_ins(%s);\n".format(inputs.unzip._2 mkString ", ")
     writer write "    $init_outs(%s);\n".format(outputs.unzip._2 mkString ", ")
     writer write "    $init_sigs(%s);\n".format(dutName)
@@ -93,11 +93,10 @@ object genVCSVerilogHarness {
     writer write "      $vcdplusmemon;\n"
     writer write "    end\n"
     writer write "    $vcdpluson(0);\n"
-    writer write "    $vcdplusautoflushon;\n"
     writer write "  end\n\n"
 
-    writer write "  always @(%s clk) begin\n".format(if (isGateLevel) "posedge" else "negedge")
-    writer write "    if (vcdfile && rst) begin\n"
+    writer write "  always @(%s clock) begin\n".format(if (isGateLevel) "posedge" else "negedge")
+    writer write "    if (vcdfile && reset) begin\n"
     writer write "      $dumpoff;\n"
     writer write "      vcdon = 0;\n"
     writer write "    end\n"
@@ -106,6 +105,7 @@ object genVCSVerilogHarness {
     writer write "      vcdon = 1;\n"
     writer write "    end\n"
     writer write "    %s $tick();\n".format(if (isGateLevel) "#0.05" else "")
+    writer write "    $vcdplusflush;\n"
     writer write "  end\n\n"
     writer write "endmodule\n"
     writer.close
@@ -113,10 +113,9 @@ object genVCSVerilogHarness {
 }
 
 private[iotesters] object setupVCSBackend {
-  def apply[T <: chisel3.Module](dutGen: () => T): (T, Backend) = {
+  def apply[T <: chisel3.Module](dutGen: () => T, dir: File): (T, Backend) = {
     val circuit = chisel3.Driver.elaborate(dutGen)
     val dut = getTopModule(circuit).asInstanceOf[T]
-    val dir = new File(s"test_run_dir/${dut.getClass.getName}") ; dir.mkdirs()
 
     // Generate CHIRRTL
     val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(dutGen))
@@ -135,7 +134,7 @@ private[iotesters] object setupVCSBackend {
     val vpdFile = new File(dir, s"${circuit.name}.vpd")
     copyVpiFiles(dir.toString)
     genVCSVerilogHarness(dut, new FileWriter(vcsHarnessFile), vpdFile.toString)
-    verilogToVCS(circuit.name, dir, new File(vcsHarnessFileName)).!
+    assert(verilogToVCS(circuit.name, dir, new File(vcsHarnessFileName)).! == 0)
 
     (dut, new VCSBackend(dut, Seq((new File(dir, circuit.name)).toString)))
   }
