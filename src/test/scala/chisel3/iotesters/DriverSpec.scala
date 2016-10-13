@@ -7,10 +7,10 @@ import org.scalatest.{Matchers, FreeSpec}
 import chisel3._
 
 class DriverTest extends Module {
-  val io = new Bundle {
-    val in = UInt(1).flip()
-    val out = UInt(1)
-  }
+  val io = IO(new Bundle {
+    val in  = Input(UInt(width = 1))
+    val out = Output(UInt(width = 1))
+  })
   io.out := io.in
 }
 

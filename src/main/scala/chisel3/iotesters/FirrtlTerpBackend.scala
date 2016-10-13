@@ -1,21 +1,29 @@
 // See LICENSE for license details.
 package chisel3.iotesters
 
-import java.io.{File, PrintStream}
+import java.io.PrintStream
 
-import chisel3.{ChiselExecutionSucccess, ChiselExecutionResult, Module, Bits}
+import chisel3._
 import chisel3.internal.InstanceId
+import firrtl.{HasFirrtlOptions, ExecutionOptionsManager}
 
-import scala.collection.mutable.HashMap
+import firrtl_interpreter.{HasInterpreterOptions, InterpretiveTester}
 
-import firrtl_interpreter.{InterpreterOptions, InterpretiveTester}
-
-private[iotesters] class FirrtlTerpBackend(dut: Module,
-                                           firrtlIR: String,
-                                           _seed: Long = System.currentTimeMillis,
-                                           interpreterOptions: InterpreterOptions = new InterpreterOptions
-                                          ) extends Backend(_seed) {
-  val interpretiveTester = new InterpretiveTester(firrtlIR, interpreterOptions)
+private[iotesters] class FirrtlTerpBackend(
+    dut: Module,
+    firrtlIR: String,
+    _seed: Long = System.currentTimeMillis,
+    optionsManager: ExecutionOptionsManager
+      with HasTesterOptions
+      with HasChiselExecutionOptions
+      with HasFirrtlOptions
+      with HasInterpreterOptions = new ExecutionOptionsManager("chisel-tutorial")
+      with HasTesterOptions
+      with HasChiselExecutionOptions
+      with HasFirrtlOptions
+      with HasInterpreterOptions)
+  extends Backend(_seed) {
+  val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
   reset(5) // reset firrtl interpreter on construction
 
   val portNames = getDataNames("io", dut.io).toMap
@@ -93,14 +101,17 @@ private[iotesters] class FirrtlTerpBackend(dut: Module,
 private[iotesters] object setupFirrtlTerpBackend {
   def apply[T <: chisel3.Module](
                                   dutGen: () => T,
-                                  testerOptions: TesterOptions = new TesterOptions,
-                                  interpreterOptions: InterpreterOptions = new InterpreterOptions()
+                                  optionsManager: ExecutionOptionsManager
+                                    with HasTesterOptions
+                                    with HasChiselExecutionOptions
+                                    with HasFirrtlOptions
+                                    with HasInterpreterOptions
                                 ): (T, Backend) = {
 
-    chisel3.Driver.execute(testerOptions, dutGen) match {
+    chisel3.Driver.execute(optionsManager, dutGen) match {
       case ChiselExecutionSucccess(Some(circuit), firrtlText, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
-        (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen), interpreterOptions = interpreterOptions))
+        (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen), optionsManager = optionsManager))
       case _ =>
         throw new Exception("Problem with compilation")
     }
