@@ -5,6 +5,7 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
+import firrtl_interpreter.InterpreterOptions
 import org.scalatest.{Matchers, FlatSpec}
 
 object RealGCD2 {
@@ -96,6 +97,18 @@ class GCDSpec extends FlatSpec with Matchers {
   }
   it should "run firrtl via command line arguments" in {
     // val args = Array.empty[String]
+    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
+    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
+      new GCDPeekPokeTester(c)
+    } should be (true)
+  }
+
+  it should "run firrtl via direct options configuration" in {
+    // val args = Array.empty[String]
+    val manager = new TesterOptionsManager {
+      testerOptions = TesterOptions(backendName = "firrtl")
+      interpreterOptions = InterpreterOptions(writeVCD = true)
+    }
     val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
     iotesters.Driver.execute(args, () => new RealGCD2) { c =>
       new GCDPeekPokeTester(c)

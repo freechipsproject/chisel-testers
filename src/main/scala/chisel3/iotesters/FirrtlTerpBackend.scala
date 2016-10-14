@@ -5,23 +5,14 @@ import java.io.PrintStream
 
 import chisel3._
 import chisel3.internal.InstanceId
-import firrtl.{HasFirrtlOptions, ExecutionOptionsManager}
 
-import firrtl_interpreter.{HasInterpreterOptions, InterpretiveTester}
+import firrtl_interpreter.InterpretiveTester
 
 private[iotesters] class FirrtlTerpBackend(
     dut: Module,
     firrtlIR: String,
     _seed: Long = System.currentTimeMillis,
-    optionsManager: ExecutionOptionsManager
-      with HasTesterOptions
-      with HasChiselExecutionOptions
-      with HasFirrtlOptions
-      with HasInterpreterOptions = new ExecutionOptionsManager("chisel-tutorial")
-      with HasTesterOptions
-      with HasChiselExecutionOptions
-      with HasFirrtlOptions
-      with HasInterpreterOptions)
+    optionsManager: TesterOptionsManager = new TesterOptionsManager)
   extends Backend(_seed) {
   val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
   reset(5) // reset firrtl interpreter on construction
@@ -100,13 +91,8 @@ private[iotesters] class FirrtlTerpBackend(
 
 private[iotesters] object setupFirrtlTerpBackend {
   def apply[T <: chisel3.Module](
-                                  dutGen: () => T,
-                                  optionsManager: ExecutionOptionsManager
-                                    with HasTesterOptions
-                                    with HasChiselExecutionOptions
-                                    with HasFirrtlOptions
-                                    with HasInterpreterOptions
-                                ): (T, Backend) = {
+      dutGen: () => T,
+      optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
 
     chisel3.Driver.execute(optionsManager, dutGen) match {
       case ChiselExecutionSucccess(Some(circuit), firrtlText, Some(firrtlExecutionResult)) =>

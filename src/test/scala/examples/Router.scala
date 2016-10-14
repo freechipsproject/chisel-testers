@@ -35,11 +35,11 @@ class Packet extends Bundle {
   */
 class RouterIO(n: Int) extends Bundle {
 //  override def cloneType           = new RouterIO(n).asInstanceOf[this.type]
-  val read_routing_table_request   = new DeqIO(new ReadCmd())
-  val read_routing_table_response  = new EnqIO(UInt(width = Router.addressWidth))
-  val load_routing_table_request   = new DeqIO(new WriteCmd())
-  val in                           = new DeqIO(new Packet())
-  val outs                         = Vec(n, new EnqIO(new Packet()))
+  val read_routing_table_request   = DeqIO(new ReadCmd())
+  val read_routing_table_response  = EnqIO(UInt(width = Router.addressWidth))
+  val load_routing_table_request   = DeqIO(new WriteCmd())
+  val in                           = DeqIO(new Packet())
+  val outs                         = Vec(n, EnqIO(new Packet()))
 }
 
 /**
@@ -56,13 +56,12 @@ class Router extends Module {
     tbl.indices.foreach { index =>
       tbl(index) := UInt(0, width = Router.addressWidth)
     }
+    io.read_routing_table_request.nodeq()
+    io.load_routing_table_request.nodeq()
+    io.read_routing_table_response.noenq()
+    io.in.nodeq()
+    io.outs.foreach { out => out.noenq() }
   }
-
-  io.read_routing_table_request.init()
-  io.load_routing_table_request.init()
-  io.read_routing_table_response.init()
-  io.in.init()
-  io.outs.foreach { out => out.init() }
 
   when(io.read_routing_table_request.valid && io.read_routing_table_response.ready) {
     io.read_routing_table_response.enq(tbl(

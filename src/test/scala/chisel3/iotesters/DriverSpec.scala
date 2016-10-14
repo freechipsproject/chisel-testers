@@ -22,7 +22,7 @@ class DriverTestTester(c: DriverTest) extends PeekPokeTester(c) {
 class DriverSpec extends FreeSpec with Matchers {
   "tester driver should support a wide range of downstream toolchain options" - {
 
-    "default options should not fail" in {
+    "default roptions should not fail" in {
       chisel3.iotesters.Driver.execute(
         Array.empty[String],
         () => new DriverTest) { c =>
