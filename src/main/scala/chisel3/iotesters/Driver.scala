@@ -2,6 +2,8 @@
 
 package chisel3.iotesters
 
+import chisel3.Module
+import scala.util.DynamicVariable
 import java.io.File
 
 import chisel3.{HasChiselExecutionOptions, Module}
@@ -91,8 +93,14 @@ object Driver {
       try {
         testerGen(dut).finish
       } catch { case e: Throwable =>
-        e.printStackTrace()
-        TesterProcess.killall
+        e.printStackTrace
+        backend match {
+          case Some(b: VCSBackend) =>
+            TesterProcess kill b
+          case Some(b: VerilatorBackend) =>
+            TesterProcess kill b
+          case _ =>
+        }
         throw e
       }
     }
@@ -110,8 +118,14 @@ object Driver {
       try {
         testerGen(dut).finish
       } catch { case e: Throwable =>
-        e.printStackTrace()
-        TesterProcess.killall
+        e.printStackTrace
+        backend match {
+          case Some(b: VCSBackend) =>
+            TesterProcess kill b
+          case Some(b: VerilatorBackend) =>
+            TesterProcess kill b
+          case _ =>
+        }
         throw e
       }
     }

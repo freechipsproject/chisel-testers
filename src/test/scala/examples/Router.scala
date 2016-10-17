@@ -3,7 +3,7 @@
 package examples
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{EnqIO, DeqIO, log2Up}
 import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object Router {
@@ -26,6 +26,7 @@ class Packet extends Bundle {
   val header = UInt(width = Router.headerWidth)
   val body   = Bits(width = Router.dataWidth)
 }
+
 
 /**
   * This router circuit
@@ -62,6 +63,12 @@ class Router extends Module {
     io.in.nodeq()
     io.outs.foreach { out => out.noenq() }
   }
+
+  io.read_routing_table_request.init()
+  io.load_routing_table_request.init()
+  io.read_routing_table_response.init()
+  io.in.init()
+  io.outs.foreach { out => out.init() }
 
   when(io.read_routing_table_request.valid && io.read_routing_table_response.ready) {
     io.read_routing_table_response.enq(tbl(

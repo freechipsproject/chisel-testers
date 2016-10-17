@@ -113,10 +113,9 @@ object genVCSVerilogHarness {
 }
 
 private[iotesters] object setupVCSBackend {
-  def apply[T <: chisel3.Module](dutGen: () => T): (T, Backend) = {
+  def apply[T <: chisel3.Module](dutGen: () => T, dir: File): (T, Backend) = {
     val circuit = chisel3.Driver.elaborate(dutGen)
     val dut = getTopModule(circuit).asInstanceOf[T]
-    val dir = new File(s"test_run_dir/${dut.getClass.getName}") ; dir.mkdirs()
 
     // Generate CHIRRTL
     val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(dutGen))
@@ -135,7 +134,7 @@ private[iotesters] object setupVCSBackend {
     val vpdFile = new File(dir, s"${circuit.name}.vpd")
     copyVpiFiles(dir.toString)
     genVCSVerilogHarness(dut, new FileWriter(vcsHarnessFile), vpdFile.toString)
-    verilogToVCS(circuit.name, dir, new File(vcsHarnessFileName)).!
+    assert(verilogToVCS(circuit.name, dir, new File(vcsHarnessFileName)).! == 0)
 
     (dut, new VCSBackend(dut, Seq((new File(dir, circuit.name)).toString)))
   }

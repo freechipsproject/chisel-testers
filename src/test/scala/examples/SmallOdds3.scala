@@ -3,7 +3,7 @@
 package examples
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{EnqIO, DeqIO, Queue}
 import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 class SmallOdds3(filter_width: Int) extends Module {

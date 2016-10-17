@@ -133,7 +133,7 @@ class GenVerilatorCppHarness(writer: Writer, dut: Chisel.Module,
     writer.write(s"""        sim_data.signal_map["%s"] = 0;\n""".format(dut.reset.pathName))
     (nodes foldLeft 1){ (id, node) =>
       val instanceName = s"%s.%s".format(node.parentPathName, validName(node.instanceName))
-      val pathName = instanceName replace (dutName, "v") replace (".", "__DOT__") replace ("$", "__024")
+      val pathName = instanceName replace (".", "__DOT__") replace ("$", "__024")
       try {
         node match {
           case mem: Chisel.MemBase[_] =>
@@ -265,13 +265,12 @@ class VerilatorCppHarnessCompiler(dut: Chisel.Module,
 }
 
 private[iotesters] object setupVerilatorBackend {
-  def apply[T <: chisel3.Module](dutGen: () => T): (T, Backend) = {
+  def apply[T <: chisel3.Module](dutGen: () => T, dir: File): (T, Backend) = {
     // Generate CHIRRTL
     val circuit = chisel3.Driver.elaborate(dutGen)
     val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
     val dut = getTopModule(circuit).asInstanceOf[T]
     val nodes = getChiselNodes(circuit)
-    val dir = new File(s"test_run_dir/${dut.getClass.getName}"); dir.mkdirs()
 
     // Generate Verilog
     val verilogFile = new File(dir, s"${circuit.name}.v")
@@ -289,8 +288,8 @@ private[iotesters] object setupVerilatorBackend {
     copyVerilatorHeaderFiles(dir.toString)
     harnessCompiler.compile(chirrtl, annotation, cppHarnessWriter)
     cppHarnessWriter.close
-    chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).!
-    chisel3.Driver.cppToExe(circuit.name, dir).!
+    assert(chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
+    assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
 
     (dut, new VerilatorBackend(dut, Seq((new File(dir, s"V${circuit.name}")).toString)))
   }
@@ -300,7 +299,7 @@ private[iotesters] class VerilatorBackend(dut: Chisel.Module,
                                           cmd: Seq[String],
                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 
-  val simApiInterface = new SimApiInterface(dut, cmd)
+  private[iotesters] val simApiInterface = new SimApiInterface(dut, cmd)
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: PrintStream, verbose: Boolean, base: Int) {
