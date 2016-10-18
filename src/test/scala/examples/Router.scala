@@ -64,12 +64,6 @@ class Router extends Module {
     io.outs.foreach { out => out.noenq() }
   }
 
-  io.read_routing_table_request.init()
-  io.load_routing_table_request.init()
-  io.read_routing_table_response.init()
-  io.in.init()
-  io.outs.foreach { out => out.init() }
-
   when(io.read_routing_table_request.valid && io.read_routing_table_response.ready) {
     io.read_routing_table_response.enq(tbl(
       io.read_routing_table_request.deq().addr

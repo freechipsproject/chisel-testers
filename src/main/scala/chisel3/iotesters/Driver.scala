@@ -29,9 +29,9 @@ object Driver {
       case "firrtl"    =>
         setupFirrtlTerpBackend(dutGenerator, optionsManager)
       case "verilator" =>
-        setupVerilatorBackend(dutGenerator)
+        setupVerilatorBackend(dutGenerator, optionsManager)
       case "vcs"       =>
-        setupVCSBackend(dutGenerator)
+        setupVCSBackend(dutGenerator, optionsManager)
       case _ =>
         throw new Exception(s"Unrecognized backend name ${testerOptions.backendName}")
     }
@@ -45,7 +45,11 @@ object Driver {
         testerGen(dut).finish
       } catch { case e: Throwable =>
         e.printStackTrace()
-        TesterProcess.killall
+        backend match {
+          case b: VCSBackend => TesterProcess.kill(b)
+          case b: VerilatorBackend => TesterProcess.kill(b)
+          case _ =>
+        }
         throw e
       }
     }
@@ -84,9 +88,9 @@ object Driver {
     val optionsManager = new TesterOptionsManager
 
     val (dut, backend) = backendType match {
-      case "firrtl" => setupFirrtlTerpBackend(dutGen, optionsManager)
-      case "verilator" => setupVerilatorBackend(dutGen)
-      case "vcs" => setupVCSBackend(dutGen)
+      case "firrtl"    => setupFirrtlTerpBackend(dutGen, optionsManager)
+      case "verilator" => setupVerilatorBackend(dutGen, optionsManager)
+      case "vcs"       => setupVCSBackend(dutGen, optionsManager)
       case _ => throw new Exception("Unrecongnized backend type $backendType")
     }
     backendVar.withValue(Some(backend)) {
@@ -95,10 +99,8 @@ object Driver {
       } catch { case e: Throwable =>
         e.printStackTrace
         backend match {
-          case Some(b: VCSBackend) =>
-            TesterProcess kill b
-          case Some(b: VerilatorBackend) =>
-            TesterProcess kill b
+          case b: VCSBackend => TesterProcess.kill(b)
+          case b: VerilatorBackend => TesterProcess.kill(b)
           case _ =>
         }
         throw e
