@@ -5,6 +5,7 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
+import firrtl_interpreter.InterpreterOptions
 import org.scalatest.{Matchers, FlatSpec}
 
 object RealGCD2 {
@@ -42,8 +43,8 @@ class RealGCD2 extends Module {
       .otherwise    { y := y - x }
   }
 
-  printf("ti %d  x %d y %d  in_ready %d  in_valid %d  out %d out_valid %d==============\n",
-    ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.valid)
+//  printf("ti %d  x %d y %d  in_ready %d  in_valid %d  out %d out_valid %d==============\n",
+//    ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.valid)
   //      ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.ready, io.out.valid)
 
   io.out.bits  := x
@@ -58,7 +59,7 @@ class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
     i <- 1 to 10
     j <- 1 to 10
   } {
-    val (gcd_value, cycles) = GCDCalculator.computeGcdResultsAndCycles(i, j)
+    val (gcd_value, _) = GCDCalculator.computeGcdResultsAndCycles(i, j)
 
     poke(c.io.in.bits.a, i)
     poke(c.io.in.bits.b, j)
@@ -70,13 +71,14 @@ class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
       count += 1
     }
     if(count > 30) {
-      println(s"Waited $count cycles on gcd inputs $i, $j, giving up")
+      // println(s"Waited $count cycles on gcd inputs $i, $j, giving up")
       System.exit(0)
     }
     expect(c.io.out.bits, gcd_value)
     step(1)
   }
 }
+
 class GCDSpec extends FlatSpec with Matchers {
   behavior of "GCDSpec"
 
@@ -84,6 +86,33 @@ class GCDSpec extends FlatSpec with Matchers {
     chisel3.iotesters.Driver(() => new RealGCD2) { c =>
       new GCDPeekPokeTester(c)
     } should be(true)
+  }
+
+  it should "run verilator via command line arguments" in {
+    // val args = Array.empty[String]
+    val args = Array("--backend-name", "verilator")
+    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
+      new GCDPeekPokeTester(c)
+    } should be (true)
+  }
+  it should "run firrtl via command line arguments" in {
+    // val args = Array.empty[String]
+    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
+    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
+      new GCDPeekPokeTester(c)
+    } should be (true)
+  }
+
+  it should "run firrtl via direct options configuration" in {
+    // val args = Array.empty[String]
+    val manager = new TesterOptionsManager {
+      testerOptions = TesterOptions(backendName = "firrtl")
+      interpreterOptions = InterpreterOptions(writeVCD = true)
+    }
+    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
+    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
+      new GCDPeekPokeTester(c)
+    } should be (true)
   }
 }
 

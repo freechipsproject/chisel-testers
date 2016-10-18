@@ -12,11 +12,13 @@ val defaultVersions = Map(
   "firrtl-interpreter" -> "1.1-SNAPSHOT"
   )
 
-libraryDependencies ++= (Seq("chisel3","firrtl","firrtl-interpreter").map {
-  dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep)) })
+libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: String =>
+    "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
+}
 
 libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
-                           "org.scalacheck" %% "scalacheck" % "1.12.4")
+                            "org.scalacheck" %% "scalacheck" % "1.12.4",
+                            "com.github.scopt" %% "scopt" % "3.4.0")
     
 publishMavenStyle := true
 
