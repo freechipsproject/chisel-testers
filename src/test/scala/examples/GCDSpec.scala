@@ -43,10 +43,6 @@ class RealGCD2 extends Module {
       .otherwise    { y := y - x }
   }
 
-//  printf("ti %d  x %d y %d  in_ready %d  in_valid %d  out %d out_valid %d==============\n",
-//    ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.valid)
-  //      ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.ready, io.out.valid)
-
   io.out.bits  := x
   io.out.valid := y === Bits(0) && p
   when (io.out.valid) {
@@ -104,13 +100,11 @@ class GCDSpec extends FlatSpec with Matchers {
   }
 
   it should "run firrtl via direct options configuration" in {
-    // val args = Array.empty[String]
     val manager = new TesterOptionsManager {
-      testerOptions = TesterOptions(backendName = "firrtl")
-      interpreterOptions = InterpreterOptions(writeVCD = true)
+      testerOptions = TesterOptions(backendName = "firrtl", testerSeed = 7L)
+      interpreterOptions = InterpreterOptions(setVerbose = false, writeVCD = true)
     }
-    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
-    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
+    iotesters.Driver.execute(() => new RealGCD2, manager) { c =>
       new GCDPeekPokeTester(c)
     } should be (true)
   }
