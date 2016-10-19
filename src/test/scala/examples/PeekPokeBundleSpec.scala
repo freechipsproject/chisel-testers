@@ -37,11 +37,11 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
   }
 
   // A tester for the trivial circuit.
-  class BundlePeekPokeTester(dut: MyCircuit = new MyCircuit) extends PeekPokeTester(dut) {
+  class BundlePeekPokeTesterMapVals(dut: MyCircuit = new MyCircuit) extends PeekPokeTester(dut) {
     // If only we had Bundle literals ...
     // This is extremely fragile. The map definitions must match the order of element definitions in the Bundle
     //  we're about to peek or poke.
-    var myBundleMap : LinkedHashMap[String, BigInt] = LinkedHashMap[String, BigInt]() ++ List[(String, BigInt)](
+    val myBundleMap : LinkedHashMap[String, BigInt] = LinkedHashMap[String, BigInt]() ++ List[(String, BigInt)](
       ("aUInt4"	-> BigInt(3) ),
       ("aSInt5"	-> BigInt(2) ),
       ("aBundle.aBool"	-> BigInt(1) ),
@@ -52,12 +52,34 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
     expect(dut.io.out, myBundleMap.values.toArray)
   }
 
+  // A tester for the trivial circuit.
+  class BundlePeekPokeTesterMap(dut: MyCircuit = new MyCircuit) extends PeekPokeTester(dut) {
+    // If only we had Bundle literals ...
+    // This is extremely fragile. The map definitions must match the order of element definitions in the Bundle
+    //  we're about to peek or poke.
+    val myBundleMap : LinkedHashMap[String, BigInt] = LinkedHashMap[String, BigInt]() ++ List[(String, BigInt)](
+      ("aUInt4"	-> BigInt(4) ),
+      ("aSInt5"	-> BigInt(5) ),
+      ("aBundle.aBool"	-> BigInt(0) ),
+      ("aBottomBool"	-> BigInt(1) )
+    )
+    poke(dut.io.in, myBundleMap.toMap)
+    step(1)
+    expect(dut.io.out, myBundleMap.toMap)
+  }
+
   // The test.
   behavior of "PeekPokeBundleSpec"
 
-  it should "poke and peek bundles" in {
+  it should "poke and peek bundles with LinkedHashMap values" in {
     chisel3.iotesters.Driver(() => new MyCircuit) { c =>
-      new BundlePeekPokeTester(c)
+      new BundlePeekPokeTesterMapVals(c)
+    } should be(true)
+  }
+
+  it should "poke and peek bundles with a LinkedHashMap" in {
+    chisel3.iotesters.Driver(() => new MyCircuit) { c =>
+      new BundlePeekPokeTesterMap(c)
     } should be(true)
   }
 }
