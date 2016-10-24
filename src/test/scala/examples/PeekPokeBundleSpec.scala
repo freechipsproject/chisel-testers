@@ -55,8 +55,6 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
   // A tester for the trivial circuit.
   class BundlePeekPokeTesterMap(dut: MyCircuit = new MyCircuit) extends PeekPokeTester(dut) {
     // If only we had Bundle literals ...
-    // This is extremely fragile. The map definitions must match the order of element definitions in the Bundle
-    //  we're about to peek or poke.
     val myBundleMap : LinkedHashMap[String, BigInt] = LinkedHashMap[String, BigInt]() ++ List[(String, BigInt)](
       ("aUInt4"	-> BigInt(4) ),
       ("aSInt5"	-> BigInt(5) ),
