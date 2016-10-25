@@ -2,6 +2,8 @@
 
 package chisel3.iotesters
 
+import java.io.File
+
 import chisel3._
 
 import scala.collection.immutable.ListMap
@@ -30,33 +32,31 @@ trait PeekPokeTests {
   def finish: Boolean
 }
 
-abstract class PeekPokeTester[+T <: Module](val dut: T,
-                                            verbose: Boolean = true,
-                                            base: Int = 16,
-                                            logFile: Option[java.io.File] = None) {
+abstract class PeekPokeTester[+T <: Module](
+    val dut: T,
+    verbose: Boolean = true,
+    base: Int = 16,
+    logFile: Option[File] = None) {
 
   implicit def longToInt(x: Long) = x.toInt
+  val optionsManager = Driver.optionsManager
 
-  implicit val logger = (logFile, chiselMain.context.logFile) match {
-    case (None, None) => System.out
-    case (Some(f), _) => new java.io.PrintStream(f)
-    case (_, Some(f)) => new java.io.PrintStream(f)
+  implicit val logger = (logFile, optionsManager.testerOptions.logFileName) match {
+    case (None, "")        => System.out
+    case (Some(f), _)      => new java.io.PrintStream(f)
+    case (_, logFileName)  => new java.io.PrintStream(new File(logFileName))
   }
-  implicit val _verbose = verbose
-  implicit val _base = base
+  implicit val _verbose = optionsManager.testerOptions.isVerbose
+  implicit val _base    = optionsManager.testerOptions.displayBase
 
   def println(msg: String = "") {
-    logger println msg
+    logger.println(msg)
   }
 
   /****************************/
   /*** Simulation Interface ***/
   /****************************/
-  val backend = ((Driver.backend, chiselMain.context.backend): @unchecked) match {
-    case (Some(b), _) => b
-    case (None, Some(b)) => b
-  }
-  logger println s"SEED ${backend._seed}"
+  val backend = Driver.backend.get
 
   /********************************/
   /*** Classic Tester Interface ***/
@@ -75,6 +75,8 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
   }
 
   val rnd = backend.rnd
+  rnd.setSeed(optionsManager.testerOptions.testerSeed)
+  logger.println(s"SEED ${optionsManager.testerOptions.testerSeed}")
 
   /** Convert a Boolean to BigInt */
   implicit def int(x: Boolean): BigInt = if (x) 1 else 0
@@ -90,7 +92,7 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
   }
 
   def step(n: Int) {
-    if (verbose) logger println s"STEP ${simTime} -> ${simTime+n}"
+    if (verbose) logger println s"STEP $simTime -> ${simTime+n}"
     backend.step(n)
     incTime(n)
   }
@@ -106,6 +108,7 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
 
   /** Locate a specific bundle element, given a name path.
     * TODO: Handle Vecs
+    *
     * @param path - list of element names (presumably bundles) terminating in a non-bundle (i.e., Bits) element.
     * @param bundle - bundle containing the element
     * @return the element (as Bits)
@@ -136,7 +139,7 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
     (signal.flatten zip value.reverse).foreach(x => poke(x._1, x._2))
   }
 
-  def pokeAt[T <: Bits](data: Mem[T], value: BigInt, off: Int): Unit = {
+  def pokeAt[TT <: Bits](data: Mem[TT], value: BigInt, off: Int): Unit = {
     backend.poke(data, value, Some(off))
   }
 
@@ -150,6 +153,7 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
 
   /** Populate a map of names ("dotted Bundles) to Bits.
     * TODO: Deal with Vecs
+    *
     * @param map the map to be constructed
     * @param indexPrefix an array of Bundle name prefixes
     * @param signalName the signal to be added to the map
@@ -193,7 +197,7 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
   }
 
   def expect (good: Boolean, msg: => String): Boolean = {
-    if (verbose) logger println s"""EXPECT ${msg} ${if (good) "PASS" else "FAIL"}"""
+    if (verbose) logger println s"""EXPECT $msg ${if (good) "PASS" else "FAIL"}"""
     if (!good) fail
     good
   }
@@ -212,6 +216,7 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
 
   /** Return true or false if an aggregate signal (Bundle) matches the expected map of values.
     * TODO: deal with Vecs
+    *
     * @param signal the Bundle to "expect"
     * @param expected a map of signal names ("dotted" Bundle notation) to BigInt values
     * @return true if the specified values match, false otherwise.
@@ -235,7 +240,7 @@ abstract class PeekPokeTester[+T <: Module](val dut: T,
       //  Anything other than 0 is an error.
       case e: TestApplicationException => if (e.exitVal != 0) fail
     }
-    logger println s"""RAN ${simTime} CYCLES ${if (ok) "PASSED" else s"FAILED FIRST AT CYCLE ${failureTime}"}"""
+    logger println s"""RAN $simTime CYCLES ${if (ok) "PASSED" else s"FAILED FIRST AT CYCLE $failureTime"}"""
     ok
   }
 }
