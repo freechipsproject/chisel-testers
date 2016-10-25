@@ -1,5 +1,5 @@
 organization := "edu.berkeley.cs"
-version := "1.1-BETA-SNAPSHOT"
+version := "1.1-SNAPSHOT"
 name := "Chisel.iotesters"
 
 scalaVersion := "2.11.7"
@@ -7,16 +7,18 @@ scalaVersion := "2.11.7"
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.0-BETA-SNAPSHOT",
-  "firrtl" -> "0.2-BETA-SNAPSHOT",
-  "firrtl-interpreter" -> "0.1-BETA-SNAPSHOT"
+  "chisel3" -> "3.0-SNAPSHOT",
+  "firrtl" -> "1.0-SNAPSHOT",
+  "firrtl-interpreter" -> "1.0-SNAPSHOT"
   )
 
-libraryDependencies ++= (Seq("chisel3","firrtl","firrtl-interpreter").map {
-  dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep)) })
+libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: String =>
+    "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
+}
 
 libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
-                           "org.scalacheck" %% "scalacheck" % "1.12.4")
+                            "org.scalacheck" %% "scalacheck" % "1.12.4",
+                            "com.github.scopt" %% "scopt" % "3.4.0")
     
 publishMavenStyle := true
 

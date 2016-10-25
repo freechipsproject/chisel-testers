@@ -57,13 +57,12 @@ class Router extends Module {
     tbl.indices.foreach { index =>
       tbl(index) := UInt(0, width = Router.addressWidth)
     }
+    io.read_routing_table_request.nodeq()
+    io.load_routing_table_request.nodeq()
+    io.read_routing_table_response.noenq()
+    io.in.nodeq()
+    io.outs.foreach { out => out.noenq() }
   }
-
-  io.read_routing_table_request.nodeq()
-  io.load_routing_table_request.nodeq()
-  io.read_routing_table_response.noenq()
-  io.in.nodeq()
-  io.outs.foreach { out => out.noenq() }
 
   when(io.read_routing_table_request.valid && io.read_routing_table_response.ready) {
     io.read_routing_table_response.enq(tbl(
