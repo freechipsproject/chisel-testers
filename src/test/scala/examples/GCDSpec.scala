@@ -10,6 +10,17 @@ import org.scalatest.{Matchers, FlatSpec}
 
 object RealGCD2 {
   val num_width = 16
+
+  /**
+    * This is an example of how to launch the repl with the RealGCD2 module
+    * @param args command line arguments
+    */
+  def main(args: Array[String]) {
+    val optionsManager = new ReplOptionsManager
+    if(optionsManager.parse(args)) {
+      iotesters.Driver.executeFirrtlRepl(() => new RealGCD2, optionsManager)
+    }
+  }
 }
 
 class RealGCD2Input extends Bundle {
@@ -109,8 +120,7 @@ class GCDSpec extends FlatSpec with Matchers {
       testerOptions = TesterOptions(backendName = "firrtl")
       interpreterOptions = InterpreterOptions(writeVCD = true)
     }
-    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
-    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
+    iotesters.Driver.execute(() => new RealGCD2, manager) { c =>
       new GCDPeekPokeTester(c)
     } should be (true)
   }
