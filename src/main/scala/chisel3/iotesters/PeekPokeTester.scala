@@ -34,7 +34,6 @@ trait PeekPokeTests {
 
 abstract class PeekPokeTester[+T <: Module](
     val dut: T,
-    verbose: Boolean = true,
     base: Int = 16,
     logFile: Option[File] = None) {
 
