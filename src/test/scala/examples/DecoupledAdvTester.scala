@@ -18,29 +18,29 @@ class SmallOdds5(filter_width: Int) extends Module {
 
     io.in.ready := io.out.ready
     io.out.bits := io.in.bits
+    val valid = Reg(Bool())
 
-    io.out.valid := io.out.ready && io.in.valid && isOk(io.in.bits)
+    valid := io.in.valid && isOk(io.in.bits)
+
+    io.out.valid := io.out.ready && valid
   }
 
   val io = IO(new FilterIO())
 
-  def buildFilter(): Unit = {
-    val smalls = Module(new Filter(_ < UInt(10)))
-    val q      = Module(new Queue(UInt(width = filter_width), entries = 1))
-    val odds   = Module(new Filter((x: UInt) => (x & UInt(1)) === UInt(1)))
+  val smalls = Module(new Filter(_ < UInt(10)))
+  val q      = Module(new Queue(UInt(width = filter_width), entries = 1))
+  val odds   = Module(new Filter((x: UInt) => (x & UInt(1)) === UInt(1)))
 
-    io.in.ready  := smalls.io.in.ready
-    smalls.io.in <> io.in
-    q.io.enq     <> smalls.io.out
-    odds.io.in   <> q.io.deq
-    io.out       <> odds.io.out
-  }
+  io.in.ready  := smalls.io.in.ready
+  smalls.io.in <> io.in
+  q.io.enq     <> smalls.io.out
+  odds.io.in   <> q.io.deq
+  io.out       <> odds.io.out
 
-  buildFilter()
 }
 
 class SmallOdds5Tester(dut: SmallOdds5) extends AdvTester(dut) {
-  val max_tick_count = 5
+  val max_tick_count = 6
 
   for (i <- 0 to 30) {
     val num = rnd.nextInt(20)

@@ -76,7 +76,6 @@ class GCDAdvTester(c: RealGCD3) extends AdvTester(c)  {
   } {
     val (gcd_value, nCycles) = RealGCD3.computeGcdResultsAndCycles(i, j)
     val gcdOutputHandler = new ValidSink(c.io.out, (outPort: UInt) => {
-//      println(s"cycles: $cycles")
       peek(outPort)
     })
     val gcdInputDriver = new DecoupledSource(c.io.in, (inPorts: RealGCD3Input, inValues: TestGCD3Values) => {
