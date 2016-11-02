@@ -90,7 +90,7 @@ class GCDSpec extends FlatSpec with Matchers {
   behavior of "GCDSpec"
 
   it should "compute gcd excellently" in {
-    chisel3.iotesters.Driver(() => new RealGCD2) { c =>
+    iotesters.Driver.execute(() => new RealGCD2, new TesterOptionsManager) { c =>
       new GCDPeekPokeTester(c)
     } should be(true)
   }
