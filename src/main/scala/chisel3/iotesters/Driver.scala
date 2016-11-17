@@ -22,7 +22,7 @@ object Driver {
     *
     * @param dutGenerator    The device under test, a subclass of a Chisel3 module
     * @param optionsManager  Use this to control options like which backend to use
-    * @param testerGen       A peek poke tester with tests fro the dut
+    * @param testerGen       A peek poke tester with tests for the dut
     * @return                Returns true if all tests in testerGen pass
     */
   def execute[T <: Module](
