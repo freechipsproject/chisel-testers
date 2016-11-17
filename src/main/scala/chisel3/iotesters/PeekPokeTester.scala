@@ -96,13 +96,22 @@ abstract class PeekPokeTester[+T <: Module](
     incTime(n)
   }
 
-  def poke(path: String, value: BigInt) = backend.poke(path, value)
+  def poke(path: String, value: BigInt): Unit = {
+    backend.poke(path, value)
+  }
+  def poke(path: String, value: Int): Unit = {
+    poke(path, BigInt(value))
+  }
 
   def peek(path: String) = backend.peek(path)
 
-  def poke(signal: Bits, value: BigInt) {
+  def poke(signal: Bits, value: BigInt): Unit = {
     if (!signal.isLit) backend.poke(signal, value, None)
     // TODO: Warn if signal.isLit
+  }
+
+  def poke(signal: Bits, value: Int) {
+    poke(signal, BigInt(value))
   }
 
   /** Locate a specific bundle element, given a name path.
@@ -207,6 +216,10 @@ abstract class PeekPokeTester[+T <: Module](
       if (!good) fail
       good
     } else expect(signal.litValue() == expected, s"${signal.litValue()} == $expected")
+  }
+
+  def expect(signal: Bits, expected: Int, msg: => String): Boolean = {
+    expect(signal, BigInt(expected), msg)
   }
 
   def expect (signal: Aggregate, expected: IndexedSeq[BigInt]): Boolean = {
