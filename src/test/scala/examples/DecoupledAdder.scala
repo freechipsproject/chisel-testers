@@ -17,7 +17,7 @@ class SlowDecoupledAdderIn extends Bundle {
 }
 
 class SlowDecoupledAdderOut extends Bundle {
-  val c = UInt(OUTPUT, width=16)
+  val c = Output(UInt(16.W))
 }
 
 class SlowDecoupledAdder extends Module {

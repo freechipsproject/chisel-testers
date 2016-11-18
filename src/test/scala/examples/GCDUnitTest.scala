@@ -9,11 +9,11 @@ import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
 class GCD extends Module {
   val int_width = 16
   val io = IO(new Bundle {
-    val a  = UInt(INPUT,  width = int_width)
-    val b  = UInt(INPUT,  width = int_width)
-    val e  = Bool(INPUT)
-    val z  = UInt(OUTPUT, width = int_width)
-    val v  = Bool(OUTPUT)
+    val a  = Input(UInt(int_width.W))
+    val b  = Input(UInt(int_width.W))
+    val e  = Input(Bool())
+    val z  = Output(UInt(int_width.W))
+    val v  = Output(Bool())
   })
   val x  = Reg(UInt(width = int_width))
   val y  = Reg(UInt(width = int_width))

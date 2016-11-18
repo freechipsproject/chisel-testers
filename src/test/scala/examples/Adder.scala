@@ -7,9 +7,9 @@ import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
 
 class Adder(val w: Int) extends Module {
   val io = IO(new Bundle {
-    val in0 = UInt(INPUT,  w)
-    val in1 = UInt(INPUT,  w)
-    val out = UInt(OUTPUT, w)
+    val in0 = Input(UInt(w.W))
+    val in1 = Input(UInt(w.W))
+    val out = Output(UInt(w.W))
   })
 // printf("in0 %d in1 %d result %d\n", io.in0, io.in1, io.out)
   io.out := io.in0 + io.in1

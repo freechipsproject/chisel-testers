@@ -8,12 +8,12 @@ import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec}
 
 class DynamicMemorySearch(val n: Int, val w: Int) extends Module {
   val io = IO(new Bundle {
-    val isWr   = Bool(INPUT)
-    val wrAddr = UInt(INPUT,  log2Up(n))
-    val data   = UInt(INPUT,  w)
-    val en     = Bool(INPUT)
-    val target = UInt(OUTPUT, log2Up(n))
-    val done   = Bool(OUTPUT)
+    val isWr   = Input(Bool())
+    val wrAddr = Input(UInt(log2Up(n).W))
+    val data   = Input(UInt(w.W))
+    val en     = Input(Bool())
+    val target = Output(UInt(log2Up(n).W))
+    val done   = Output(Bool())
   })
   val index  = Reg(init = UInt(0, width = log2Up(n)))
   val list   = Mem(n, UInt(width = w))
