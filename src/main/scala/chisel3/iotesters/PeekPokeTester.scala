@@ -79,10 +79,6 @@ abstract class PeekPokeTester[+T <: Module](
 
   /** Convert a Boolean to BigInt */
   implicit def int(x: Boolean): BigInt = if (x) 1 else 0
-  /** Convert an Int to BigInt */
-  implicit def int(x: Int):     BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
-  /** Convert a Long to BigInt */
-  implicit def int(x: Long):    BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
   /** Convert Bits to BigInt */
   implicit def int(x: Bits):    BigInt = x.litValue()
 
