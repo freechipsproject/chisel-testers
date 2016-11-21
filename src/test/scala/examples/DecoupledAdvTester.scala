@@ -17,38 +17,49 @@ class SmallOdds5(filter_width: Int) extends Module {
     val io = IO(new FilterIO)
 
     io.in.ready := io.out.ready
-    io.out.bits := io.in.bits
+    // The following is used to decouple ready/valid but introduces a delay of one cycle.
     val valid = Reg(Bool())
+    // We'll need to delay the result appropriately.
+    val result = Reg(UInt(width = filter_width))
 
-    valid := io.in.valid && isOk(io.in.bits)
+    when (io.in.valid && isOk(io.in.bits)) {
+      result := io.in.bits
+      valid := Bool(true)
+    } otherwise {
+      valid := Bool(false)
+    }
 
+    io.out.bits := result
     io.out.valid := io.out.ready && valid
   }
 
   val io = IO(new FilterIO())
 
   val smalls = Module(new Filter(_ < UInt(10)))
-  val q      = Module(new Queue(UInt(width = filter_width), entries = 1))
+  // Because of the way the AdvTester works:
+  //  peeks for ready execute in the "current" cycle, while pokes occur in the next cycle
+  //  we need to ensure that ready won't be de-asserted during the poke cycle (we only get one chance to assert "valid").
+  //  A queue depth of 2 should be sufficient to ensure this.
+  val q      = Module(new Queue(UInt(width = filter_width), entries = 2))
   val odds   = Module(new Filter((x: UInt) => (x & UInt(1)) === UInt(1)))
 
-  io.in.ready  := smalls.io.in.ready
   smalls.io.in <> io.in
   q.io.enq     <> smalls.io.out
   odds.io.in   <> q.io.deq
   io.out       <> odds.io.out
-
 }
 
 class SmallOdds5Tester(dut: SmallOdds5) extends AdvTester(dut) {
-  val max_tick_count = 6
-
-  for (i <- 0 to 30) {
+  val max_tick_count = 8
+  val testerInputDriver = DecoupledSource(dut.io.in)
+  val testerOutputHandler = DecoupledSink(dut.io.out)
+  for (i <- 0 to 300) {
     val num = rnd.nextInt(20)
-    val testerInputDriver = DecoupledSource(dut.io.in)
-    val testerOutputHandler = DecoupledSink(dut.io.out)
     testerInputDriver.inputs.enqueue(num)
     if (num % 2 == 1 && num < 10) {
-      eventually(testerOutputHandler.outputs.size != 0, max_tick_count)
+      // Since we may not have stepped the circuit while we were enqueuing test samples,
+      //  ensure we run sufficient cycles to drain the queue.
+      eventually(testerOutputHandler.outputs.size != 0, max_tick_count + testerInputDriver.inputs.size)
       val result = testerOutputHandler.outputs.dequeue()
       expect(result == num, s"tester output ($result) == $num")
     }
