@@ -15,13 +15,13 @@ class GCD extends Module {
     val z  = Output(UInt(int_width.W))
     val v  = Output(Bool())
   })
-  val x  = Reg(UInt(width = int_width))
-  val y  = Reg(UInt(width = int_width))
+  val x  = Reg(UInt(int_width.W))
+  val y  = Reg(UInt(int_width.W))
   when   (x > y) { x := x - y }
   unless (x > y) { y := y - x }
   when (io.e) { x := io.a; y := io.b }
   io.z := x
-  io.v := y === UInt(0)
+  io.v := y === 0.U
 }
 
 class GCDUnitTester extends SteppedHWIOTester {

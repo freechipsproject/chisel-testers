@@ -12,8 +12,8 @@ import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
   * to exercise the ready valid stuff
   */
 class SlowDecoupledAdderIn extends Bundle {
-  val a = UInt(width=16)
-  val b = UInt(width=16)
+  val a = UInt(16.W)
+  val b = UInt(16.W)
 }
 
 class SlowDecoupledAdderOut extends Bundle {
@@ -26,10 +26,10 @@ class SlowDecoupledAdder extends Module {
     val in  = Decoupled(new SlowDecoupledAdderIn).flip()
     val out = Decoupled(new SlowDecoupledAdderOut)
   })
-  val busy    = Reg(init=Bool(false))
-  val a_reg   = Reg(init=UInt(0, width = 16))
-  val b_reg   = Reg(init=UInt(0, width = 16))
-  val wait_counter = Reg(init=UInt(0, width = 16))
+  val busy    = Reg(init=false.B)
+  val a_reg   = Reg(init=0.U(16.W))
+  val b_reg   = Reg(init=0.U(16.W))
+  val wait_counter = Reg(init=0.U(16.W))
 
   io.in.ready := !busy
 
@@ -40,21 +40,21 @@ class SlowDecoupledAdder extends Module {
   when(io.in.valid && !busy) {
     a_reg        := io.in.bits.a
     b_reg        := io.in.bits.b
-    busy         := Bool(true)
-    wait_counter := UInt(0)
+    busy         := true.B
+    wait_counter := 0.U
   }
   when(busy) {
-    when(wait_counter > UInt(delay_value)) {
+    when(wait_counter > delay_value.asUInt()) {
       io.out.bits.c := a_reg + b_reg
     }.otherwise {
-      wait_counter := wait_counter + UInt(1)
+      wait_counter := wait_counter + 1.U
     }
   }
 
   io.out.valid := (io.out.bits.c === a_reg + b_reg ) && busy
 
   when(io.out.valid) {
-    busy          := Bool(false)
+    busy          := false.B
   }
 }
 
