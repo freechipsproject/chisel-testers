@@ -15,16 +15,16 @@ object Router {
 }
 
 class ReadCmd extends Bundle {
-  val addr = UInt(width = Router.addressWidth)
+  val addr = UInt(Router.addressWidth.W)
 }
 
 class WriteCmd extends ReadCmd {
-  val data = UInt(width = Router.addressWidth)
+  val data = UInt(Router.addressWidth.W)
 }
 
 class Packet extends Bundle {
-  val header = UInt(width = Router.headerWidth)
-  val body   = Bits(width = Router.dataWidth)
+  val header = UInt(Router.headerWidth.W)
+  val body   = UInt(Router.dataWidth.W)
 }
 
 
@@ -37,7 +37,7 @@ class Packet extends Bundle {
 class RouterIO(n: Int) extends Bundle {
 //  override def cloneType           = new RouterIO(n).asInstanceOf[this.type]
   val read_routing_table_request   = DeqIO(new ReadCmd())
-  val read_routing_table_response  = EnqIO(UInt(width = Router.addressWidth))
+  val read_routing_table_response  = EnqIO(UInt(Router.addressWidth.W))
   val load_routing_table_request   = DeqIO(new WriteCmd())
   val in                           = DeqIO(new Packet())
   val outs                         = Vec(n, EnqIO(new Packet()))
@@ -51,11 +51,11 @@ class Router extends Module {
   val depth = Router.routeTableSize
   val n     = Router.numberOfOutputs
   val io    = IO(new RouterIO(n))
-  val tbl   = Mem(depth, UInt(width = BigInt(n).bitLength))
+  val tbl   = Mem(depth, UInt(BigInt(n).bitLength.W))
 
   when(reset) {
     tbl.indices.foreach { index =>
-      tbl(index) := UInt(0, width = Router.addressWidth)
+      tbl(index) := 0.asUInt(Router.addressWidth.W)
     }
     io.read_routing_table_request.nodeq()
     io.load_routing_table_request.nodeq()

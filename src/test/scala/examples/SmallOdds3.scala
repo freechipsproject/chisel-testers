@@ -9,8 +9,8 @@ import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 class SmallOdds3(filter_width: Int) extends Module {
 
   class FilterIO extends Bundle {
-    val in = DeqIO(UInt(width = filter_width))
-    val out = EnqIO(UInt(width = filter_width))
+    val in = DeqIO(UInt(filter_width.W))
+    val out = EnqIO(UInt(filter_width.W))
   }
 
   class Filter(isOk: UInt => Bool) extends Module {
@@ -25,9 +25,9 @@ class SmallOdds3(filter_width: Int) extends Module {
   val io = IO(new FilterIO())
 
   def buildFilter(): Unit = {
-    val smalls = Module(new Filter(_ < UInt(10)))
-    val q      = Module(new Queue(UInt(width = filter_width), entries = 1))
-    val odds   = Module(new Filter((x: UInt) => (x & UInt(1)) === UInt(1)))
+    val smalls = Module(new Filter(_ < 10.U))
+    val q      = Module(new Queue(UInt(filter_width.W), entries = 1))
+    val odds   = Module(new Filter((x: UInt) => (x & 1.U) === 1.U))
 
     io.in.ready         := smalls.io.in.ready
 

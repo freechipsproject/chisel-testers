@@ -7,10 +7,10 @@ import chisel3.iotesters.SteppedHWIOTester
 
 class VecShiftRegister extends Module {
   val io = new Bundle {
-    val ins   = Vec(4, UInt(INPUT, 4))
-    val load  = Bool(INPUT)
-    val shift = Bool(INPUT)
-    val out   = UInt(OUTPUT, 4)
+    val ins   = Vec(4, Input(UInt(4.W)))
+    val load  = Input(Bool())
+    val shift = Input(Bool())
+    val out   = Output(UInt(4.W))
   }
   val delays = Reg(Vec(4, UInt()))
   when (io.load) {
