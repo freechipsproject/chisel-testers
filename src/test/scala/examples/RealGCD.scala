@@ -115,7 +115,7 @@ class DecoupledRealGCDTestHandCodedExample extends OrderedDecoupledHWIOTester {
     c.io.in.bits.b := b_values(pc)
     c.io.in.valid  := true.B
     pc := pc + 1.U
-    when(pc >= (a_values.length).asUInt()) {
+    when(pc >= (a_values.length).asUInt) {
       in_done := true.B
     }
   }
@@ -128,7 +128,7 @@ class DecoupledRealGCDTestHandCodedExample extends OrderedDecoupledHWIOTester {
     assert(c.io.out.bits === c_values(oc))
 //    c.io.out.ready := true.B
     oc := oc + 1.U
-    when(oc >= (c_values.length).asUInt()) {
+    when(oc >= (c_values.length).asUInt) {
       out_done := true.B
     }
   }

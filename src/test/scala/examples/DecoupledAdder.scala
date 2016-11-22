@@ -44,7 +44,7 @@ class SlowDecoupledAdder extends Module {
     wait_counter := 0.U
   }
   when(busy) {
-    when(wait_counter > delay_value.asUInt()) {
+    when(wait_counter > delay_value.asUInt) {
       io.out.bits.c := a_reg + b_reg
     }.otherwise {
       wait_counter := wait_counter + 1.U
