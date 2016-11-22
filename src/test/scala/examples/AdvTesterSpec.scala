@@ -58,10 +58,6 @@ class RealGCD3 extends Module {
     printf("x: %d, y: %d\n", x, y)
   }.otherwise { printf("stalled\n")}
 
-  //  printf("ti %d  x %d y %d  in_ready %d  in_valid %d  out %d out_valid %d==============\n",
-  //    ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.valid)
-  //      ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.ready, io.out.valid)
-
   io.out.bits  := x
   io.out.valid := y === Bits(0) && p
   when (io.out.valid) {
@@ -70,19 +66,19 @@ class RealGCD3 extends Module {
 }
 
 class GCDAdvTester(c: RealGCD3) extends AdvTester(c)  {
+  val gcdOutputHandler = new ValidSink(c.io.out, (outPort: UInt) => {
+    peek(outPort)
+  })
+  val gcdInputDriver = new DecoupledSource(c.io.in, (inPorts: RealGCD3Input, inValues: TestGCD3Values) => {
+    wire_poke(inPorts.a, inValues.a)
+    wire_poke(inPorts.b, inValues.b)
+  })
+
   for {
     i <- 1 to 10
     j <- 1 to 10
   } {
     val (gcd_value, nCycles) = RealGCD3.computeGcdResultsAndCycles(i, j)
-    val gcdOutputHandler = new ValidSink(c.io.out, (outPort: UInt) => {
-      peek(outPort)
-    })
-    val gcdInputDriver = new DecoupledSource(c.io.in, (inPorts: RealGCD3Input, inValues: TestGCD3Values) => {
-      wire_poke(inPorts.a, inValues.a)
-      wire_poke(inPorts.b, inValues.b)
-    })
-
     gcdInputDriver.inputs.enqueue(TestGCD3Values(i, j))
     gcdInputDriver.process()
     eventually(gcdOutputHandler.outputs.size != 0, nCycles + 2)
@@ -101,14 +97,12 @@ class AdvTesterSpec extends FlatSpec with Matchers {
   }
 
   it should "run verilator via command line arguments" in {
-    // val args = Array.empty[String]
     val args = Array("--backend-name", "verilator")
     iotesters.Driver.execute(args, () => new RealGCD3) { c =>
       new GCDAdvTester(c)
     } should be (true)
   }
   it should "run firrtl via command line arguments" in {
-    // val args = Array.empty[String]
     val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
     iotesters.Driver.execute(args, () => new RealGCD3) { c =>
       new GCDAdvTester(c)
@@ -116,7 +110,6 @@ class AdvTesterSpec extends FlatSpec with Matchers {
   }
 
   it should "run firrtl via direct options configuration" in {
-    // val args = Array.empty[String]
     val manager = new TesterOptionsManager {
       testerOptions = TesterOptions(backendName = "firrtl")
       interpreterOptions = InterpreterOptions(writeVCD = true)
