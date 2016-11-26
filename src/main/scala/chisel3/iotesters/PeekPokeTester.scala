@@ -82,6 +82,20 @@ abstract class PeekPokeTester[+T <: Module](
   /** Convert Bits to BigInt */
   implicit def int(x: Bits):    BigInt = x.litValue()
 
+  /**
+    * Convert an Int to unsigned (effectively 32-bit) BigInt
+    * @param x  number to be converted
+    * @return
+    */
+  def intToUnsignedBigInt(x: Int): BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
+
+  /**
+    * Convert an Int to unsigned (effectively 64-bit) BigInt
+    * @param x long to be converted
+    * @return
+    */
+  def longToUnsignedBigInt(x: Long): BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
+
   def reset(n: Int = 1) {
     backend.reset(n)
   }
