@@ -24,29 +24,31 @@ object RealGCD2 {
 }
 
 class RealGCD2Input extends Bundle {
-  val a = Bits(width = RealGCD2.num_width)
-  val b = Bits(width = RealGCD2.num_width)
+  val theWidth = RealGCD2.num_width
+  val a = UInt(theWidth.W)
+  val b = UInt(theWidth.W)
 }
 
 class RealGCD2 extends Module {
+  val theWidth = RealGCD2.num_width
   val io  = IO(new Bundle {
     val in  = Decoupled(new RealGCD2Input()).flip()
-    val out = Valid(UInt(width = RealGCD2.num_width))
+    val out = Valid(UInt(theWidth.W))
   })
 
-  val x = Reg(UInt(width = RealGCD2.num_width))
-  val y = Reg(UInt(width = RealGCD2.num_width))
-  val p = Reg(init=Bool(false))
+  val x = Reg(UInt(theWidth.W))
+  val y = Reg(UInt(theWidth.W))
+  val p = Reg(init=false.B)
 
-  val ti = Reg(init=UInt(0, width = RealGCD2.num_width))
-  ti := ti + UInt(1)
+  val ti = Reg(init=0.U(theWidth.W))
+  ti := ti + 1.U
 
   io.in.ready := !p
 
   when (io.in.valid && !p) {
     x := io.in.bits.a
     y := io.in.bits.b
-    p := Bool(true)
+    p := true.B
   }
 
   when (p) {
@@ -55,9 +57,9 @@ class RealGCD2 extends Module {
   }
 
   io.out.bits  := x
-  io.out.valid := y === Bits(0) && p
+  io.out.valid := y === 0.U && p
   when (io.out.valid) {
-    p := Bool(false)
+    p := false.B
   }
 }
 
@@ -90,7 +92,7 @@ class GCDSpec extends FlatSpec with Matchers {
   behavior of "GCDSpec"
 
   it should "compute gcd excellently" in {
-    chisel3.iotesters.Driver(() => new RealGCD2) { c =>
+    iotesters.Driver.execute(() => new RealGCD2, new TesterOptionsManager) { c =>
       new GCDPeekPokeTester(c)
     } should be(true)
   }

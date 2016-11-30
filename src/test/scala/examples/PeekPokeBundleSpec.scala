@@ -18,8 +18,8 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
   }
 
  class MyBundle extends Bundle {
-   val aUInt4 = UInt(width = 4)
-   val aSInt5 = SInt(width = 5)
+   val aUInt4 = UInt(4.W)
+   val aSInt5 = SInt(5.W)
    val aBundle = new ABundle()
    val aBottomBool = Bool()
 
