@@ -169,7 +169,7 @@ abstract class PeekPokeTester[+T <: Module](
     signal.flatten map (x => backend.peek(x, None))
   }
 
-  /** Populate a map of names ("dotted Bundles) to Bits.
+  /** Populate a map of names ("dotted" Bundles) to Bits.
     * TODO: Deal with Vecs
     *
     * @param map the map to be constructed
@@ -187,6 +187,8 @@ abstract class PeekPokeTester[+T <: Module](
       case bits: Bits =>
         val index = indexPrefix.mkString(".")
         map(index) = bits
+      // Skip Vecs.
+      case vec: Vec[_] => {}
     }
     indexPrefix.remove(indexPrefix.size - 1)
   }
