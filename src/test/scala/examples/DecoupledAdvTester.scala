@@ -9,8 +9,8 @@ import chisel3.iotesters.{ChiselFlatSpec, AdvTester}
 class SmallOdds5(filter_width: Int) extends Module {
 
   class FilterIO extends Bundle {
-    val in = DeqIO(UInt(width = filter_width))
-    val out = EnqIO(UInt(width = filter_width))
+    val in = DeqIO(UInt(filter_width.W))
+    val out = EnqIO(UInt(filter_width.W))
   }
 
   class Filter(isOk: UInt => Bool) extends Module {
@@ -20,13 +20,13 @@ class SmallOdds5(filter_width: Int) extends Module {
     // The following is used to decouple ready/valid but introduces a delay of one cycle.
     val valid = Reg(Bool())
     // We'll need to delay the result appropriately.
-    val result = Reg(UInt(width = filter_width))
+    val result = Reg(UInt(filter_width.W))
 
     when (io.in.valid && isOk(io.in.bits)) {
       result := io.in.bits
-      valid := Bool(true)
+      valid := true.B
     } otherwise {
-      valid := Bool(false)
+      valid := false.B
     }
 
     io.out.bits := result
@@ -35,13 +35,13 @@ class SmallOdds5(filter_width: Int) extends Module {
 
   val io = IO(new FilterIO())
 
-  val smalls = Module(new Filter(_ < UInt(10)))
+  val smalls = Module(new Filter(_ < 10.U))
   // Because of the way the AdvTester works:
   //  peeks for ready execute in the "current" cycle, while pokes occur in the next cycle
   //  we need to ensure that ready won't be de-asserted during the poke cycle (we only get one chance to assert "valid").
   //  A queue depth of 2 should be sufficient to ensure this.
-  val q      = Module(new Queue(UInt(width = filter_width), entries = 2))
-  val odds   = Module(new Filter((x: UInt) => (x & UInt(1)) === UInt(1)))
+  val q      = Module(new Queue(UInt(filter_width.W), entries = 2))
+  val odds   = Module(new Filter((x: UInt) => (x & 1.U) === 1.U))
 
   smalls.io.in <> io.in
   q.io.enq     <> smalls.io.out

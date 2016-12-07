@@ -25,8 +25,8 @@ object RealGCD3 {
 }
 
 class RealGCD3Input extends Bundle {
-  val a = Bits(width = RealGCD3.num_width)
-  val b = Bits(width = RealGCD3.num_width)
+  val a = UInt(RealGCD3.num_width.W)
+  val b = UInt(RealGCD3.num_width.W)
 }
 
 case class TestGCD3Values(a: BigInt, b: BigInt)
@@ -34,22 +34,22 @@ case class TestGCD3Values(a: BigInt, b: BigInt)
 class RealGCD3 extends Module {
   val io  = IO(new Bundle {
     val in  = Decoupled(new RealGCD3Input()).flip()
-    val out = Valid(UInt(width = RealGCD3.num_width))
+    val out = Valid(UInt(RealGCD3.num_width.W))
   })
 
-  val x = Reg(UInt(width = RealGCD3.num_width))
-  val y = Reg(UInt(width = RealGCD3.num_width))
-  val p = Reg(init=Bool(false))
+  val x = Reg(UInt(RealGCD3.num_width.W))
+  val y = Reg(UInt(RealGCD3.num_width.W))
+  val p = Reg(init=false.B)
 
-  val ti = Reg(init=UInt(0, width = RealGCD3.num_width))
-  ti := ti + UInt(1)
+  val ti = Reg(init=0.U(RealGCD3.num_width.W))
+  ti := ti + 1.U
 
   io.in.ready := !p
 
   when (io.in.valid && !p) {
     x := io.in.bits.a
     y := io.in.bits.b
-    p := Bool(true)
+    p := true.B
   }
 
   when (p) {
@@ -59,9 +59,9 @@ class RealGCD3 extends Module {
   }.otherwise { printf("stalled\n")}
 
   io.out.bits  := x
-  io.out.valid := y === Bits(0) && p
+  io.out.valid := y === 0.U && p
   when (io.out.valid) {
-    p := Bool(false)
+    p := false.B
   }
 }
 
