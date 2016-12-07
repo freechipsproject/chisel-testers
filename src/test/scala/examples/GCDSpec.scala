@@ -114,8 +114,8 @@ class GCDSpec extends FlatSpec with Matchers {
 
   it should "run firrtl via direct options configuration" in {
     val manager = new TesterOptionsManager {
-      testerOptions = TesterOptions(backendName = "firrtl", testerSeed = 7L)
-      interpreterOptions = InterpreterOptions(setVerbose = false, writeVCD = true)
+      testerOptions = testerOptions.copy(backendName = "firrtl", testerSeed = 7L)
+      interpreterOptions = interpreterOptions.copy(setVerbose = false, writeVCD = true)
     }
     iotesters.Driver.execute(() => new RealGCD2, manager) { c =>
       new GCDPeekPokeTester(c)
