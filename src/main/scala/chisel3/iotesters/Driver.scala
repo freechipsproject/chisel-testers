@@ -2,13 +2,10 @@
 
 package chisel3.iotesters
 
-import chisel3.Module
-import scala.util.DynamicVariable
+import chisel3._
 import java.io.File
-
-import chisel3.{HasChiselExecutionOptions, Module}
 import firrtl.{ExecutionOptionsManager, HasFirrtlOptions}
-import firrtl_interpreter.HasInterpreterOptions
+import firrtl_interpreter.{FirrtlRepl, ReplConfig, HasReplConfig, HasInterpreterOptions}
 
 import scala.util.DynamicVariable
 
@@ -19,7 +16,15 @@ object Driver {
   private val optionsManagerVar = new DynamicVariable[Option[TesterOptionsManager]](None)
   private[iotesters] def optionsManager = optionsManagerVar.value.getOrElse(new TesterOptionsManager)
 
-
+  /**
+    * This executes a test harness that extends peek-poke tester upon a device under test
+    * with an optionsManager to control all the options of the toolchain components
+    *
+    * @param dutGenerator    The device under test, a subclass of a Chisel3 module
+    * @param optionsManager  Use this to control options like which backend to use
+    * @param testerGen       A peek poke tester with tests for the dut
+    * @return                Returns true if all tests in testerGen pass
+    */
   def execute[T <: Module](
                             dutGenerator: () => T,
                             optionsManager: TesterOptionsManager
@@ -27,6 +32,14 @@ object Driver {
                           (
                             testerGen: T => PeekPokeTester[T]
                           ): Boolean = {
+    if(optionsManager.topName.isEmpty) {
+      if(optionsManager.targetDirName == ".") {
+        optionsManager.setTargetDirName("test_run_dir")
+      }
+      val genClassName = testerGen.getClass.getName
+      val testerName = genClassName.split("""\$\$""").headOption.getOrElse("") + genClassName.hashCode.abs
+      optionsManager.setTargetDirName(s"${optionsManager.targetDirName}/$testerName")
+    }
     val testerOptions = optionsManager.testerOptions
 
     val (dut, backend) = testerOptions.backendName match {
@@ -40,27 +53,30 @@ object Driver {
         throw new Exception(s"Unrecognized backend name ${testerOptions.backendName}")
     }
 
-    if(optionsManager.topName.isEmpty) {
-      optionsManager.setTargetDirName(s"${optionsManager.targetDirName}/${testerGen.getClass.getName}")
-    }
-    optionsManagerVar.withValue(Some(optionsManager)) {
-      backendVar.withValue(Some(backend)) {
-        try {
-          testerGen(dut).finish
-        } catch {
-          case e: Throwable =>
-            e.printStackTrace()
-            backend match {
-              case b: VCSBackend => TesterProcess.kill(b)
-              case b: VerilatorBackend => TesterProcess.kill(b)
-              case _ =>
-            }
-            throw e
+    backendVar.withValue(Some(backend)) {
+      try {
+        testerGen(dut).finish
+      } catch { case e: Throwable =>
+        e.printStackTrace()
+        backend match {
+          case b: VCSBackend => TesterProcess.kill(b)
+          case b: VerilatorBackend => TesterProcess.kill(b)
+          case _ =>
         }
+        throw e
       }
     }
   }
 
+  /**
+    * This executes the test with options provide from an array of string -- typically provided from the
+    * command line
+    *
+    * @param args       A *main* style array of string options
+    * @param dut        The device to be tested, (device-under-test)
+    * @param testerGen  A peek-poke tester with test for the dey
+    * @return           Returns true if all tests in testerGen pass
+    */
   def execute[T <: Module](args: Array[String], dut: () => T)(
     testerGen: T => PeekPokeTester[T]
   ): Boolean = {
@@ -69,9 +85,76 @@ object Driver {
     optionsManager.parse(args) match {
       case true =>
         execute(dut, optionsManager)(testerGen)
-        true
       case _ =>
         false
+    }
+  }
+
+  /**
+    * Start up the interpreter repl with the given circuit
+    * To test a `class X extends Module {}`, add the following code to the end
+    * of the file that defines
+    *
+    * @example {{{
+    *           object XRepl {
+    *             def main(args: Array[String]) {
+    *               val optionsManager = new ReplOptionsManager
+    *               if(optionsManager.parse(args)) {
+    *                 iotesters.Driver.executeFirrtlRepl(() => new X, optionsManager)
+    *               }
+    *             }
+    * }}}
+    * running main will place users in the repl with the circuit X loaded into the repl
+    * @param dutGenerator   Module to run in interpreter
+    * @param optionsManager options
+    * @return
+    */
+  def executeFirrtlRepl[T <: Module](
+                                      dutGenerator: () => T,
+                                      optionsManager: ReplOptionsManager = new ReplOptionsManager): Boolean = {
+
+    optionsManager.chiselOptions = optionsManager.chiselOptions.copy(runFirrtlCompiler = false)
+    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
+
+    val chiselResult: ChiselExecutionResult = chisel3.Driver.execute(optionsManager, dutGenerator)
+    chiselResult match {
+      case ChiselExecutionSucccess(_, emitted, _) =>
+        optionsManager.replConfig = ReplConfig(firrtlSource = emitted)
+        FirrtlRepl.execute(optionsManager)
+        true
+      case ChiselExecutionFailure(message) =>
+        println("Failed to compile circuit")
+        false
+    }
+  }
+  /**
+    * Start up the interpreter repl with the given circuit
+    * To test a `class X extends Module {}`, add the following code to the end
+    * of the file that defines
+    * @example {{{
+    *           object XRepl {
+    *             def main(args: Array[String]) {
+    *               iotesters.Driver.executeFirrtlRepl(args, () => new X)
+    *             }
+    *           }
+    * }}}
+    * running main will place users in the repl with the circuit X loaded into the repl
+    *
+    * @param dutGenerator   Module to run in interpreter
+    * @param args           options from the command line
+    * @return
+    */
+  def executeFirrtlRepl[T <: Module](
+                                    args: Array[String],
+                                      dutGenerator: () => T
+                                      ): Boolean = {
+    val optionsManager = new ReplOptionsManager
+
+    if(optionsManager.parse(args)) {
+      executeFirrtlRepl(dutGenerator, optionsManager)
+    }
+    else {
+      false
     }
   }
   /**
@@ -86,32 +169,45 @@ object Driver {
   }
   /**
     * Runs the ClassicTester and returns a Boolean indicating test success or failure
-    * @@backendType determines whether the ClassicTester uses verilator or the firrtl interpreter to simulate the circuit
-    * Will do intermediate compliation steps to setup the backend specified, including cpp compilation for the verilator backend and firrtl IR compilation for the firrlt backend
-    */
-  def apply[T <: Module](dutGen: () => T, backendType: String = "firrtl")(
-      testerGen: T => PeekPokeTester[T]): Boolean = {
-    val optionsManager = new TesterOptionsManager
+    * @@backendType determines whether the ClassicTester uses verilator or the firrtl interpreter to simulate
+    * the circuit.
+    * Will do intermediate compliation steps to setup the backend specified, including cpp compilation for the
+    * verilator backend and firrtl IR compilation for the firrlt backend
+    *
+    * This apply method is a convenient short form of the [[Driver.execute()]] which has many more options
+    *
+    * The following tests a chisel CircuitX with a CircuitXTester setting the random number seed to a fixed value and
+    * turning on verbose tester output.  The result of the overall test is put in testsPassed
+    *
+    * @example {{{
+    *           val testsPassed = iotesters.Driver(() => new CircuitX, testerSeed = 0L, verbose = true) { circuitX =>
+    *             CircuitXTester(circuitX)
+    *           }
+    * }}}
+    *
 
-    val (dut, backend) = backendType match {
-      case "firrtl"    => setupFirrtlTerpBackend(dutGen, optionsManager)
-      case "verilator" => setupVerilatorBackend(dutGen, optionsManager)
-      case "vcs"       => setupVCSBackend(dutGen, optionsManager)
-      case _ => throw new Exception("Unrecongnized backend type $backendType")
+    * @param dutGen      This is the device under test.
+    * @param backendType The default backend is "firrtl" which uses the firrtl interperter. Other options
+    *                    "verilator" will use the verilator c++ simulation generator
+    *                    "vcs" will use the VCS simulation
+    * @param verbose     Setting this to true will make the tester display information on peeks,
+    *                    pokes, steps, and expects.  By default only failed expects will be printed
+    * @param testerSeed  Set the random number generator seed
+    * @param testerGen   This is a test harness subclassing PeekPokeTester for dutGen,
+    * @return            This will be true if all tests in the testerGen pass
+    */
+  def apply[T <: Module](
+      dutGen: () => T,
+      backendType: String = "firrtl",
+      verbose: Boolean = false,
+      testerSeed: Long = System.currentTimeMillis())(
+      testerGen: T => PeekPokeTester[T]): Boolean = {
+
+    val optionsManager = new TesterOptionsManager {
+      testerOptions = testerOptions.copy(backendName = backendType, isVerbose = verbose, testerSeed = testerSeed)
     }
-    backendVar.withValue(Some(backend)) {
-      try {
-        testerGen(dut).finish
-      } catch { case e: Throwable =>
-        e.printStackTrace
-        backend match {
-          case b: VCSBackend => TesterProcess.kill(b)
-          case b: VerilatorBackend => TesterProcess.kill(b)
-          case _ =>
-        }
-        throw e
-      }
-    }
+
+    execute(dutGen, optionsManager)(testerGen)
   }
 
   /**
@@ -126,7 +222,7 @@ object Driver {
       try {
         testerGen(dut).finish
       } catch { case e: Throwable =>
-        e.printStackTrace
+        e.printStackTrace()
         backend match {
           case Some(b: VCSBackend) =>
             TesterProcess kill b
@@ -152,3 +248,11 @@ object Driver {
     run(dutGen, binary.toString +: args.toSeq)(testerGen)
   }
 }
+
+class ReplOptionsManager
+  extends ExecutionOptionsManager("chisel-testers")
+    with HasInterpreterOptions
+    with HasChiselExecutionOptions
+    with HasFirrtlOptions
+    with HasReplConfig
+

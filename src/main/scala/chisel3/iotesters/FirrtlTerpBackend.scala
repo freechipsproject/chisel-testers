@@ -29,6 +29,11 @@ private[iotesters] class FirrtlTerpBackend(
     }
   }
 
+  def poke(signal: InstanceId, value: Int, off: Option[Int])
+          (implicit logger: PrintStream, verbose: Boolean, base: Int): Unit = {
+    poke(signal, BigInt(value), off)
+  }
+
   def peek(signal: InstanceId, off: Option[Int])
           (implicit logger: PrintStream, verbose: Boolean, base: Int): BigInt = {
     signal match {
@@ -48,12 +53,18 @@ private[iotesters] class FirrtlTerpBackend(
         val name = portNames(port)
         val got = interpretiveTester.peek(name)
         val good = got == expected
-        if (verbose) logger println
-           s"""$msg  EXPECT $name -> ${bigIntToStr(got, base)} == ${bigIntToStr(expected, base)}""" +
+        if (verbose || !good) logger println
+           s"""EXPECT AT $stepNumber $msg  $name -> ${bigIntToStr(got, base)} == ${bigIntToStr(expected, base)}""" +
            s""" ${if (good) "PASS" else "FAIL"}"""
+        if(good) interpretiveTester.expectationsMet += 1
         good
       case _ => false
     }
+  }
+
+  def expect(signal: InstanceId, expected: Int, msg: => String)
+            (implicit logger: PrintStream, verbose: Boolean, base: Int) : Boolean = {
+    expect(signal,BigInt(expected), msg)
   }
 
   def poke(path: String, value: BigInt)
@@ -73,7 +84,10 @@ private[iotesters] class FirrtlTerpBackend(
     false
   }
 
+  private var stepNumber: Long = 0L
+
   def step(n: Int)(implicit logger: PrintStream): Unit = {
+    stepNumber += n
     interpretiveTester.step(n)
   }
 

@@ -34,7 +34,6 @@ trait PeekPokeTests {
 
 abstract class PeekPokeTester[+T <: Module](
     val dut: T,
-    verbose: Boolean = true,
     base: Int = 16,
     logFile: Option[File] = None) {
 
@@ -80,30 +79,49 @@ abstract class PeekPokeTester[+T <: Module](
 
   /** Convert a Boolean to BigInt */
   implicit def int(x: Boolean): BigInt = if (x) 1 else 0
-  /** Convert an Int to BigInt */
-  implicit def int(x: Int):     BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
-  /** Convert a Long to BigInt */
-  implicit def int(x: Long):    BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
   /** Convert Bits to BigInt */
   implicit def int(x: Bits):    BigInt = x.litValue()
+
+  /**
+    * Convert an Int to unsigned (effectively 32-bit) BigInt
+    * @param x  number to be converted
+    * @return
+    */
+  def intToUnsignedBigInt(x: Int): BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
+
+  /**
+    * Convert an Int to unsigned (effectively 64-bit) BigInt
+    * @param x long to be converted
+    * @return
+    */
+  def longToUnsignedBigInt(x: Long): BigInt = (BigInt(x >>> 1) << 1) | BigInt(x & 1)
 
   def reset(n: Int = 1) {
     backend.reset(n)
   }
 
   def step(n: Int) {
-    if (verbose) logger println s"STEP $simTime -> ${simTime+n}"
+    if (_verbose) logger println s"STEP $simTime -> ${simTime+n}"
     backend.step(n)
     incTime(n)
   }
 
-  def poke(path: String, value: BigInt) = backend.poke(path, value)
+  def poke(path: String, value: BigInt): Unit = {
+    backend.poke(path, value)
+  }
+  def poke(path: String, value: Int): Unit = {
+    poke(path, BigInt(value))
+  }
 
   def peek(path: String) = backend.peek(path)
 
-  def poke(signal: Bits, value: BigInt) {
+  def poke(signal: Bits, value: BigInt): Unit = {
     if (!signal.isLit) backend.poke(signal, value, None)
     // TODO: Warn if signal.isLit
+  }
+
+  def poke(signal: Bits, value: Int) {
+    poke(signal, BigInt(value))
   }
 
   /** Locate a specific bundle element, given a name path.
@@ -192,12 +210,12 @@ abstract class PeekPokeTester[+T <: Module](
     bigIntMap
   }
 
-  def peekAt[T <: Bits](data: Mem[T], off: Int): BigInt = {
+  def peekAt[TT <: Bits](data: Mem[TT], off: Int): BigInt = {
     backend.peek(data, Some(off))
   }
 
   def expect (good: Boolean, msg: => String): Boolean = {
-    if (verbose) logger println s"""EXPECT $msg ${if (good) "PASS" else "FAIL"}"""
+    if (_verbose || ! good) logger println s"""EXPECT AT $simTime $msg ${if (good) "PASS" else "FAIL"}"""
     if (!good) fail
     good
   }
@@ -208,6 +226,10 @@ abstract class PeekPokeTester[+T <: Module](
       if (!good) fail
       good
     } else expect(signal.litValue() == expected, s"${signal.litValue()} == $expected")
+  }
+
+  def expect(signal: Bits, expected: Int, msg: => String): Boolean = {
+    expect(signal, BigInt(expected), msg)
   }
 
   def expect (signal: Aggregate, expected: IndexedSeq[BigInt]): Boolean = {

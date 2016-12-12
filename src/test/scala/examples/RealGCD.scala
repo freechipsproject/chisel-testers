@@ -22,29 +22,31 @@ object GCDCalculator {
 }
 
 class RealGCDInput extends Bundle {
-  val a = Bits(width = RealGCD.num_width)
-  val b = Bits(width = RealGCD.num_width)
+  val theWidth = RealGCD.num_width
+  val a = UInt(theWidth.W)
+  val b = UInt(theWidth.W)
 }
 
 class RealGCD extends Module {
+  val theWidth = RealGCD.num_width
   val io  = IO(new Bundle {
     val in  = Decoupled(new RealGCDInput()).flip()
-    val out = Valid(UInt(width = RealGCD.num_width))
+    val out = Valid(UInt(theWidth.W))
   })
 
-  val x = Reg(UInt(width = RealGCD.num_width))
-  val y = Reg(UInt(width = RealGCD.num_width))
-  val p = Reg(init=Bool(false))
+  val x = Reg(UInt(theWidth.W))
+  val y = Reg(UInt(theWidth.W))
+  val p = Reg(init=false.B)
 
-  val ti = Reg(init=UInt(0, width = RealGCD.num_width))
-  ti := ti + UInt(1)
+  val ti = Reg(init=0.U(theWidth.W))
+  ti := ti + 1.U
 
   io.in.ready := !p
 
   when (io.in.valid && !p) {
     x := io.in.bits.a
     y := io.in.bits.b
-    p := Bool(true)
+    p := true.B
   }
 
   when (p) {
@@ -53,13 +55,13 @@ class RealGCD extends Module {
   }
 
   printf("ti %d  x %d y %d  in_ready %d  in_valid %d  out %d  out_ready %d  out_valid %d==============\n",
-      ti, x, y, io.in.ready, io.in.valid, io.out.bits, UInt(0), io.out.valid)
+      ti, x, y, io.in.ready, io.in.valid, io.out.bits, 0.U, io.out.valid)
 //      ti, x, y, io.in.ready, io.in.valid, io.out.bits, io.out.ready, io.out.valid)
 
   io.out.bits  := x
-  io.out.valid := y === Bits(0) && p
+  io.out.valid := y === 0.U && p
   when (io.out.valid) {
-    p := Bool(false)
+    p := false.B
   }
 }
 
@@ -91,18 +93,18 @@ class DecoupledRealGCDTestHandCodedExample extends OrderedDecoupledHWIOTester {
   val device_under_test = Module(new RealGCD())
   val c = device_under_test
 
-  val a_values = Vec(Array(UInt(12, width = 16), UInt(33, width = 16)))
-  val b_values = Vec(Array(UInt(24, width = 16), UInt(24, width = 16)))
+  val a_values = Vec(Array(12.U(16.W), 33.U(16.W)))
+  val b_values = Vec(Array(24.U(16.W), 24.U(16.W)))
 
-  val ti = Reg(init=UInt(0, width = 16))
-  val pc = Reg(init=UInt(0, width = 16))
-  val oc = Reg(init=UInt(0, width = 16))
+  val ti = Reg(init=0.U(16.W))
+  val pc = Reg(init=0.U(16.W))
+  val oc = Reg(init=0.U(16.W))
 
-  val in_done  = Reg(init=Bool(false))
-  val out_done = Reg(init=Bool(false))
+  val in_done  = Reg(init=false.B)
+  val out_done = Reg(init=false.B)
 
-  ti := ti + UInt(1)
-  when(ti >= UInt(50)) { stop() }
+  ti := ti + 1.U
+  when(ti >= 50.U) { stop() }
   when(in_done && out_done) { stop() }
 
   //printf("ti %d pc %d oc %d in_ready %d out_valid %d==============",
@@ -111,23 +113,23 @@ class DecoupledRealGCDTestHandCodedExample extends OrderedDecoupledHWIOTester {
     //    printf(s"pc %d a %d b %d", pc, a_values(pc), b_values(pc))
     c.io.in.bits.a := a_values(pc)
     c.io.in.bits.b := b_values(pc)
-    c.io.in.valid  := Bool(true)
-    pc := pc + UInt(1)
-    when(pc >= UInt(a_values.length)) {
-      in_done := Bool(true)
+    c.io.in.valid  := true.B
+    pc := pc + 1.U
+    when(pc >= (a_values.length).asUInt) {
+      in_done := true.B
     }
   }
 
-  val c_values = Vec(Array(UInt(12, width = 16), UInt(3, width = 16)))
-//  c.io.out.ready := Bool(true)
+  val c_values = Vec(Array(12.U(16.W), 3.U(16.W)))
+//  c.io.out.ready := true.B
 
   when(!out_done && c.io.out.valid) {
     logPrintfDebug("oc %d   got %d   expected %d\n", oc, c.io.out.bits, c_values(oc))
     assert(c.io.out.bits === c_values(oc))
-//    c.io.out.ready := Bool(true)
-    oc := oc + UInt(1)
-    when(oc >= UInt(c_values.length)) {
-      out_done := Bool(true)
+//    c.io.out.ready := true.B
+    oc := oc + 1.U
+    when(oc >= (c_values.length).asUInt) {
+      out_done := true.B
     }
   }
   //  finish()
