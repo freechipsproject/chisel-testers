@@ -11,7 +11,7 @@ class MyDut extends Module {
   io.out := io.in + 1.U
 }
 
-class MyDutSpec extends ChiselPokeSpec {
+class ChiselPokeSpecSpec extends ChiselPokeSpec {
   "MyDut" should "properly add" in {
     run(new MyDut) {(t, c) =>
       t.poke(c.io.in, 0x41)
@@ -25,16 +25,16 @@ class MyDutSpec extends ChiselPokeSpec {
   }
 }
 
-class MyImplicitDutSpec extends ChiselImplicitPokeSpec {
+class ChiselImplicitPokeSpecSpec extends ChiselImplicitPokeSpec {
   "MyDut with implicits" should "properly add" in {
     run(new MyDut) {implicit t => c =>
       c.io.in <<= 0x41
       step()
-      assert(c.io.out ?== 0x42)
+      c.io.out ?== 0x42
 
       c.io.in <<= 0x0
       step()
-      assert(c.io.out ?== 0x1)
+      c.io.out ?== 0x1
     }
   }
 }

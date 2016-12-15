@@ -42,16 +42,16 @@ trait ChiselPokeUtils extends Assertions {
     def expect(ref: Bits, value: BigInt, msg: String="") {
       val actualValue = backend.peek(ref, None)
       val postfix = if (msg != "") s": $msg" else ""
-      assert(actualValue == value, s"expect failure on cycle $currCycle, expected ${ref.instanceName} == $value, got $actualValue$postfix")
+      assert(actualValue == value, s"(cycle $currCycle: expected ${ref.instanceName} == $value, got $actualValue$postfix)")
     }
 
     /** Write a value into the circuit.
       */
     def poke(ref: Bits, value: BigInt) {
-      assert(!ref.isLit, "attempted to poke literal")
+      assert(!ref.isLit, s"(attempted to poke literal ${ref.instanceName})")
       backend.poke(ref, value, None)
       val verifyVal = backend.peek(ref, None)
-      assert(verifyVal == value, s"poke failed on ${ref.instanceName}, verify expected $value, got $verifyVal")
+      assert(verifyVal == value, s"(poke failed on ${ref.instanceName} <= $value, read back $verifyVal)")
     }
 
     /** Steps the circuit by the specified number of clock cycles.
@@ -115,13 +115,22 @@ class ChiselPokeSpec extends FlatSpec with ChiselPokeUtils {
 class ChiselImplicitPokeSpec extends FlatSpec with ChiselPokeUtils {
   // Optional chain-through giving lightweight syntax for those unafraid of implicits.
   implicit class BitsTestable(ref: Bits) {
-    def ?==(value: BigInt)(implicit t: InnerTester): Boolean = {
-      t.peek(ref) == value
+    /** Shorthand for assert(peek(ref) === value).
+      * TODO: perhaps find a way to specify a failure message?
+      */
+    def ?==(value: BigInt)(implicit t: InnerTester) {
+      t.expect(ref, value)
     }
 
     def <<=(value: BigInt)(implicit t: InnerTester) {
       t.poke(ref, value)
     }
+  }
+
+  /** This alternative to ?== allows a failure message to be specified
+    */
+  def check(ref: Bits, value: BigInt, msg: String="")(implicit t: InnerTester) {
+    t.expect(ref, value, msg)
   }
 
   def step(cycles: Int = 1)(implicit t: InnerTester) {
