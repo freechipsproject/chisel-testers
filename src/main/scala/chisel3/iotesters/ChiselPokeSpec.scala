@@ -26,7 +26,7 @@ case object VcsBackend extends TesterBackend {
   }
 }
 
-trait ChiselPokeUtils extends Assertions {
+trait ChiselPokeTesterUtils extends Assertions {
   class InnerTester(val backend: Backend, val options: TesterOptionsManager) {
     // Implicit configuration options for backend
     implicit val logger = System.out  // TODO: this should be parsed in OptionsManager
@@ -101,7 +101,7 @@ trait ChiselPokeUtils extends Assertions {
 
 /** Basic peek-poke test system where failures are handled and reported within ScalaTest.
   */
-class ChiselPokeSpec extends FlatSpec with ChiselPokeUtils {
+trait PokeTester extends ChiselPokeTesterUtils {
   def run[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: (InnerTester, T) => Unit) {
     runTester(dutGen, testerBackend) { (tester, dut) => block(tester, dut) }
   }
@@ -112,7 +112,7 @@ class ChiselPokeSpec extends FlatSpec with ChiselPokeUtils {
   *
   * API very subject to change.
   */
-class ChiselImplicitPokeSpec extends FlatSpec with ChiselPokeUtils {
+trait ImplicitPokeTester extends ChiselPokeTesterUtils {
   // Optional chain-through giving lightweight syntax for those unafraid of implicits.
   implicit class BitsTestable(ref: Bits) {
     /** Shorthand for assert(peek(ref) === value).
