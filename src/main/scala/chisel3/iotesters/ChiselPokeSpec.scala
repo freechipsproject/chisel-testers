@@ -127,6 +127,30 @@ trait ImplicitPokeTester extends ChiselPokeTesterUtils {
     }
   }
 
+  implicit class BoolTestable(ref: Bool) {
+    def ?==(value: BigInt)(implicit t: InnerTester) {
+      t.expect(ref, value)
+    }
+
+    def <<=(value: BigInt)(implicit t: InnerTester) {
+      t.poke(ref, value)
+    }
+
+    def ?==(value: Boolean)(implicit t: InnerTester) {
+      value match {
+        case true => t.expect(ref, 1)
+        case false => t.expect(ref, 0)
+      }
+    }
+
+    def <<=(value: Boolean)(implicit t: InnerTester) {
+      value match {
+        case true => t.poke(ref, 1)
+        case false => t.poke(ref, 0)
+      }
+    }
+  }
+
   /** This alternative to ?== allows a failure message to be specified
     */
   def check(ref: Bits, value: BigInt, msg: String="")(implicit t: InnerTester) {
