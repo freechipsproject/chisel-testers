@@ -7,7 +7,7 @@ import org.scalatest.{FreeSpec, Matchers}
 
 /**
   * Passes a Vec of elements with one cycle delay
-  * This part of an example of using poke on a Vector input
+  * This is part of an example of using poke on a Vector input
   * @param numberOfElements  number of elements to be sorted
   * @param elementGenerator  generator for kind of elements to be sorted
   */
@@ -28,7 +28,7 @@ class VecPassThrough(val numberOfElements: Int, elementGenerator: => UInt) exten
 
 /**
   * Passes a Bundle of elements with one cycle delay
-  * This part of an example of using poke on a Vector input
+  * This is part of an example of using poke on a Bundle input
   */
 class BundlePassThrough extends Module {
   val io = IO(new Bundle {
@@ -53,7 +53,7 @@ class PassThroughBundle extends Bundle {
 
 /**
   * Demonstrate that calling poke with a IndexedSeq of BigInts
-  * will poke the individual elements of a Vec
+  * will poke the individual elements of a Bundle, first element of Seq goes to first element in bundle
   *
   * @param c is the device under test
   */
@@ -83,7 +83,9 @@ class BundlePeekPokeTester(c: BundlePassThrough) extends PeekPokeTester(c) {
 
 /**
   * Demonstrate that calling poke with a IndexedSeq of BigInts
-  * will poke the individual elements of a Vec
+  * will poke the individual elements of a Vec, perversely the first element of the seq will go into the last
+  * element of the Vec and so on.  Equally perversely the peek on the Vec will place the first element of the
+  * Vec into the first element of the resulting Seq
   *
   * @param c is the device under test
   */
@@ -119,7 +121,7 @@ class VecPeekPokeTester(c: VecPassThrough) extends PeekPokeTester(c) {
 
 /**
   * Passes a Vec of elements with one cycle delay
-  * This part of an example of using poke on a Vector input
+  * This is part of an example of using poke on a Vector input
   */
 class AggregatePassThrough(aggregateGenerator: => Aggregate) extends Module {
   val io = IO(new Bundle {
