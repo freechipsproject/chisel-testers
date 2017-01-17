@@ -14,7 +14,7 @@ object Driver {
   private[iotesters] def backend = backendVar.value
 
   private val optionsManagerVar = new DynamicVariable[Option[TesterOptionsManager]](None)
-  private[iotesters] def optionsManager = optionsManagerVar.value.getOrElse(new TesterOptionsManager)
+  def optionsManager = optionsManagerVar.value.getOrElse(new TesterOptionsManager)
 
   /**
     * This executes a test harness that extends peek-poke tester upon a device under test
