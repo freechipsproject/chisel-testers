@@ -8,7 +8,7 @@ import java.io.{File, FileWriter, IOException, PrintStream, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-import chisel3.SInt
+import chisel3.{SInt, FixedPoint}
 
 /**
   * Copies the necessary header files used for verilator compilation to the specified destination folder
@@ -333,17 +333,15 @@ private[iotesters] class VerilatorBackend(dut: Chisel.Module,
           (implicit logger: PrintStream, verbose: Boolean, base: Int): BigInt = {
     val idx = off map (x => s"[$x]") getOrElse ""
     val path = s"${signal.parentPathName}.${validName(signal.instanceName)}$idx"
+    val bigIntU = peek(path)
+    def signConvert(bigInt: BigInt, width: Int): BigInt = {
+      if(bigInt.bitLength >= width) - ((BigInt(1) << width) - bigInt)
+      else bigInt
+    }
     signal match {
-      case sInt: SInt =>
-        val bigInt = peek(path)
-        if(bigInt.bitLength >= sInt.getWidth) {
-          - ((BigInt(1) << sInt.getWidth) - bigInt)
-        }
-        else {
-          bigInt
-        }
-      case _ =>
-        peek(path)
+      case s: SInt => signConvert(bigIntU, s.getWidth)
+      case f: FixedPoint => signConvert(bigIntU, f.getWidth)
+      case _ => bigIntU
     }
   }
 
