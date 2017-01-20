@@ -102,7 +102,7 @@ trait ChiselPokeTesterUtils extends Assertions {
 /** Basic peek-poke test system where failures are handled and reported within ScalaTest.
   */
 trait PokeTester extends ChiselPokeTesterUtils {
-  def run[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: (InnerTester, T) => Unit) {
+  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: (InnerTester, T) => Unit) {
     runTester(dutGen, testerBackend) { (tester, dut) => block(tester, dut) }
   }
 }
@@ -113,58 +113,66 @@ trait PokeTester extends ChiselPokeTesterUtils {
   * API very subject to change.
   */
 trait ImplicitPokeTester extends ChiselPokeTesterUtils {
-  // Optional chain-through giving lightweight syntax for those unafraid of implicits.
-  implicit class BitsTestable(ref: Bits) {
-    /** Shorthand for assert(peek(ref) === value).
-      * TODO: perhaps find a way to specify a failure message?
-      */
-    def ?==(value: BigInt)(implicit t: InnerTester) {
-      t.expect(ref, value)
-    }
-
-    def <<=(value: BigInt)(implicit t: InnerTester) {
-      t.poke(ref, value)
-    }
-  }
-
-  implicit class BoolTestable(ref: Bool) {
-    def ?==(value: BigInt)(implicit t: InnerTester) {
-      t.expect(ref, value)
-    }
-
-    def <<=(value: BigInt)(implicit t: InnerTester) {
-      t.poke(ref, value)
-    }
-
-    def ?==(value: Boolean)(implicit t: InnerTester) {
-      value match {
-        case true => t.expect(ref, 1)
-        case false => t.expect(ref, 0)
-      }
-    }
-
-    def <<=(value: Boolean)(implicit t: InnerTester) {
-      value match {
-        case true => t.poke(ref, 1)
-        case false => t.poke(ref, 0)
-      }
-    }
-  }
-
-  /** This alternative to ?== allows a failure message to be specified
+  /** Pokes a value into the circuit.
     */
-  def check(ref: Bits, value: BigInt, msg: String="")(implicit t: InnerTester) {
+  def poke(ref: Bits, value: BigInt)(implicit t: InnerTester) {
+    t.poke(ref, value)
+  }
+
+  // Wrapper for poke with Bool/Boolean types.
+  def poke(ref: Bool, value: Boolean)(implicit t: InnerTester) {
+    poke(ref, boolean2BigInt(value))
+  }
+
+  // Wrapper for check when no explicit message is passed in.
+  // Scala doesn't allow multiple overloaded functions with default arguments.
+  def check(ref: Bits, value: BigInt)(implicit t: InnerTester) {
+    check(ref, value, "")
+  }
+  /** Asserts that the node's simulation value is equal to the given value.
+    */
+  def check(ref: Bits, value: BigInt, msg: String)(implicit t: InnerTester) {
     t.expect(ref, value, msg)
   }
 
+  // Wrapper for check with Bool/Boolean with no explicit message.
+  // Scala doesn't allow multiple overloaded functions with default arguments.
+  def check(ref: Bool, value: Boolean)(implicit t: InnerTester) {
+    check(ref, value, "")
+  }
+  // Wrapper for check with Bool/Boolean
+  // Scala doesn't allow multiple overloaded functions with default arguments.
+  def check(ref: Bool, value: Boolean, msg: String)(implicit t: InnerTester) {
+    check(ref, boolean2BigInt(value), msg)
+  }
+
+  def boolean2BigInt(in: Boolean) = in match {
+    case true => BigInt(1)
+    case false => BigInt(0)
+  }
+
+  /** Steps the top-level clock by some number (default 1) of clock cycles.
+    */
   def step(cycles: Int = 1)(implicit t: InnerTester) {
     t.step(cycles)
   }
+  /** Holds the design in reset for some number (default 1) of clock cycles.
+    */
   def reset(cycles: Int = 1)(implicit t: InnerTester) {
     t.reset(cycles)
   }
 
-  def run[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: InnerTester => (T => Unit)) {
+  /** Runs a test: runs the DUT generator, compiles it down to the requested backend, and runs the
+    * test sequence.
+    * @example {{{
+    * test(new MyDut) {implicit t => c =>
+    *   poke(c.io.in, 0x41)
+    *   step()
+    *   check(c.io.out, 0x42)
+    * }
+    * }}}
+    */
+  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: InnerTester => (T => Unit)) {
     runTester(dutGen, testerBackend) { (tester, dut) => block(tester)(dut) }
   }
 }
