@@ -305,7 +305,7 @@ private[iotesters] object setupVerilatorBackend {
       CircuitState(chirrtl, ChirrtlForm, Some(annotations)), // TODO do we actually need this annotation?
       cppHarnessWriter)
     cppHarnessWriter.close()
-    assert(chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
+    assert(chisel3.Driver.verilogToCpp(circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
     assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
 
     (dut, new VerilatorBackend(dut, Seq((new File(dir, s"V${circuit.name}")).toString)))
