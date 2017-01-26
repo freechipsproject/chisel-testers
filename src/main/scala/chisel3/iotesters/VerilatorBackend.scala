@@ -10,9 +10,9 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 import chisel3.{ChiselExecutionFailure, ChiselExecutionSucccess, SInt}
 import chisel3.experimental.FixedPoint
-import firrtl.annotations.CircuitName
-import firrtl.transforms.{BlackBoxSourceHelper, BlackBoxTargetDir}
-import firrtl.{AnnotationMap, FirrtlExecutionFailure, FirrtlExecutionSuccess}
+import firrtl.annotations.{Annotation, CircuitName}
+import firrtl.transforms.{BlackBoxResource, BlackBoxInline, BlackBoxSource, BlackBoxSourceHelper, BlackBoxTargetDir}
+import firrtl.{AnnotationMap, FileUtils, FirrtlExecutionFailure, FirrtlExecutionSuccess}
 
 /**
   * Copies the necessary header files used for verilator compilation to the specified destination folder
@@ -324,53 +324,22 @@ private[iotesters] object setupVerilatorBackend {
           CircuitState(chirrtl, ChirrtlForm, Some(annotationMap)), // TODO do we actually need this annotation?
           cppHarnessWriter)
         cppHarnessWriter.close()
-        assert(chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
+
+        assert(
+          chisel3.Driver.verilogToCpp(
+            circuit.name,
+            circuit.name,
+            dir,
+            vSources = Seq(),
+            new File(cppHarnessFileName)
+          ).! == 0
+        )
         assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
 
         (dut, new VerilatorBackend(dut, Seq((new File(dir, s"V${circuit.name}")).toString)))
       case ChiselExecutionFailure(message) =>
         throw new Exception(message)
     }
-  }
-  def oldApply[T <: chisel3.Module](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
-    import firrtl.{CircuitState, ChirrtlForm}
-
-    optionsManager.makeTargetDir()
-    val dir = new File(optionsManager.targetDirName)
-
-    // Generate CHIRRTL
-    val circuit = chisel3.Driver.elaborate(dutGen)
-    val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
-    val dut = getTopModule(circuit).asInstanceOf[T]
-    val nodes = getChiselNodes(circuit)
-
-    // Generate Verilog
-    val verilogFile = new File(dir, s"${circuit.name}.v")
-    val verilogWriter = new FileWriter(verilogFile)
-
-    // TODO why do we need to infer readwrite?
-    val annotations = firrtl.AnnotationMap(Seq(
-      firrtl.passes.memlib.InferReadWriteAnnotation(circuit.name)))
-    (new firrtl.VerilogCompiler).compile(
-      CircuitState(chirrtl, ChirrtlForm, Some(annotations)),
-      verilogWriter,
-      List(new firrtl.passes.memlib.InferReadWrite))
-    verilogWriter.close()
-
-    val cppHarnessFileName = s"${circuit.name}-harness.cpp"
-    val cppHarnessFile = new File(dir, cppHarnessFileName)
-    val cppHarnessWriter = new FileWriter(cppHarnessFile)
-    val vcdFile = new File(dir, s"${circuit.name}.vcd")
-    val harnessCompiler = new VerilatorCppHarnessCompiler(dut, nodes, vcdFile.toString)
-    copyVerilatorHeaderFiles(dir.toString)
-    harnessCompiler.compile(
-      CircuitState(chirrtl, ChirrtlForm, Some(annotations)), // TODO do we actually need this annotation?
-      cppHarnessWriter)
-    cppHarnessWriter.close()
-    assert(chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
-    assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
-
-    (dut, new VerilatorBackend(dut, Seq((new File(dir, s"V${circuit.name}")).toString)))
   }
 }
 
