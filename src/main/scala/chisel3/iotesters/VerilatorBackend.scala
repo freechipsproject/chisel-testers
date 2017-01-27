@@ -268,8 +268,7 @@ class VerilatorCppHarnessCompiler(dut: Chisel.Module,
   def transforms = Seq(
     new firrtl.ChirrtlToHighFirrtl,
     new firrtl.IRToWorkingIR,
-    new firrtl.ResolveAndCheck,
-    new firrtl.transforms.BlackBoxSourceHelper
+    new firrtl.ResolveAndCheck
   )
 }
 
