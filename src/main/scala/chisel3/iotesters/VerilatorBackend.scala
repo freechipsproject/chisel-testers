@@ -8,7 +8,7 @@ import java.io.{File, FileWriter, IOException, PrintStream, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-import chisel3.{ChiselExecutionFailure, ChiselExecutionSucccess, SInt}
+import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, SInt}
 import chisel3.experimental.FixedPoint
 import firrtl.annotations.{Annotation, CircuitName}
 import firrtl.transforms.{BlackBoxResource, BlackBoxInline, BlackBoxSource, BlackBoxSourceHelper, BlackBoxTargetDir}
@@ -285,7 +285,7 @@ private[iotesters] object setupVerilatorBackend {
 
     // Generate CHIRRTL
     chisel3.Driver.execute(optionsManager, dutGen) match {
-      case ChiselExecutionSucccess(Some(circuit), emitted, _) =>
+      case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
 
         //      val circuit = chisel3.Driver.elaborate(dutGen)
         //      val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
