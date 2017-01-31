@@ -146,7 +146,7 @@ private[iotesters] object setupVCSBackend {
     val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
       optionsManager.testerOptions.testCmd
     } else {
-      Seq((new File(dir, s"V${circuit.name}")).toString)
+      Seq(new File(dir, circuit.name).toString)
     }
 
     (dut, new VCSBackend(dut, command))
