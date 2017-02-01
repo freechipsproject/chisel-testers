@@ -278,9 +278,6 @@ private[iotesters] object setupVerilatorBackend {
 
     optionsManager.makeTargetDir()
 
-    optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
-      runFirrtlCompiler = false
-    )
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
