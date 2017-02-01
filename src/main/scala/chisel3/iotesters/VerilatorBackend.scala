@@ -277,20 +277,19 @@ private[iotesters] object setupVerilatorBackend {
     import firrtl.{CircuitState, ChirrtlForm}
 
     optionsManager.makeTargetDir()
-
     optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
       runFirrtlCompiler = false
     )
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
-    chisel3.Driver.execute(optionsManager, dutGen) match {
-      case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
+    //chisel3.Driver.execute(optionsManager, dutGen) match {
+    //  case ChiselExecutionSuccess(Some(circuit_), emitted, _) =>
 
-        //      val circuit = chisel3.Driver.elaborate(dutGen)
-        //      val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
+        val circuit = chisel3.Driver.elaborate(dutGen)
+        val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
 
-        val chirrtl = firrtl.Parser.parse(emitted)
+        //val chirrtl = firrtl.Parser.parse(emitted)
         val dut = getTopModule(circuit).asInstanceOf[T]
         val nodes = getChiselNodes(circuit)
 
@@ -336,11 +335,13 @@ private[iotesters] object setupVerilatorBackend {
         assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
 
         (dut, new VerilatorBackend(dut, Seq((new File(dir, s"V${circuit.name}")).toString)))
-      case ChiselExecutionFailure(message) =>
-        throw new Exception(message)
-    }
+      //case ChiselExecutionFailure(message) =>
+      //  throw new Exception(message)
+    //}
   }
 }
+
+
 
 private[iotesters] class VerilatorBackend(dut: Chisel.Module, 
                                           cmd: Seq[String],
