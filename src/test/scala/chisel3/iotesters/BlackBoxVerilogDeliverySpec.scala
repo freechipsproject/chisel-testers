@@ -29,7 +29,7 @@ class BBAddTwo extends HasBlackBoxResource {
     val in = Input(UInt(16.W))
     val out = Output(UInt(16.W))
   })
-  setResource("/AddTwoAddThree.v")
+  setResource("/BBAddTwo.v")
 }
 
 class BBAddThree extends HasBlackBoxResource {
@@ -37,7 +37,7 @@ class BBAddThree extends HasBlackBoxResource {
     val in = Input(UInt(16.W))
     val out = Output(UInt(16.W))
   })
-  setResource("/AddTwoAddThree.v")
+  setResource("/BBAddThree.v")
 }
 
 class UsesBBAddOne extends Module {
