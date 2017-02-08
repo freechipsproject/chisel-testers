@@ -143,7 +143,13 @@ private[iotesters] object setupVCSBackend {
     genVCSVerilogHarness(dut, new FileWriter(vcsHarnessFile), vpdFile.toString)
     assert(verilogToVCS(circuit.name, dir, new File(vcsHarnessFileName)).! == 0)
 
-    (dut, new VCSBackend(dut, Seq((new File(dir, circuit.name)).toString)))
+    val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
+      optionsManager.testerOptions.testCmd
+    } else {
+      Seq(new File(dir, circuit.name).toString)
+    }
+
+    (dut, new VCSBackend(dut, command))
   }
 }
 

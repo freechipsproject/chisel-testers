@@ -305,7 +305,13 @@ private[iotesters] object setupVerilatorBackend {
     assert(chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
     assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
 
-    (dut, new VerilatorBackend(dut, Seq((new File(dir, s"V${circuit.name}")).toString)))
+    val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
+      optionsManager.testerOptions.testCmd
+    } else {
+      Seq((new File(dir, s"V${circuit.name}")).toString)
+    }
+
+    (dut, new VerilatorBackend(dut, command))
   }
 }
 
@@ -368,7 +374,7 @@ private[iotesters] class VerilatorBackend(dut: Chisel.Module,
     val got = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
     val good = got == expected
     if (verbose) logger println (
-      s"""${msg}  EXPECT ${path} -> ${bigIntToStr(got, base)} == """ +
+      s"""${msg}  EXPECT ${path} got ${bigIntToStr(got, base)} expected""" +
         s"""${bigIntToStr(expected, base)} ${if (good) "PASS" else "FAIL"}""")
     good
   }
