@@ -119,9 +119,9 @@ class SignedAdderSpec extends FreeSpec with Matchers {
 
 class FixedPointAdder(val w: Int) extends Module {
   val io = IO(new Bundle {
-    val in0 = Input(FixedPoint(width = 16, binaryPoint = 2))
-    val in1 = Input(FixedPoint(width = 16, binaryPoint = 2))
-    val out = Output(FixedPoint(width = 16, binaryPoint = 2))
+    val in0 = Input(FixedPoint(16.W, 2.BP))
+    val in1 = Input(FixedPoint(16.W, 2.BP))
+    val out = Output(FixedPoint(16.W, 2.BP))
   })
   // printf("in0 %d in1 %d result %d\n", io.in0, io.in1, io.out)
   io.out := io.in0 + io.in1
