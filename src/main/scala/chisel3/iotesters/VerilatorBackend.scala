@@ -283,11 +283,12 @@ private[iotesters] object setupVerilatorBackend {
     val verilogFile = new File(dir, s"${circuit.name}.v")
     val verilogWriter = new FileWriter(verilogFile)
 
-    // TODO why do we need to infer readwrite?
-    val annotations = firrtl.AnnotationMap(Seq(
-      firrtl.passes.memlib.InferReadWriteAnnotation(circuit.name)))
+    val annotationMap = firrtl.AnnotationMap(optionsManager.firrtlOptions.annotations ++ List(
+      firrtl.passes.memlib.InferReadWriteAnnotation(circuit.name)
+    ))
+
     (new firrtl.VerilogCompiler).compile(
-      CircuitState(chirrtl, ChirrtlForm, Some(annotations)),
+      CircuitState(chirrtl, ChirrtlForm, Some(annotationMap)),
       verilogWriter,
       List(new firrtl.passes.memlib.InferReadWrite))
     verilogWriter.close()
@@ -299,7 +300,7 @@ private[iotesters] object setupVerilatorBackend {
     val harnessCompiler = new VerilatorCppHarnessCompiler(dut, nodes, vcdFile.toString)
     copyVerilatorHeaderFiles(dir.toString)
     harnessCompiler.compile(
-      CircuitState(chirrtl, ChirrtlForm, Some(annotations)), // TODO do we actually need this annotation?
+      CircuitState(chirrtl, ChirrtlForm, Some(annotationMap)), // TODO do we actually need this annotation?
       cppHarnessWriter)
     cppHarnessWriter.close()
     assert(chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
