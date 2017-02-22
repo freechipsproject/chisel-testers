@@ -4,9 +4,15 @@ package chisel3.iotesters
 import chisel3.internal.InstanceId
 
 import scala.util.Random
-import java.io.{File, Writer, FileWriter, PrintStream, IOException}
+import java.io.{File, FileWriter, IOException, PrintStream, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+
+import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, SInt}
+import chisel3.experimental.FixedPoint
+import firrtl.annotations.{Annotation, CircuitName}
+import firrtl.transforms.{BlackBoxResource, BlackBoxInline, BlackBoxSource, BlackBoxSourceHelper, BlackBoxTargetDir}
+import firrtl.{AnnotationMap, FileUtils, FirrtlExecutionFailure, FirrtlExecutionSuccess}
 
 /**
   * Copies the necessary header files used for verilator compilation to the specified destination folder
@@ -271,47 +277,73 @@ private[iotesters] object setupVerilatorBackend {
     import firrtl.{CircuitState, ChirrtlForm}
 
     optionsManager.makeTargetDir()
+
+    optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
+      runFirrtlCompiler = false
+    )
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
-    val circuit = chisel3.Driver.elaborate(dutGen)
-    val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
-    val dut = getTopModule(circuit).asInstanceOf[T]
-    val nodes = getChiselNodes(circuit)
+    chisel3.Driver.execute(optionsManager, dutGen) match {
+      case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
 
-    // Generate Verilog
-    val verilogFile = new File(dir, s"${circuit.name}.v")
-    val verilogWriter = new FileWriter(verilogFile)
+        //      val circuit = chisel3.Driver.elaborate(dutGen)
+        //      val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
 
-    // TODO why do we need to infer readwrite?
-    val annotations = firrtl.AnnotationMap(Seq(
-      firrtl.passes.memlib.InferReadWriteAnnotation(circuit.name)))
-    (new firrtl.VerilogCompiler).compile(
-      CircuitState(chirrtl, ChirrtlForm, Some(annotations)),
-      verilogWriter,
-      List(new firrtl.passes.memlib.InferReadWrite))
-    verilogWriter.close()
+        val chirrtl = firrtl.Parser.parse(emitted)
+        val dut = getTopModule(circuit).asInstanceOf[T]
+        val nodes = getChiselNodes(circuit)
 
-    val cppHarnessFileName = s"${circuit.name}-harness.cpp"
-    val cppHarnessFile = new File(dir, cppHarnessFileName)
-    val cppHarnessWriter = new FileWriter(cppHarnessFile)
-    val vcdFile = new File(dir, s"${circuit.name}.vcd")
-    val harnessCompiler = new VerilatorCppHarnessCompiler(dut, nodes, vcdFile.toString)
-    copyVerilatorHeaderFiles(dir.toString)
-    harnessCompiler.compile(
-      CircuitState(chirrtl, ChirrtlForm, Some(annotations)), // TODO do we actually need this annotation?
-      cppHarnessWriter)
-    cppHarnessWriter.close()
-    assert(chisel3.Driver.verilogToCpp(circuit.name, circuit.name, dir, Seq(), new File(cppHarnessFileName)).! == 0)
-    assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
+        val annotationMap = firrtl.AnnotationMap(optionsManager.firrtlOptions.annotations ++ List(
+          firrtl.passes.memlib.InferReadWriteAnnotation(circuit.name),
+          firrtl.annotations.Annotation(
+            CircuitName(circuit.name),
+            classOf[BlackBoxSourceHelper],
+            BlackBoxTargetDir(optionsManager.targetDirName).serialize
+          )
+        ))
 
-    val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
-      optionsManager.testerOptions.testCmd
-    } else {
-      Seq((new File(dir, s"V${circuit.name}")).toString)
+        // Generate Verilog
+        val verilogFile = new File(dir, s"${circuit.name}.v")
+        val verilogWriter = new FileWriter(verilogFile)
+
+        (new firrtl.VerilogCompiler).compile(
+          CircuitState(chirrtl, ChirrtlForm, Some(annotationMap)),
+          verilogWriter,
+          List(new firrtl.passes.memlib.InferReadWrite))
+        verilogWriter.close()
+
+        val cppHarnessFileName = s"${circuit.name}-harness.cpp"
+        val cppHarnessFile = new File(dir, cppHarnessFileName)
+        val cppHarnessWriter = new FileWriter(cppHarnessFile)
+        val vcdFile = new File(dir, s"${circuit.name}.vcd")
+        val harnessCompiler = new VerilatorCppHarnessCompiler(dut, nodes, vcdFile.toString)
+        copyVerilatorHeaderFiles(dir.toString)
+        harnessCompiler.compile(
+          CircuitState(chirrtl, ChirrtlForm, Some(annotationMap)), // TODO do we actually need this annotation?
+          cppHarnessWriter)
+        cppHarnessWriter.close()
+
+        assert(
+          chisel3.Driver.verilogToCpp(
+            circuit.name,
+            dir,
+            vSources = Seq(),
+            cppHarnessFile
+          ).! == 0
+        )
+        assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
+
+        val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
+          optionsManager.testerOptions.testCmd
+        } else {
+          Seq((new File(dir, s"V${circuit.name}")).toString)
+        }
+
+        (dut, new VerilatorBackend(dut, command))
+      case ChiselExecutionFailure(message) =>
+        throw new Exception(message)
     }
-
-    (dut, new VerilatorBackend(dut, command))
   }
 }
 
@@ -337,13 +369,37 @@ private[iotesters] class VerilatorBackend(dut: Chisel.Module,
           (implicit logger: PrintStream, verbose: Boolean, base: Int): BigInt = {
     val idx = off map (x => s"[$x]") getOrElse ""
     val path = s"${signal.parentPathName}.${validName(signal.instanceName)}$idx"
-    peek(path)
+    val bigIntU = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
+  
+    def signConvert(bigInt: BigInt, width: Int): BigInt = {
+      // Necessary b/c Verilator returns bigInts with whatever # of bits it feels like (?)
+      // Inconsistent with getWidth -- note also that since the bigInt is always unsigned,
+      // bitLength always gets the max # of bits required to represent bigInt
+      val w = bigInt.bitLength.max(width)
+      // Negative if MSB is set or in this case, ex: 3 bit wide: negative if >= 4
+      if (bigInt >= (BigInt(1) << (w - 1))) (bigInt - (BigInt(1) << w)) else bigInt
+    }
+
+    val result = signal match {
+      case s: SInt =>
+        signConvert(bigIntU, s.getWidth)
+      case f: FixedPoint => signConvert(bigIntU, f.getWidth)
+      case _ => bigIntU
+    }
+    if (verbose) logger println s"  PEEK ${path} -> ${bigIntToStr(result, base)}"
+    result
   }
 
   def expect(signal: InstanceId, expected: BigInt, msg: => String)
             (implicit logger: PrintStream, verbose: Boolean, base: Int): Boolean = {
     val path = s"${signal.parentPathName}.${validName(signal.instanceName)}"
-    expect(path, expected, msg)
+
+    val got = peek(signal, None)
+    val good = got == expected
+    if (verbose) logger println (
+      s"""${msg}  EXPECT ${path} -> ${bigIntToStr(got, base)} == """ +
+        s"""${bigIntToStr(expected, base)} ${if (good) "PASS" else "FAIL"}""")
+    good
   }
 
   def expect(signal: InstanceId, expected: Int, msg: => String)

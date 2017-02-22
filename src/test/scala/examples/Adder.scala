@@ -3,7 +3,9 @@
 package examples
 
 import chisel3._
-import chisel3.iotesters.{SteppedHWIOTester, ChiselFlatSpec, Exerciser}
+import chisel3.experimental.FixedPoint
+import chisel3.iotesters.{ChiselFlatSpec, Exerciser, PeekPokeTester, SteppedHWIOTester}
+import org.scalatest.{FreeSpec, Matchers}
 
 class Adder(val w: Int) extends Module {
   val io = IO(new Bundle {
@@ -76,3 +78,84 @@ class AdderTester extends ChiselFlatSpec {
     assertTesterPasses { new AdderTests }
   }
 }
+
+class SignedAdder(val w: Int) extends Module {
+  val io = IO(new Bundle {
+    val in0 = Input(SInt(w.W))
+    val in1 = Input(SInt(w.W))
+    val out = Output(SInt(w.W))
+  })
+  // printf("in0 %d in1 %d result %d\n", io.in0, io.in1, io.out)
+  io.out := io.in0 + io.in1
+}
+
+class SignedAdderTester(c: SignedAdder) extends PeekPokeTester(c) {
+  for {
+    i <- -10 to 10
+    j <- -10 to 10
+  } {
+    poke(c.io.in0, i)
+    poke(c.io.in1, j)
+    step(1)
+    println(s"signed adder $i + $j got ${peek(c.io.out)} should be ${i+j}")
+    expect(c.io.out, i + j)
+    step(1)
+  }
+}
+
+class SignedAdderSpec extends FreeSpec with Matchers {
+  "tester should returned signed values with interpreter" in {
+    iotesters.Driver.execute(Array("--backend-name", "firrtl"), () => new SignedAdder(16)) { c =>
+      new SignedAdderTester(c)
+    } should be (true)
+  }
+
+  "tester should returned signed values with verilator" in {
+    iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new SignedAdder(16)) { c =>
+      new SignedAdderTester(c)
+    } should be (true)
+  }
+}
+
+class FixedPointAdder(val w: Int) extends Module {
+  val io = IO(new Bundle {
+    val in0 = Input(FixedPoint(width = 16, binaryPoint = 2))
+    val in1 = Input(FixedPoint(width = 16, binaryPoint = 2))
+    val out = Output(FixedPoint(width = 16, binaryPoint = 2))
+  })
+  // printf("in0 %d in1 %d result %d\n", io.in0, io.in1, io.out)
+  io.out := io.in0 + io.in1
+}
+
+class FixedPointAdderTester(c: FixedPointAdder) extends PeekPokeTester(c) {
+  for {
+//    i <- -10 to 10
+//    j <- -10 to 10
+    i <- -10 to -9
+    j <- -10 to -8
+  } {
+    poke(c.io.in0, i)
+    poke(c.io.in1, j)
+    step(1)
+    println(s"signed adder $i + $j got ${peek(c.io.out)} should be ${i+j}")
+    expect(c.io.out, i + j)
+    step(1)
+  }
+
+}
+
+class FixedPointAdderSpec extends FreeSpec with Matchers {
+  "tester should returned signed values with interpreter" in {
+    iotesters.Driver.execute(Array("--backend-name", "firrtl"), () => new FixedPointAdder(16)) { c =>
+      new FixedPointAdderTester(c)
+    } should be (true)
+  }
+
+  //TODO: make this work
+  "tester should returned signed values" ignore {
+    iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new FixedPointAdder(16)) { c =>
+      new FixedPointAdderTester(c)
+    } should be (true)
+  }
+}
+
