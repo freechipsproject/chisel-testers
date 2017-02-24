@@ -424,3 +424,7 @@ project/plugins/project/
 .worksheet
 
 /lib
+
+.cache-main
+.cache-tests
+test_run_dir/
