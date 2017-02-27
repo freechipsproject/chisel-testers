@@ -4,7 +4,7 @@ package verilator
 // chisel3._ here!
 import Chisel._
 
-class thingamabob() extends Module {
+class iterator() extends Module {
   val io = new Bundle {
     val address = Vec(32, UInt(INPUT, 16)).asInput
     val thingy = UInt(INPUT, 4)
