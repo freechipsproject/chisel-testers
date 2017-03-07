@@ -25,6 +25,52 @@ case class GcdResult(x: Int, y: Int, gcd: Int) {
 }
 
 /**
+  * computes the gcd of two UInt operands, using decoupled for input and valid for output
+  * engine takes different number of cycles depending on the operands
+  * returns the operands plus their gcd
+  */
+class GcdEngine extends Module {
+  val io = IO(new Bundle {
+    val decoupledInput = Flipped(DecoupledIO(new GcdInput))
+    val validOutput = Valid(new GcdOutput)
+  })
+
+  val x = Reg(UInt(RealGCD3.num_width.W))
+  val y = Reg(UInt(RealGCD3.num_width.W))
+  val xOriginal = Reg(UInt(RealGCD3.num_width.W))
+  val yOriginal = Reg(UInt(RealGCD3.num_width.W))
+  val busy = RegInit(false.B)
+
+  io.decoupledInput.ready := !busy
+
+  when(io.decoupledInput.valid && !busy) {
+    x := io.decoupledInput.bits.a
+    y := io.decoupledInput.bits.b
+    xOriginal := io.decoupledInput.bits.a
+    yOriginal := io.decoupledInput.bits.b
+    busy := true.B
+  }
+
+  when(busy) {
+    when(x > y) {
+      x := y       // flip register values
+      y := x
+    }
+      .otherwise {
+        y := y - x
+      }
+  }
+
+  io.validOutput.bits.gcd := x
+  io.validOutput.bits.a   := xOriginal
+  io.validOutput.bits.b   := yOriginal
+  io.validOutput.valid    := y === 0.U && busy
+  when(io.validOutput.valid) {
+    busy := false.B
+  }
+}
+
+/**
   * This module can calculate n independent gcd results in parallel
   * @param numberOfEngines the number of parallel gcd engines in circuit
   */
@@ -34,55 +80,22 @@ class MultiGcdCalculator(val numberOfEngines: Int) extends Module {
     val output = Vec(numberOfEngines, Valid(new GcdOutput))
   })
 
-  /**
-    * This function saves the inputs and computes the gcd of the inputs and returns all three values
-    * @param decoupledInput gcd operands
-    * @param validOutput    gcd result, i.e. operands with the gcd of them
-    */
-  def gcdLogic(decoupledInput: DecoupledIO[GcdInput], validOutput: Valid[GcdOutput]): Unit = {
-    val x = Reg(UInt(RealGCD3.num_width.W))
-    val y = Reg(UInt(RealGCD3.num_width.W))
-    val xOriginal = Reg(UInt(RealGCD3.num_width.W))
-    val yOriginal = Reg(UInt(RealGCD3.num_width.W))
-    val p = RegInit(false.B)
-
-    val ti = RegInit(0.U(RealGCD3.num_width.W))
-    ti := ti + 1.U
-
-    decoupledInput.ready := !p
-
-    when(decoupledInput.valid && !p) {
-      x := decoupledInput.bits.a
-      y := decoupledInput.bits.b
-      xOriginal := decoupledInput.bits.a
-      yOriginal := decoupledInput.bits.b
-      p := true.B
-    }
-
-    when(p) {
-      when(x > y) {
-        x := y       // flip register values
-        y := x
-      }
-      .otherwise {
-        y := y - x
-      }
-    }
-
-    validOutput.bits.gcd := x
-    validOutput.bits.a   := xOriginal
-    validOutput.bits.b   := yOriginal
-    validOutput.valid := y === 0.U && p
-    when(validOutput.valid) {
-      p := false.B
-    }
-  }
-
   for(i <- 0 until numberOfEngines) {
-    gcdLogic(io.input(i), io.output(i))
+    val engine = Module(new GcdEngine)
+    engine.io.decoupledInput <> io.input(i)
+    engine.io.validOutput <> io.output(i)
   }
 }
 
+/**
+  * creates a queue of pairs for which to compute gcd
+  * input handlers take the top of the queue and pass the pair to their
+  * engine.  As each engine completes a computation the result is taken
+  * and tested and a new pair is taken from the queue and is pushed into that engine.
+  * Tests is complete when all pairs in queue have been processed.
+  *
+  * @param c  The device to test
+  */
 class MultiGcdCalculatorTester(c: MultiGcdCalculator) extends AdvTester(c)  {
   private val numberOfSamples = ConcurrentDecoupledTestingSpec.numberOfSamples
 
@@ -105,19 +118,19 @@ class MultiGcdCalculatorTester(c: MultiGcdCalculator) extends AdvTester(c)  {
     val inputData = pairsToProcess.dequeue()
     driver.inputs.enqueue(inputData)
     valuesInputCount += 1
-     println(s"Input: $driverNumber $inputData count $valuesInputCount")
+    // println(s"Input: $driverNumber $inputData count $valuesInputCount")
   }
 
   private val pairsToProcess = mutable.Queue.fill(numberOfSamples) {
     TestGCD3Values(rnd.nextInt(numberOfSamples) + 1, rnd.nextInt(numberOfSamples) + 1)
   }
 
-  // give everybody something to do
+  // give each engine something to do
   for((driver, index) <- inputHandlers.zipWithIndex) {
     addInput(index, driver)
   }
 
-  def checkOutput(): Unit = {
+  while(resultCount < numberOfSamples) {
     def ok(result: GcdResult): String = {
       val (e, _) = GCDCalculator.computeGcdResultsAndCycles(result.x, result.y)
       if(e == result.gcd) "ok" else s"FAILED, got ${result.gcd} should be $e"
@@ -126,18 +139,16 @@ class MultiGcdCalculatorTester(c: MultiGcdCalculator) extends AdvTester(c)  {
       if(handler.outputs.nonEmpty) {
         resultCount += 1
         val result = handler.outputs.dequeue()
-        println(f"handler $index%3d event $resultCount%5d got output $result ${ok(result)}")
+
+        assert(ok(result) == "ok", f"handler $index%3d event $resultCount%5d got output $result ${ok(result)}")
+
+        // println(f"handler $index%3d event $resultCount%5d got output $result ${ok(result)}")
         if (pairsToProcess.nonEmpty) {
           addInput(index, inputHandlers(index))
         }
       }
     }
     takestep()
-  }
-
-  //noinspection LoopVariableNotUpdated
-  while(resultCount < numberOfSamples) {
-    checkOutput()
   }
 }
 
