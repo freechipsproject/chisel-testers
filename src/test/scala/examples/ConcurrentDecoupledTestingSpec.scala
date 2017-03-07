@@ -112,13 +112,10 @@ class MultiGcdCalculatorTester(c: MultiGcdCalculator) extends AdvTester(c)  {
   }
 
   var resultCount = 0
-  var valuesInputCount: Int = 0
 
   def addInput(driverNumber: Int, driver: DecoupledSource[GcdInput, TestGCD3Values]): Unit = {
     val inputData = pairsToProcess.dequeue()
     driver.inputs.enqueue(inputData)
-    valuesInputCount += 1
-    // println(s"Input: $driverNumber $inputData count $valuesInputCount")
   }
 
   private val pairsToProcess = mutable.Queue.fill(numberOfSamples) {
@@ -131,18 +128,16 @@ class MultiGcdCalculatorTester(c: MultiGcdCalculator) extends AdvTester(c)  {
   }
 
   while(resultCount < numberOfSamples) {
-    def ok(result: GcdResult): String = {
-      val (e, _) = GCDCalculator.computeGcdResultsAndCycles(result.x, result.y)
-      if(e == result.gcd) "ok" else s"FAILED, got ${result.gcd} should be $e"
-    }
     outputHandlers.zipWithIndex.foreach { case (handler, index) =>
       if(handler.outputs.nonEmpty) {
         resultCount += 1
         val result = handler.outputs.dequeue()
 
-        assert(ok(result) == "ok", f"handler $index%3d event $resultCount%5d got output $result ${ok(result)}")
+        val (expectedGcd, _) = GCDCalculator.computeGcdResultsAndCycles(result.x, result.y)
 
-        // println(f"handler $index%3d event $resultCount%5d got output $result ${ok(result)}")
+        assert(expectedGcd == result.gcd,
+          f"handler $index%3d event $resultCount%5d got output $result expected $expectedGcd FAILED")
+
         if (pairsToProcess.nonEmpty) {
           addInput(index, inputHandlers(index))
         }
@@ -158,13 +153,20 @@ object ConcurrentDecoupledTestingSpec {
 }
 
 class ConcurrentDecoupledTestingSpec extends FreeSpec with Matchers {
-  "This demonstrates waiting on two independent decoupled interfaces" in {
+  "This demonstrates waiting on multiple independent decoupled interfaces" in {
     chisel3.iotesters.Driver.execute(
       Array("--backend-name", "firrtl"),
       () => new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)
     ) { c =>
       new MultiGcdCalculatorTester(c)
-     } should be(true)
+    } should be(true)
+
+    chisel3.iotesters.Driver.execute(
+      Array("--backend-name", "verilator"),
+      () => new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)
+    ) { c =>
+      new MultiGcdCalculatorTester(c)
+    } should be(true)
   }
 }
 
