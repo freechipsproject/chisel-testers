@@ -153,20 +153,24 @@ object ConcurrentDecoupledTestingSpec {
 }
 
 class ConcurrentDecoupledTestingSpec extends FreeSpec with Matchers {
-  "This demonstrates waiting on multiple independent decoupled interfaces" in {
-    chisel3.iotesters.Driver.execute(
-      Array("--backend-name", "firrtl"),
-      () => new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)
-    ) { c =>
-      new MultiGcdCalculatorTester(c)
-    } should be(true)
+  "This demonstrates waiting on multiple independent decoupled interfaces" - {
+    "using interpreter" in {
+      chisel3.iotesters.Driver.execute(
+        Array("--backend-name", "firrtl"),
+        () => new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)
+      ) { c =>
+        new MultiGcdCalculatorTester(c)
+      } should be(true)
+    }
 
-    chisel3.iotesters.Driver.execute(
-      Array("--backend-name", "verilator"),
-      () => new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)
-    ) { c =>
-      new MultiGcdCalculatorTester(c)
-    } should be(true)
+    "using verilator" in {
+      chisel3.iotesters.Driver.execute(
+        Array("--backend-name", "verilator"),
+        () => new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)
+      ) { c =>
+        new MultiGcdCalculatorTester(c)
+      } should be(true)
+    }
   }
 }
 

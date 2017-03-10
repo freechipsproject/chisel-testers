@@ -36,9 +36,9 @@ class RealGCD extends Module {
 
   val x = Reg(UInt(theWidth.W))
   val y = Reg(UInt(theWidth.W))
-  val p = Reg(init=false.B)
+  val p = RegInit(false.B)
 
-  val ti = Reg(init=0.U(theWidth.W))
+  val ti = RegInit(0.U(theWidth.W))
   ti := ti + 1.U
 
   io.in.ready := !p
@@ -96,12 +96,12 @@ class DecoupledRealGCDTestHandCodedExample extends OrderedDecoupledHWIOTester {
   val a_values = Vec(Array(12.U(16.W), 33.U(16.W)))
   val b_values = Vec(Array(24.U(16.W), 24.U(16.W)))
 
-  val ti = Reg(init=0.U(16.W))
-  val pc = Reg(init=0.U(16.W))
-  val oc = Reg(init=0.U(16.W))
+  val ti = RegInit(0.U(16.W))
+  val pc = RegInit(0.U(16.W))
+  val oc = RegInit(0.U(16.W))
 
-  val in_done  = Reg(init=false.B)
-  val out_done = Reg(init=false.B)
+  val in_done  = RegInit(false.B)
+  val out_done = RegInit(false.B)
 
   ti := ti + 1.U
   when(ti >= 50.U) { stop() }
