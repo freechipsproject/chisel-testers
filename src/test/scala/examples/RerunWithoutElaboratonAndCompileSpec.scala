@@ -15,7 +15,6 @@ class RerunWithoutElaboratonAndCompileSpec extends FreeSpec with Matchers {
     "build once" in {
       iotesters.Driver.execute(
         Array("--backend-name", "verilator", "--target-dir", "build1", "--top-name", "PlusOne"), () => new PlusOne
-//        Array("--backend-name", "verilator"), () => new PlusOne
       ) { c =>
         new PlusOneTester(c, 0)
       } should be (true)
