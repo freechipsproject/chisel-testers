@@ -8,7 +8,7 @@ import java.io.{File, FileWriter, IOException, PrintStream, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, SInt}
+import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, SInt, Module}
 import chisel3.experimental.FixedPoint
 import firrtl.annotations.{Annotation, CircuitName}
 import firrtl.transforms.{BlackBoxResource, BlackBoxInline, BlackBoxSource, BlackBoxSourceHelper, BlackBoxTargetDir}
@@ -42,7 +42,7 @@ object copyVerilatorHeaderFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 class GenVerilatorCppHarness(
-    dut: Chisel.Module,
+    dut: Module,
     nodes: Seq[InstanceId],
     vcdFilePath: String) extends firrtl.Emitter {
   import firrtl._
@@ -196,7 +196,7 @@ class GenVerilatorCppHarness(
   }
 }
 
-class VerilatorCppHarnessCompiler(dut: Chisel.Module,
+class VerilatorCppHarnessCompiler(dut: Module,
     nodes: Seq[InstanceId], vcdFilePath: String) extends firrtl.Compiler {
   def emitter = new GenVerilatorCppHarness(dut, nodes, vcdFilePath)
   def transforms = Seq(
@@ -280,7 +280,7 @@ private[iotesters] object setupVerilatorBackend {
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: Chisel.Module, 
+private[iotesters] class VerilatorBackend(dut: Module, 
                                           cmd: Seq[String],
                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 
