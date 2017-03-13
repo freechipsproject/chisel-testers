@@ -259,7 +259,7 @@ private[iotesters] object setupVerilatorBackend {
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: Chisel.Module, 
+private[iotesters] class VerilatorBackend(dut: Module,
                                           cmd: Seq[String],
                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 
