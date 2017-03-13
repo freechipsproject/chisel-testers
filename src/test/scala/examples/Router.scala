@@ -3,7 +3,7 @@
 package examples
 
 import chisel3._
-import chisel3.util.{EnqIO, DeqIO, log2Up}
+import chisel3.util.{EnqIO, DeqIO, log2Ceil}
 import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
 
 object Router {
@@ -76,7 +76,7 @@ class Router extends Module {
   }
   .elsewhen(io.in.valid) {
     val pkt = io.in.bits
-    val idx = tbl(pkt.header(log2Up(Router.routeTableSize), 0))
+    val idx = tbl(pkt.header(log2Ceil(Router.routeTableSize), 0))
     when(io.outs(idx).ready) {
       io.in.deq()
       io.outs(idx).enq(pkt)

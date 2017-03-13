@@ -26,10 +26,10 @@ class SlowDecoupledAdder extends Module {
     val in  = Decoupled(new SlowDecoupledAdderIn).flip()
     val out = Decoupled(new SlowDecoupledAdderOut)
   })
-  val busy    = Reg(init=false.B)
-  val a_reg   = Reg(init=0.U(16.W))
-  val b_reg   = Reg(init=0.U(16.W))
-  val wait_counter = Reg(init=0.U(16.W))
+  val busy    = RegInit(false.B)
+  val a_reg   = RegInit(0.U(16.W))
+  val b_reg   = RegInit(0.U(16.W))
+  val wait_counter = RegInit(0.U(16.W))
 
   io.in.ready := !busy
 
