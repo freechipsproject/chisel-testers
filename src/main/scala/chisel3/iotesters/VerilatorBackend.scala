@@ -212,6 +212,10 @@ private[iotesters] object setupVerilatorBackend {
           )
         ))
 
+        val transforms = circuit.annotations.map(_.transform).toSet.map { transformClass: Class[_ <: Transform] =>
+          transformClass.newInstance()
+        }.toSeq
+
         copyVerilatorHeaderFiles(optionsManager.targetDirName)
 
         // Generate Verilog
@@ -219,7 +223,8 @@ private[iotesters] object setupVerilatorBackend {
         val verilogWriter = new FileWriter(verilogFile)
 
         val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
-          CircuitState(chirrtl, ChirrtlForm, Some(annotationMap))
+          CircuitState(chirrtl, ChirrtlForm, Some(annotationMap)),
+          customTransforms = transforms
         )
         val compiledStuff = compileResult.getEmittedCircuit
         verilogWriter.write(compiledStuff.value)
