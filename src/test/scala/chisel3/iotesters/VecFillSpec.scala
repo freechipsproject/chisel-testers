@@ -24,11 +24,7 @@ class VFTester(c: VF) extends PeekPokeTester(c) {
     expect(c.io.value, i)
     step(1)
   }
-  for(i <- 11 until 111) {
-    poke(c.io.addr, i)
-    expect(c.io.value, i % 11)
-    step(1)
-  }
+  // behavior of indexing past end of vec is undefined
 }
 
 class VecFillSpec extends FreeSpec with Matchers {

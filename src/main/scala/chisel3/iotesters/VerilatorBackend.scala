@@ -204,6 +204,10 @@ private[iotesters] object setupVerilatorBackend {
         val chirrtl = firrtl.Parser.parse(emitted)
         val dut = getTopModule(circuit).asInstanceOf[T]
 
+        /*
+        The following block adds an annotation that tells the black box helper where the
+        current build directory is, so that it can copy verilog resource files into the right place
+         */
         val annotationMap = firrtl.AnnotationMap(optionsManager.firrtlOptions.annotations ++ List(
           firrtl.annotations.Annotation(
             CircuitName(circuit.name),
@@ -212,9 +216,7 @@ private[iotesters] object setupVerilatorBackend {
           )
         ))
 
-        val transforms = circuit.annotations.map(_.transform).toSet.map { transformClass: Class[_ <: Transform] =>
-          transformClass.newInstance()
-        }.toSeq
+        val transforms = optionsManager.firrtlOptions.customTransforms
 
         copyVerilatorHeaderFiles(optionsManager.targetDirName)
 
@@ -230,6 +232,7 @@ private[iotesters] object setupVerilatorBackend {
         verilogWriter.write(compiledStuff.value)
         verilogWriter.close()
 
+        // Generate Harness
         val cppHarnessFileName = s"${circuit.name}-harness.cpp"
         val cppHarnessFile = new File(dir, cppHarnessFileName)
         val cppHarnessWriter = new FileWriter(cppHarnessFile)
