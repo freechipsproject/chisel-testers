@@ -1,20 +1,14 @@
+import Dependencies._
+
+val internalName = "chisel-testers"
+
 organization := "edu.berkeley.cs"
 version := "1.2-SNAPSHOT"
 name := "Chisel.iotesters"
 
 scalaVersion := "2.11.7"
 
-// Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
-// The following are the default development versions, not the "release" versions.
-val defaultVersions = Map(
-  "chisel3" -> "3.1-SNAPSHOT",
-  "firrtl" -> "1.1-SNAPSHOT",
-  "firrtl-interpreter" -> "1.1-SNAPSHOT"
-  )
-
-libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: String =>
-    "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
-}
+libraryDependencies ++= chiselLibraryDependencies(internalName)
 
 libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
                             "org.scalacheck" %% "scalacheck" % "1.12.4",
@@ -67,3 +61,5 @@ scalacOptions := Seq("-deprecation")
 scalacOptions in (Compile, doc) <++= (baseDirectory, version) map { (bd, v) =>
   Seq("-diagrams", "-diagrams-max-classes", "25", "-sourcepath", bd.getAbsolutePath, "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala")
 }
+
+dependsOn((chiselProjectDependencies(internalName)):_*)

@@ -1,6 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
 
-project/
 target/
 
 ### Xcode template
@@ -100,7 +99,6 @@ project/plugins/project/
 /.idea
 .idea/workspace.xml
 /target
-/project
 .idea/
 # if you remove the above rule, at least ignore the following:
 
