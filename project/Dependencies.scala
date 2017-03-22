@@ -5,7 +5,8 @@ object Dependencies {
   // The basic chisel dependencies.
   val chiselDependencies = collection.immutable.HashMap[String, Seq[String]](
     "chisel" -> Seq("firrtl"),
-    "chisel-testers" -> Seq("firrtl", "firrtl-interpreter"),
+    "chisel3" -> Seq("firrtl"),
+    "chisel-testers" -> Seq("firrtl", "firrtl-interpreter", "chisel3"),
     "firrtl" -> Seq(),
     "firrtl-interpreter" -> Seq("firrtl")
   )
@@ -45,8 +46,22 @@ object Dependencies {
   }
 
   // Chisel projects as library dependencies.
-  def chiselLibraryDependencies(name: String): Seq[ModuleID] = {
-    chiselDependencies(name) map { nameToModuleID(_) }
+  // The optional argument is a classpath to check.
+  // Libraries appearing on that classpath will be skipped.
+  def chiselLibraryDependencies(name: String, optionClasspath: Option[String] = None): Seq[ModuleID] = {
+    if (false) {
+      Seq()
+    } else {
+      optionClasspath match {
+	case None =>
+	  chiselDependencies(name) map { nameToModuleID(_) }
+	case Some(classpath: String) =>
+	  chiselDependencies(name).collect {
+	    // If we have an unmanaged jar file on the classpath, assume we're to use that,
+	    case dep: String if !classpath.contains(s"$dep.jar") => nameToModuleID(dep)
+	  }
+      }
+    }
   }
 
 }
