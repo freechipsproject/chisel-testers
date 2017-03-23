@@ -1,13 +1,12 @@
 // See LICENSE for license details.
 package chisel3.iotesters
 
-import scala.collection.mutable.HashMap
-import scala.util.Random
-import java.io.{File, FileWriter, IOException, PrintStream, Writer}
+import java.io.{File, FileWriter, IOException, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess}
+import firrtl.{ChirrtlForm, CircuitState, Transform}
 import firrtl.annotations.CircuitName
 import firrtl.transforms.{BlackBoxSourceHelper, BlackBoxTargetDir}
 
@@ -27,11 +26,10 @@ object copyVpiFiles {
       Files.createFile(vpiCppFilePath)
       Files.createFile(vpiTabFilePath)
     } catch {
-      case x: FileAlreadyExistsException =>
+      case _: FileAlreadyExistsException =>
         System.out.format("")
-      case x: IOException => {
+      case x: IOException =>
         System.err.format("createFile error: %s%n", x)
-      }
     }
 
     Files.copy(getClass.getResourceAsStream("/sim_api.h"), simApiHFilePath, REPLACE_EXISTING)
@@ -70,10 +68,10 @@ object genVCSVerilogHarness {
     writer write "  reg [1023:0] vpdfile = 0;\n"
 
     writer write "\n  /*** DUT instantiation ***/\n"
-    writer write s"  ${dutName} ${dutName}(\n"
+    writer write s"  $dutName $dutName(\n"
     writer write "    .clock(clock),\n"
     writer write "    .reset(reset),\n"
-    writer write ((inputs ++ outputs).unzip._2 map (name => s"    .${name}(${name}_delay)") mkString ",\n")
+    writer write ((inputs ++ outputs).unzip._2 map (name => s"    .$name(${name}_delay)") mkString ",\n")
     writer write "  );\n\n"
 
     writer write "  initial begin\n"
@@ -112,7 +110,7 @@ object genVCSVerilogHarness {
     writer write "    $vcdplusflush;\n"
     writer write "  end\n\n"
     writer write "endmodule\n"
-    writer.close
+    writer.close()
   }
 }
 
@@ -130,9 +128,12 @@ private[iotesters] object setupVCSBackend {
 
         val chirrtl = firrtl.Parser.parse(emitted)
         val dut = getTopModule(circuit).asInstanceOf[T]
-        val nodes = getChiselNodes(circuit)
-        val annotations = firrtl.AnnotationMap(optionsManager.firrtlOptions.annotations ++ List(
-          firrtl.passes.memlib.InferReadWriteAnnotation(circuit.name),
+
+        /*
+        The following block adds an annotation that tells the black box helper where the
+        current build directory is, so that it can copy verilog resource files into the right place
+         */
+        val annotationMap = firrtl.AnnotationMap(optionsManager.firrtlOptions.annotations ++ List(
           firrtl.annotations.Annotation(
             CircuitName(circuit.name),
             classOf[BlackBoxSourceHelper],
@@ -140,15 +141,18 @@ private[iotesters] object setupVCSBackend {
           )
         ))
 
+        val transforms = optionsManager.firrtlOptions.customTransforms
+
         // Generate Verilog
         val verilogFile = new File(dir, s"${circuit.name}.v")
         val verilogWriter = new FileWriter(verilogFile)
-        val verilogCompiler = new firrtl.VerilogCompiler
-        verilogCompiler.compile(
-          firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm, Some(annotations)),
-          verilogWriter,
-          List(new firrtl.passes.memlib.InferReadWrite)
+
+        val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
+          CircuitState(chirrtl, ChirrtlForm, Some(annotationMap)),
+          customTransforms = transforms
         )
+        val compiledStuff = compileResult.getEmittedCircuit
+        verilogWriter.write(compiledStuff.value)
         verilogWriter.close()
 
         // Generate Harness
@@ -161,7 +165,8 @@ private[iotesters] object setupVCSBackend {
 
         val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
-        } else {
+        }
+        else {
           Seq(new File(dir, circuit.name).toString)
         }
 

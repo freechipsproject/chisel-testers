@@ -38,9 +38,9 @@ class RealGCD2 extends Module {
 
   val x = Reg(UInt(theWidth.W))
   val y = Reg(UInt(theWidth.W))
-  val p = Reg(init=false.B)
+  val p = RegInit(false.B)
 
-  val ti = Reg(init=0.U(theWidth.W))
+  val ti = RegInit(0.U(theWidth.W))
   ti := ti + 1.U
 
   io.in.ready := !p

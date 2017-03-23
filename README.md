@@ -10,7 +10,7 @@ parameterized generators and layered domain-specific hardware languages.
 Visit the [community website](http://chisel.eecs.berkeley.edu/) for more
 information.
 
-The [Chisel Tutorials](https://github.com/ucb-bar/chisel-tutorials) provide many examples of how to use these harnesses
+The [Chisel Tutorials](https://github.com/ucb-bar/chisel-tutorial) provide many examples of how to use these harnesses
 
 The Available Harnesses
 -----------------------

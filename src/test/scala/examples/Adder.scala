@@ -105,13 +105,13 @@ class SignedAdderTester(c: SignedAdder) extends PeekPokeTester(c) {
 
 class SignedAdderSpec extends FreeSpec with Matchers {
   "tester should returned signed values with interpreter" in {
-    iotesters.Driver.execute(Array("--backend-name", "firrtl"), () => new SignedAdder(16)) { c =>
+    iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new SignedAdder(16)) { c =>
       new SignedAdderTester(c)
     } should be (true)
   }
 
   "tester should returned signed values with verilator" in {
-    iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new SignedAdder(16)) { c =>
+    iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"), () => new SignedAdder(16)) { c =>
       new SignedAdderTester(c)
     } should be (true)
   }
@@ -119,9 +119,9 @@ class SignedAdderSpec extends FreeSpec with Matchers {
 
 class FixedPointAdder(val w: Int) extends Module {
   val io = IO(new Bundle {
-    val in0 = Input(FixedPoint(width = 16, binaryPoint = 2))
-    val in1 = Input(FixedPoint(width = 16, binaryPoint = 2))
-    val out = Output(FixedPoint(width = 16, binaryPoint = 2))
+    val in0 = Input(FixedPoint(16.W, 2.BP))
+    val in1 = Input(FixedPoint(16.W, 2.BP))
+    val out = Output(FixedPoint(16.W, 2.BP))
   })
   // printf("in0 %d in1 %d result %d\n", io.in0, io.in1, io.out)
   io.out := io.in0 + io.in1
@@ -146,14 +146,14 @@ class FixedPointAdderTester(c: FixedPointAdder) extends PeekPokeTester(c) {
 
 class FixedPointAdderSpec extends FreeSpec with Matchers {
   "tester should returned signed values with interpreter" in {
-    iotesters.Driver.execute(Array("--backend-name", "firrtl"), () => new FixedPointAdder(16)) { c =>
+    iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new FixedPointAdder(16)) { c =>
       new FixedPointAdderTester(c)
     } should be (true)
   }
 
   //TODO: make this work
   "tester should returned signed values" ignore {
-    iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new FixedPointAdder(16)) { c =>
+    iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"), () => new FixedPointAdder(16)) { c =>
       new FixedPointAdderTester(c)
     } should be (true)
   }
