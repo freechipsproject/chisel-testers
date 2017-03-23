@@ -39,14 +39,15 @@ object MyBundle {
     wire
   }
   /**
-    * This init takes an existing bundle to preserve unspecified values, in this case wire.x
+    * This init takes an existing bundle to preserve unspecified values, in this case wire.y
+    * @param newX new value for x
     * @param current set this to preserve existing values for fields not set
     * @return
     */
-  def setXTo7(current: MyBundle): MyBundle = {
+  def setX(newX: Int, current: MyBundle): MyBundle = {
     val wire = Wire(new MyBundle)
     wire := current
-    wire.x := 7.U
+    wire.x := newX.U
     wire
   }
 }
@@ -64,9 +65,9 @@ class UseMyBundle extends Module {
 
   when (io.trigger === 1.U) {
     regB := MyBundle.setYTo5()
-    regC := MyBundle.setXTo7(regC)
+    regC := MyBundle.setX(7, regC)
   }.elsewhen(io.trigger === 2.U) {
-    regB := MyBundle.setXTo7(regB)
+    regB := MyBundle.setX(6, regB)
     regC := MyBundle.setYTo5()
   }
 
@@ -127,7 +128,7 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   expect(c.io.outC.x, 7)
   expect(c.io.outC.y, 9)
 
-  // register b is set to 7, 5, c is set to 0, 5
+  // register b is set to 6, 5, c is set to 0, 5
   // note unspecified c.x has been zeroed
   // note b.y was preserved
   // results show after one step
@@ -139,19 +140,19 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   expect(c.io.outC.y, 9)
   step(1)
   show()
-  expect(c.io.outB.x, 7)
+  expect(c.io.outB.x, 6)
   expect(c.io.outB.y, 5)
   expect(c.io.outC.x, 0)
   expect(c.io.outC.y, 5)
 
   // everything unchanged as trigger off again
   poke(c.io.trigger, 0.U())
-  expect(c.io.outB.x, 7)
+  expect(c.io.outB.x, 6)
   expect(c.io.outB.y, 5)
   expect(c.io.outC.x, 0)
   expect(c.io.outC.y, 5)
   step(1)
-  expect(c.io.outB.x, 7)
+  expect(c.io.outB.x, 6)
   expect(c.io.outB.y, 5)
   expect(c.io.outC.x, 0)
   expect(c.io.outC.y, 5)
