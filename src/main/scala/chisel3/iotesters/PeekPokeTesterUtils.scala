@@ -104,6 +104,7 @@ private[iotesters] object verilogToVCS {
       "-quiet",
       "-timescale=1ns/1ps",
       "-debug_pp",
+      "-sverilog",
       s"-Mdir=$topModule.csrc",
       "+v2k", "+vpi",
       "+vcs+lic+wait",
