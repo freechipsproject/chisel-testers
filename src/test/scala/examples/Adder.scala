@@ -51,7 +51,7 @@ class AdderExerciser extends Exerciser {
   val in1_vec = Vec(range(y_range_start).map(_.asUInt))
 
   val expected_out_vec = Vec(in0_vec.zip(in1_vec).map { case (i,j) => i + j })
-  val test_number      = Reg(init=0.U(internal_counter_width.W))
+  val test_number      = RegInit(0.U(internal_counter_width.W))
 
   buildState("check adder")(StopCondition(test_number > (range(0).size).asUInt)) { () =>
     printf(
