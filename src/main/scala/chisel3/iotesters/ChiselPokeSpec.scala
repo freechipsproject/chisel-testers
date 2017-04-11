@@ -10,6 +10,11 @@ import chisel3.iotesters._
 sealed trait TesterBackend {
   def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend)
 }
+case object IntermediateBackend extends TesterBackend {
+  override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
+    setupIntermediateBackend(dutGen, options)
+  }
+}
 case object FirrtlInterpreterBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
     setupFirrtlTerpBackend(dutGen, options)
@@ -40,9 +45,10 @@ trait ChiselPokeTesterUtils extends Assertions {
     // Map-based Bundle expect/pokes currently not supported because those don't compile-time check
 
     def expect(ref: Bits, value: BigInt, msg: String="") {
-      val actualValue = backend.peek(ref, None)
-      val postfix = if (msg != "") s": $msg" else ""
-      assert(actualValue == value, s"(cycle $currCycle: expected ${ref.instanceName} == $value, got $actualValue$postfix)")
+      backend.expect(ref, value, msg)
+      // val actualValue = backend.peek(ref, None)
+      // val postfix = if (msg != "") s": $msg" else ""
+      // assert(actualValue == value, s"(cycle $currCycle: expected ${ref.instanceName} == $value, got $actualValue$postfix)")
     }
 
     /** Write a value into the circuit.
@@ -50,8 +56,8 @@ trait ChiselPokeTesterUtils extends Assertions {
     def poke(ref: Bits, value: BigInt) {
       assert(!ref.isLit, s"(attempted to poke literal ${ref.instanceName})")
       backend.poke(ref, value, None)
-      val verifyVal = backend.peek(ref, None)
-      assert(verifyVal == value, s"(poke failed on ${ref.instanceName} <= $value, read back $verifyVal)")
+      // val verifyVal = backend.peek(ref, None)
+      // assert(verifyVal == value, s"(poke failed on ${ref.instanceName} <= $value, read back $verifyVal)")
     }
 
     /** Steps the circuit by the specified number of clock cycles.
