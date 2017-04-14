@@ -4,7 +4,7 @@ package examples
 
 import chisel3._
 import chisel3.util._
-import Chisel.iotesters. {ChiselFlatSpec, Driver, PeekPokeTester}
+import chisel3.iotesters. {ChiselFlatSpec, Driver, PeekPokeTester}
 
 object AluOpCode {
   val Add                   = 1.U
