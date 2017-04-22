@@ -1,6 +1,6 @@
 import Dependencies._
 
-val internalName = "chisel-testers"
+val internalName = "chisel_testers"
 
 organization := "edu.berkeley.cs"
 version := "1.2-SNAPSHOT"
