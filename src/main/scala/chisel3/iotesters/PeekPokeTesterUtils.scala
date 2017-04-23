@@ -102,6 +102,11 @@ private[iotesters] object verilogToVCS {
 
     val vcsFlags = Seq("-full64",
       "-quiet",
+      "-sverilog",
+      "+define+RANDOMIZE_MEM_INIT",
+      "+define+RANDOMIZE_REG_INIT",
+      "+define+RANDOMIZE_GARBAGE_ASSIGN",
+      "+define+RANDOMIZE_INVALID_ASSIGN",
       "-timescale=1ns/1ps",
       "-debug_pp",
       s"-Mdir=$topModule.csrc",
