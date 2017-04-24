@@ -54,9 +54,6 @@ class Router extends Module {
   val tbl   = Mem(depth, UInt(BigInt(n).bitLength.W))
 
   when(reset) {
-    tbl.indices.foreach { index =>
-      tbl(index) := 0.asUInt(Router.addressWidth.W)
-    }
     io.read_routing_table_request.nodeq()
     io.load_routing_table_request.nodeq()
     io.read_routing_table_response.noenq()
