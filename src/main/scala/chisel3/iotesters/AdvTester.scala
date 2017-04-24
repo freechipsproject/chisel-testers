@@ -98,7 +98,7 @@ abstract class AdvTester[+T <: Module](dut: T,
     expr
   }
 
-  class DecoupledSink[T <: Data, R]( socket: DecoupledIO[T], cvt: T=>R, 
+  class IrrevocableSink[T <: Data, R]( socket: IrrevocableIO[T], cvt: T=>R, 
     max_count: Option[Int] = None ) extends Processable
   {
     val outputs = new scala.collection.mutable.Queue[R]()
@@ -119,9 +119,9 @@ abstract class AdvTester[+T <: Module](dut: T,
     wire_poke(socket.ready, 1)
     preprocessors += this
   }
-  object DecoupledSink {
-    def apply[T<:Bits](socket: DecoupledIO[T]) =
-      new DecoupledSink(socket, (socket_bits: T) => peek(socket_bits))
+  object IrrevocableSink {
+    def apply[T<:Bits](socket: IrrevocableIO[T]) =
+      new IrrevocableSink(socket, (socket_bits: T) => peek(socket_bits))
   }
 
   class ValidSink[T <: Data, R]( socket: ValidIO[T], cvt: T=>R ) extends Processable
