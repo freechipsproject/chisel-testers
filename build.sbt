@@ -1,4 +1,6 @@
-import Dependencies._
+// See LICENSE for license details.
+
+import chiselBuild.ChiselDependencies._
 
 val internalName = "chisel_testers"
 
