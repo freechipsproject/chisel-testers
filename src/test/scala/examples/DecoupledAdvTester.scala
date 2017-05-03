@@ -52,7 +52,7 @@ class SmallOdds5(filter_width: Int) extends Module {
 class SmallOdds5Tester(dut: SmallOdds5) extends AdvTester(dut) {
   val max_tick_count = 8
   val testerInputDriver = DecoupledSource(dut.io.in)
-  val testerOutputHandler = DecoupledSink(dut.io.out)
+  val testerOutputHandler = IrrevocableSink(dut.io.out)
   for (i <- 0 to 300) {
     val num = rnd.nextInt(20)
     testerInputDriver.inputs.enqueue(num)
