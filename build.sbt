@@ -1,14 +1,16 @@
 // See LICENSE for license details.
 
 import chiselBuild.ChiselDependencies._
+import chiselBuild.ChiselSettings
+
+ChiselSettings.commonSettings
+
+ChiselSettings.publishSettings
 
 val internalName = "chisel_testers"
 
-organization := "edu.berkeley.cs"
 version := "1.2-SNAPSHOT"
 name := "Chisel.iotesters"
-
-scalaVersion := "2.11.7"
 
 libraryDependencies ++= chiselLibraryDependencies(internalName)
 
@@ -16,11 +18,6 @@ libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
                             "org.scalacheck" %% "scalacheck" % "1.12.4",
                             "com.github.scopt" %% "scopt" % "3.4.0")
     
-publishMavenStyle := true
-
-publishArtifact in Test := false
-pomIncludeRepository := { x => false }
-
 pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
 <licenses>
   <license>
@@ -40,23 +37,6 @@ pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
     <url>http://www.eecs.berkeley.edu/~jrb/</url>
   </developer>
 </developers>)
-
-
-publishTo <<= version { v: String =>
-  val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT")) {
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  }
-  else {
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  }
-}
-
-
-resolvers ++= Seq(
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.sonatypeRepo("releases")
-)
 
 scalacOptions := Seq("-deprecation")
 
