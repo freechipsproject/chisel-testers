@@ -7,10 +7,13 @@ ChiselSettings.commonSettings
 
 ChiselSettings.publishSettings
 
+version := "1.2-SNAPSHOT"
+
+val externalName = "Chisel.iotesters"
+
 val internalName = "chisel_testers"
 
-version := "1.2-SNAPSHOT"
-name := "Chisel.iotesters"
+name := externalName
 
 libraryDependencies ++= chiselLibraryDependencies(internalName)
 
