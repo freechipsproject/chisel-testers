@@ -1,5 +1,5 @@
 organization := "edu.berkeley.cs"
-version := "1.1-SNAPSHOT_2017-05-03"
+version := "1.1-SNAPSHOT_2017-05-16"
 name := "Chisel.iotesters"
 
 scalaVersion := "2.11.7"
@@ -7,9 +7,9 @@ scalaVersion := "2.11.7"
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.0-SNAPSHOT_2017-05-03",
-  "firrtl" -> "1.0-SNAPSHOT_2017-05-03",
-  "firrtl-interpreter" -> "1.0-SNAPSHOT_2017-05-03"
+  "chisel3" -> "3.0-SNAPSHOT_2017-05-16",
+  "firrtl" -> "1.0-SNAPSHOT_2017-05-16",
+  "firrtl-interpreter" -> "1.0-SNAPSHOT_2017-05-16"
   )
 
 libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: String =>
