@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-import chiselBuild.ChiselDependencies._
+import chiselBuild.ChiselDependencies.{basicDependencies, chiselLibraryDependencies, chiselProjectDependencies}
 import chiselBuild.ChiselSettings
 
 ChiselSettings.commonSettings
@@ -11,11 +11,14 @@ version := "1.2-SNAPSHOT"
 
 val externalName = "Chisel.iotesters"
 
-val internalName = "chisel_testers"
+val internalName = "chisel-iotesters"
 
 name := externalName
 
-libraryDependencies ++= chiselLibraryDependencies(internalName)
+// The Chisel projects we're dependendent on.
+val dependentProjects: Seq[String] = basicDependencies(internalName)
+
+libraryDependencies ++= chiselLibraryDependencies(dependentProjects)
 
 libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
                             "org.scalacheck" %% "scalacheck" % "1.12.4",
@@ -47,4 +50,4 @@ scalacOptions in (Compile, doc) <++= (baseDirectory, version) map { (bd, v) =>
   Seq("-diagrams", "-diagrams-max-classes", "25", "-sourcepath", bd.getAbsolutePath, "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala")
 }
 
-dependsOn((chiselProjectDependencies(internalName)):_*)
+lazy val chisel_iotesters = (project in file(".")).dependsOn((chiselProjectDependencies(dependentProjects)):_*)
