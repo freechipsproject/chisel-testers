@@ -14,6 +14,7 @@ class VerilatorTest extends FlatSpec with Matchers {
           "--compile",
           "--genHarness",
           "--minimumCompatibility", "3.0.0")
-      chiselMain(args, () => new doohickey())
+      chiselMain(args, () => new doohickey(4))
+      chiselMain(args, () => new doohickey(8))
     }
 }
