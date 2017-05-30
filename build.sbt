@@ -2,7 +2,7 @@ organization := "edu.berkeley.cs"
 version := "1.1-SNAPSHOT_2017-05-25"
 name := "Chisel.iotesters"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
