@@ -154,6 +154,7 @@ class AccumBlackBox_PeekPokeTest_VCS extends FlatSpec with Matchers {
   behavior of "AccumBlackBox"
 
   it should "work" in {
+    assume(firrtl.FileUtils.isVCSAvailable)
     chisel3.iotesters.Driver( () => new AccumBlackBoxWrapper, "vcs"){ c => new Accum_PeekPokeTester(c)} should be (true)
   }
 
