@@ -15,7 +15,7 @@ private[iotesters] class FirrtlTerpBackend(
   val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
   reset(5) // reset firrtl interpreter on construction
 
-  val portNames = getDataNames("io", dut.io).toMap
+  private val portNames = getDataNames("io", dut.io).toMap
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit = {
@@ -107,9 +107,9 @@ private[iotesters] object setupFirrtlTerpBackend {
       optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
 
     chisel3.Driver.execute(optionsManager, dutGen) match {
-      case ChiselExecutionSuccess(Some(circuit), firrtlText, Some(firrtlExecutionResult)) =>
+      case ChiselExecutionSuccess(Some(circuit), firrtlText, Some(_)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
-        (dut, new FirrtlTerpBackend(dut, chisel3.Driver.emit(dutGen), optionsManager = optionsManager))
+        (dut, new FirrtlTerpBackend(dut, firrtlText, optionsManager = optionsManager))
       case _ =>
         throw new Exception("Problem with compilation")
     }
