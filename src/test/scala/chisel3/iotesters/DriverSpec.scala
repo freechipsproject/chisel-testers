@@ -85,7 +85,7 @@ class DriverSpec extends FreeSpec with Matchers {
         dir.exists() should be (true)
         //
         dir.listFiles().exists { f =>
-          f.getAbsolutePath.split("/").last == "DriverTest.v"
+          f.getAbsolutePath.split("/").last == "DriverTest.fir"
         } should be (true)
         deleteDirectoryHierarchy(new File(driverTestDir))
       }
