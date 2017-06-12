@@ -177,16 +177,8 @@ object chiselMain {
       if (context.isRunTest) {
         setupBackend(dut)
         assert(try {
-          testerGen(dut).finish
+          chisel3.iotesters.Driver.test(dut, testerGen, context.backend.get)
         } catch { case e: Throwable =>
-          e.printStackTrace()
-          context.backend match {
-            case Some(b: VCSBackend) =>
-              TesterProcess kill b
-            case Some(b: VerilatorBackend) =>
-              TesterProcess kill b
-            case _ =>
-          }
           false
         }, "Test failed")
       }

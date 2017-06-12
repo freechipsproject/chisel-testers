@@ -57,20 +57,32 @@ object Driver {
             throw new Exception(s"Unrecognized backend name ${testerOptions.backendName}")
         }
 
-        backendVar.withValue(Some(backend)) {
-          try {
-            testerGen(dut).finish
-          } catch {
-            case e: Throwable =>
-              e.printStackTrace()
-              backend match {
-                case b: VCSBackend => TesterProcess.kill(b)
-                case b: VerilatorBackend => TesterProcess.kill(b)
-                case _ =>
-              }
-              throw e
+        test(dut, testerGen, backend)
+      }
+    }
+  }
+
+  /**
+    * This tests a device-under-test (previously built) with a peek-poke tester on a specific backend.
+    * The dut has been
+    *
+    * @param dut    The device under test, a subclass of a Chisel3 module
+    * @param testerGen       A peek poke tester with tests for the dut
+    * @return                Returns true if all tests in testerGen pass
+    */
+  def test[T <: Module](dut: T, testerGen: T => PeekPokeTester[T], backend: Backend): Boolean = {
+    backendVar.withValue(Some(backend)) {
+      try {
+        testerGen(dut).finish
+      } catch {
+        case e: Throwable =>
+          e.printStackTrace()
+          backend match {
+            case b: VCSBackend => TesterProcess.kill(b)
+            case b: VerilatorBackend => TesterProcess.kill(b)
+            case _ =>
           }
-        }
+          throw e
       }
     }
   }
@@ -225,21 +237,7 @@ object Driver {
                       (testerGen: T => PeekPokeTester[T]): Boolean = {
     val circuit = chisel3.Driver.elaborate(dutGen)
     val dut = getTopModule(circuit).asInstanceOf[T]
-    backendVar.withValue(Some(new VerilatorBackend(dut, cmd))) {
-      try {
-        testerGen(dut).finish
-      } catch { case e: Throwable =>
-        e.printStackTrace()
-        backend match {
-          case Some(b: VCSBackend) =>
-            TesterProcess kill b
-          case Some(b: VerilatorBackend) =>
-            TesterProcess kill b
-          case _ =>
-        }
-        throw e
-      }
-    }
+    test(dut, testerGen, new VerilatorBackend(dut, cmd))
   }
 
   def run[T <: Module](dutGen: () => T, binary: String, args: String*)

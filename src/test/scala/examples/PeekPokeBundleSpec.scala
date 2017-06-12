@@ -4,9 +4,8 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
+import chisel3.iotesters.PeekPokeTester.{ElementDataMap, _}
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.collection.mutable.LinkedHashMap
 
 class PeekPokeBundleSpec extends FlatSpec with Matchers {
   // Define some data types to be used in the circuit.
@@ -41,7 +40,7 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
     // If only we had Bundle literals ...
     // This is extremely fragile. The map definitions must match the order of element definitions in the Bundle
     //  we're about to peek or poke.
-    val myBundleMap : LinkedHashMap[String, BigInt] = LinkedHashMap[String, BigInt]() ++ List[(String, BigInt)](
+    val myBundleMap : ElementDataMap = new ElementDataMap() ++ List[(String, BigInt)](
       ("aUInt4"	-> BigInt(3) ),
       ("aSInt5"	-> BigInt(2) ),
       ("aBundle.aBool"	-> BigInt(1) ),
@@ -55,15 +54,15 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
   // A tester for the trivial circuit.
   class BundlePeekPokeTesterMap(dut: MyCircuit = new MyCircuit) extends PeekPokeTester(dut) {
     // If only we had Bundle literals ...
-    val myBundleMap : LinkedHashMap[String, BigInt] = LinkedHashMap[String, BigInt]() ++ List[(String, BigInt)](
+    val myBundleMap : ElementDataMap = new ElementDataMap() ++ List[(String, BigInt)](
       ("aUInt4"	-> BigInt(4) ),
       ("aSInt5"	-> BigInt(5) ),
       ("aBundle.aBool"	-> BigInt(0) ),
       ("aBottomBool"	-> BigInt(1) )
     )
-    poke(dut.io.in, myBundleMap.toMap)
+    poke(dut.io.in, myBundleMap)
     step(1)
-    expect(dut.io.out, myBundleMap.toMap)
+    expect(dut.io.out, myBundleMap)
   }
 
   // The test.
