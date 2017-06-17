@@ -2,7 +2,7 @@ organization := "edu.berkeley.cs"
 version := "1.2-SNAPSHOT"
 name := "Chisel.iotesters"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
@@ -16,9 +16,9 @@ libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: 
     "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
 }
 
-libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
-                            "org.scalacheck" %% "scalacheck" % "1.12.4",
-                            "com.github.scopt" %% "scopt" % "3.4.0")
+libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "3.0.1",
+                            "org.scalacheck" %% "scalacheck" % "1.13.4",
+                            "com.github.scopt" %% "scopt" % "3.5.0")
     
 publishMavenStyle := true
 
