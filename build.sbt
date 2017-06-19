@@ -20,9 +20,9 @@ val dependentProjects: Seq[String] = basicDependencies(internalName)
 
 libraryDependencies ++= chiselLibraryDependencies(dependentProjects)
 
-libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.4",
-                            "org.scalacheck" %% "scalacheck" % "1.12.4",
-                            "com.github.scopt" %% "scopt" % "3.4.0")
+libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "3.0.1",
+                            "org.scalacheck" %% "scalacheck" % "1.13.4",
+                            "com.github.scopt" %% "scopt" % "3.5.0")
     
 pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
 <licenses>
