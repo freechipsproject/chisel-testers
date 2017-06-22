@@ -17,8 +17,8 @@ class ExampleModule extends Module {
 
   val delay_value = 5.U
 
-  val busy = Reg(init = false.B)
-  val in_reg   = Reg(init=0.U(16.W))
+  val busy = RegInit(false.B)
+  val in_reg   = RegInit(0.U(16.W))
   io.in.ready := !busy
 
   when(io.in.valid && !busy) {
@@ -26,7 +26,7 @@ class ExampleModule extends Module {
     busy := true.B
   }
 
-  val wait_counter = Reg(init=0.U(16.W))
+  val wait_counter = RegInit(0.U(16.W))
 
   when(io.in.valid && !busy) {
     wait_counter := 0.U

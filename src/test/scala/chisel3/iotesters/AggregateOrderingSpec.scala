@@ -137,7 +137,7 @@ class AggregatePassThrough(aggregateGenerator: => Aggregate) extends Module {
   io.outputAggregate <> aggregateRegister
 
   io.aggregateAsUInt := aggregateRegister.asUInt()
-  io.outputFromUInt := aggregateGenerator.fromBits(aggregateRegister.asUInt())
+  io.outputFromUInt := aggregateRegister.asTypeOf(aggregateGenerator)
 }
 
 /**
