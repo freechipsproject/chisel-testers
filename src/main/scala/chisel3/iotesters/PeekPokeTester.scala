@@ -169,7 +169,16 @@ abstract class PeekPokeTester[+T <: Module](
     (path, bundle(path.head)) match {
       case (head :: Nil, element: Element) => element
       case (head :: tail, b: Bundle) => getBundleElement(tail, b.elements)
-      case _ => throw new Exception(s"peek/poke bundle element mismatch $path")
+      case (head :: tail, v: Vec[_]) => {
+        val vecAsMap: ListMap[String, Data] = ListMap[String, Data] (
+          v.getElements.toList.zipWithIndex.map { case (d: Data, i: Int) => s"($i)" -> d }: _*
+        )
+
+        getBundleElement(tail, vecAsMap)
+      }
+      case _ => {
+        throw new Exception(s"peek/poke bundle element mismatch $path")
+      }
     }
   }
 
