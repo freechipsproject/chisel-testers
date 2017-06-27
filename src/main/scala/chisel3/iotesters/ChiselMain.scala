@@ -122,8 +122,7 @@ object chiselMain {
         writer.write(compileResult.getEmittedCircuit.value)
         writer.close()
       case _ =>
-    } 
-
+    }
     if (context.isGenHarness) genHarness(dut, nodes, chirrtl)
 
     if (context.isCompiling) compile(name)
