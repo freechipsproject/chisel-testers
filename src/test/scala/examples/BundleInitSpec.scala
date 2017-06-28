@@ -86,7 +86,7 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   reset()
 
   // registers are initialized to 8 and 9
-  poke(c.io.trigger, 0.U())
+  poke(c.io.trigger, 0.U)
   expect(c.io.outB.x, 8)
   expect(c.io.outB.y, 9)
   expect(c.io.outC.x, 8)
@@ -102,7 +102,7 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   // note unspecified b.x has been zeroed
   // note c.y was preserved
   // results show after one step
-  poke(c.io.trigger, 1.U())
+  poke(c.io.trigger, 1.U)
   expect(c.io.outB.x, 8)
   expect(c.io.outB.y, 9)
   expect(c.io.outC.x, 8)
@@ -115,7 +115,7 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   expect(c.io.outC.y, 9)
 
   // values unchanged as trigger goes to zero
-  poke(c.io.trigger, 0.U())
+  poke(c.io.trigger, 0.U)
   show()
   expect(c.io.outB.x, 0)
   expect(c.io.outB.y, 5)
@@ -132,7 +132,7 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   // note unspecified c.x has been zeroed
   // note b.y was preserved
   // results show after one step
-  poke(c.io.trigger, 2.U())
+  poke(c.io.trigger, 2.U)
   show()
   expect(c.io.outB.x, 0)
   expect(c.io.outB.y, 5)
@@ -146,7 +146,7 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   expect(c.io.outC.y, 5)
 
   // everything unchanged as trigger off again
-  poke(c.io.trigger, 0.U())
+  poke(c.io.trigger, 0.U)
   expect(c.io.outB.x, 6)
   expect(c.io.outB.y, 5)
   expect(c.io.outC.x, 0)

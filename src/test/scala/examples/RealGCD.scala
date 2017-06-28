@@ -22,15 +22,15 @@ object GCDCalculator {
 }
 
 class RealGCDInput extends Bundle {
-  val theWidth = RealGCD.num_width
+  private val theWidth = RealGCD.num_width
   val a = UInt(theWidth.W)
   val b = UInt(theWidth.W)
 }
 
 class RealGCD extends Module {
-  val theWidth = RealGCD.num_width
+  private val theWidth = RealGCD.num_width
   val io  = IO(new Bundle {
-    val in  = Decoupled(new RealGCDInput()).flip()
+    val in  = Flipped(Decoupled(new RealGCDInput()))
     val out = Valid(UInt(theWidth.W))
   })
 
