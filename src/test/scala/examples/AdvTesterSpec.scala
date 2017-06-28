@@ -33,7 +33,7 @@ case class TestGCD3Values(a: BigInt, b: BigInt)
 
 class RealGCD3 extends Module {
   val io  = IO(new Bundle {
-    val in  = Decoupled(new RealGCD3Input()).flip()
+    val in  = Flipped(Decoupled(new RealGCD3Input()))
     val out = Valid(UInt(RealGCD3.num_width.W))
   })
 

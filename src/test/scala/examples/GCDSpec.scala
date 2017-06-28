@@ -5,7 +5,6 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
-import firrtl_interpreter.InterpreterOptions
 import org.scalatest.{Matchers, FlatSpec}
 
 object RealGCD2 {
@@ -24,15 +23,15 @@ object RealGCD2 {
 }
 
 class RealGCD2Input extends Bundle {
-  val theWidth = RealGCD2.num_width
+  private val theWidth = RealGCD2.num_width
   val a = UInt(theWidth.W)
   val b = UInt(theWidth.W)
 }
 
 class RealGCD2 extends Module {
-  val theWidth = RealGCD2.num_width
+  private val theWidth = RealGCD2.num_width
   val io  = IO(new Bundle {
-    val in  = Decoupled(new RealGCD2Input()).flip()
+    val in  = Flipped(Decoupled(new RealGCD2Input()))
     val out = Valid(UInt(theWidth.W))
   })
 
