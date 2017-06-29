@@ -29,9 +29,8 @@ class HasCycleTest extends FlatSpec with Matchers {
 
   it should "work in the interpreter" in {
     chisel3.iotesters.Driver.execute(
-      //        Array( "--no-check-comb-loops", "--backend-name", "verilator"),
-      //        Array( "--no-check-comb-loops", "--backend-name", "firrtl", "-filcol"),
-      Array( "--no-check-comb-loops", "--backend-name", "firrtl", "-fisfas", "-fiac"),
+      // interpreter has it's own loop detector that needs to be disabled as well with --fr-allow-cycles
+      Array( "--no-check-comb-loops", "--backend-name", "firrtl", "--fr-allow-cycles"),
       () => new HasCycle) { c =>
       new HasCycleTester( c)
     } should be ( true)
@@ -39,8 +38,6 @@ class HasCycleTest extends FlatSpec with Matchers {
   it should "work in verilator" in {
     chisel3.iotesters.Driver.execute(
               Array( "--no-check-comb-loops", "--backend-name", "verilator"),
-//              Array( "--no-check-comb-loops", "--backend-name", "firrtl", "-filcol"),
-//      Array( "--no-check-comb-loops", "--backend-name", "firrtl", "-fisfas", "-fiac"),
       () => new HasCycle) { c =>
       new HasCycleTester( c)
     } should be ( true)
