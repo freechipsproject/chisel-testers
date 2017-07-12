@@ -9,7 +9,7 @@ import chisel3.util._
 import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
 
-class ExampleModule extends Module {
+class ExampleModule extends ImplicitInvalidateModule {
   val io = IO(new Bundle {
     val in  = Flipped(Decoupled(Bits(16.W)))
     val out = Decoupled(Bits(16.W))

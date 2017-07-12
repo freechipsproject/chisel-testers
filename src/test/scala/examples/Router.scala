@@ -5,6 +5,7 @@ package examples
 import chisel3._
 import chisel3.util.{EnqIO, DeqIO, log2Ceil}
 import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import chisel3.iotesters.{ImplicitInvalidateModule, implicitInvalidateOptions}
 
 object Router {
   val addressWidth    = 32
@@ -47,7 +48,7 @@ class RouterIO(n: Int) extends Bundle {
   * routes packets by using their header as an index into an externally loaded and readable table,
   * The number of addresses recognized does not need to match the number of outputs
   */
-class Router extends Module {
+class Router extends ImplicitInvalidateModule {
   val depth = Router.routeTableSize
   val n     = Router.numberOfOutputs
   val io    = IO(new RouterIO(n))

@@ -5,6 +5,7 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
+import chisel3.iotesters.{ImplicitInvalidateModule, implicitInvalidateOptions}
 
 /**
   * Implements an adder that used decoupledIO for both input and output
@@ -20,7 +21,7 @@ class SlowDecoupledAdderOut extends Bundle {
   val c = Output(UInt(16.W))
 }
 
-class SlowDecoupledAdder extends Module {
+class SlowDecoupledAdder extends ImplicitInvalidateModule {
   val delay_value = 10
   val io = IO(new Bundle {
     val in  = Flipped(Decoupled(new SlowDecoupledAdderIn))
