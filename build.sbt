@@ -46,7 +46,8 @@ pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
 </developers>)
 
 
-publishTo <<= version { v: String =>
+publishTo := {
+  val v = version.value
   val nexus = "https://oss.sonatype.org/"
   if (v.trim.endsWith("SNAPSHOT")) {
     Some("snapshots" at nexus + "content/repositories/snapshots")
@@ -64,6 +65,9 @@ resolvers ++= Seq(
 
 scalacOptions := Seq("-deprecation")
 
-scalacOptions in (Compile, doc) <++= (baseDirectory, version) map { (bd, v) =>
-  Seq("-diagrams", "-diagrams-max-classes", "25", "-sourcepath", bd.getAbsolutePath, "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala")
-}
+scalacOptions in (Compile, doc) ++= Seq(
+  "-diagrams",
+  "-diagrams-max-classes", "25",
+  "-sourcepath", baseDirectory.value.getAbsolutePath,
+  "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala"
+)
