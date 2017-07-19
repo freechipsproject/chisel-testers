@@ -46,8 +46,11 @@ pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
 
 scalacOptions := Seq("-deprecation")
 
-scalacOptions in (Compile, doc) <++= (baseDirectory, version) map { (bd, v) =>
-  Seq("-diagrams", "-diagrams-max-classes", "25", "-sourcepath", bd.getAbsolutePath, "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala")
-}
+scalacOptions in (Compile, doc) ++= Seq(
+  "-diagrams",
+  "-diagrams-max-classes", "25",
+  "-sourcepath", baseDirectory.value.getAbsolutePath,
+  "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala"
+)
 
 lazy val chisel_iotesters = (project in file(".")).dependsOn((chiselProjectDependencies(dependentProjects)):_*)
