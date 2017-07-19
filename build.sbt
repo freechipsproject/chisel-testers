@@ -1,5 +1,5 @@
 organization := "edu.berkeley.cs"
-version := "1.1-SNAPSHOT_2017-07-17"
+version := "1.1-SNAPSHOT_2017-07-19"
 name := "Chisel.iotesters"
 
 scalaVersion := "2.11.11"
@@ -7,9 +7,9 @@ scalaVersion := "2.11.11"
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.0-SNAPSHOT_2017-07-17",
-  "firrtl" -> "1.0-SNAPSHOT_2017-07-17",
-  "firrtl-interpreter" -> "1.0-SNAPSHOT_2017-07-17"
+  "chisel3" -> "3.0-SNAPSHOT_2017-07-19",
+  "firrtl" -> "1.0-SNAPSHOT_2017-07-19",
+  "firrtl-interpreter" -> "1.0-SNAPSHOT_2017-07-19"
   )
 
 libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: String =>
@@ -46,7 +46,8 @@ pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
 </developers>)
 
 
-publishTo <<= version { v: String =>
+publishTo := {
+  val v = version.value
   val nexus = "https://oss.sonatype.org/"
   if (v.trim.endsWith("SNAPSHOT")) {
     Some("snapshots" at nexus + "content/repositories/snapshots")
@@ -63,6 +64,9 @@ resolvers ++= Seq(
 
 scalacOptions := Seq("-deprecation")
 
-scalacOptions in (Compile, doc) <++= (baseDirectory, version) map { (bd, v) =>
-  Seq("-diagrams", "-diagrams-max-classes", "25", "-sourcepath", bd.getAbsolutePath, "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala")
-}
+scalacOptions in (Compile, doc) ++= Seq(
+  "-diagrams",
+  "-diagrams-max-classes", "25",
+  "-sourcepath", baseDirectory.value.getAbsolutePath,
+  "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala"
+)
