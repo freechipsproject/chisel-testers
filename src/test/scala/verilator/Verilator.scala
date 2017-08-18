@@ -21,4 +21,9 @@ class VerilatorTest extends FlatSpec with Matchers {
       )
       chiselMain(args, () => new doohickey())
     }
+  it should "be able to deal with zero-width wires" in {
+      chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new ZeroWidthIOModule) {
+          c => new ZeroWidthIOTester(c)
+    }
+  }
 }
