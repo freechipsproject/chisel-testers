@@ -1,50 +1,44 @@
 // See LICENSE for license details.
 
-import chiselBuild.ChiselDependencies.{basicDependencies, chiselLibraryDependencies, chiselProjectDependencies}
-import chiselBuild.ChiselSettings
+enablePlugins(BuildInfoPlugin)
 
-ChiselSettings.commonSettings
+ChiselProjectDependenciesPlugin.chiselBuildInfoSettings
 
-ChiselSettings.publishSettings
+ChiselProjectDependenciesPlugin.chiselProjectSettings
 
 version := "1.2-SNAPSHOT"
 
-val externalName = "Chisel.iotesters"
-
-val internalName = "chisel-iotesters"
-
-name := externalName
-
 // The Chisel projects we're dependendent on.
-val dependentProjects: Seq[String] = basicDependencies(internalName)
+val chiselDeps = chisel.dependencies(Seq(
+    ("edu.berkeley.cs" % "firrtl" % "1.1-SNAPSHOT", "firrtl"),
+    ("edu.berkeley.cs" % "firrtl-interpreter" % "1.1-SNAPSHOT", "firrtl-interpreter"),
+    ("edu.berkeley.cs" % "chisel3" % "3.1-SNAPSHOT", "chisel3")
+))
 
-libraryDependencies ++= chiselLibraryDependencies(dependentProjects)
+val dependentProjects = chiselDeps.projects
 
-libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "3.0.1",
-                            "org.scalacheck" %% "scalacheck" % "1.13.4",
-                            "com.github.scopt" %% "scopt" % "3.5.0")
+name := "chisel-iotesters"
+
+libraryDependencies ++= Seq(
+  "org.scalatest" %% "scalatest" % "3.0.1",
+  "org.scalacheck" %% "scalacheck" % "1.13.4",
+  "com.github.scopt" %% "scopt" % "3.5.0"
+) ++ chiselDeps.libraries
     
-pomExtra := (<url>http://chisel.eecs.berkeley.edu/</url>
-<licenses>
-  <license>
-    <name>BSD-style</name>
-    <url>http://www.opensource.org/licenses/bsd-license.php</url>
-    <distribution>repo</distribution>
-  </license>
-</licenses>
-<scm>
-  <url>https://github.com/ucb-bar/chisel-testers.git</url>
-  <connection>scm:git:github.com/ucb-bar/chisel-testers.git</connection>
-</scm>
-<developers>
-  <developer>
-    <id>jackbackrack</id>
-    <name>Jonathan Bachrach</name>
-    <url>http://www.eecs.berkeley.edu/~jrb/</url>
-  </developer>
-</developers>)
+  pomExtra := pomExtra.value ++
+    <scm>
+      <url>https://github.com/ucb-bar/chisel-testers.git</url>
+      <connection>scm:git:github.com/ucb-bar/chisel-testers.git</connection>
+    </scm>
+    <developers>
+      <developer>
+	<id>jackbackrack</id>
+	<name>Jonathan Bachrach</name>
+	<url>http://www.eecs.berkeley.edu/~jrb/</url>
+      </developer>
+    </developers>
 
-scalacOptions := Seq("-deprecation")
+scalacOptions ++= Seq("-deprecation")
 
 scalacOptions in (Compile, doc) ++= Seq(
   "-diagrams",
@@ -53,4 +47,5 @@ scalacOptions in (Compile, doc) ++= Seq(
   "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala"
 )
 
-lazy val chisel_iotesters = (project in file(".")).dependsOn((chiselProjectDependencies(dependentProjects)):_*)
+lazy val chisel_iotesters = (project in file("."))
+  .dependsOn(dependentProjects.map(classpathDependency(_)):_*)
