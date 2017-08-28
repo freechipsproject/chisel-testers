@@ -10,9 +10,9 @@ version := "1.2-SNAPSHOT"
 
 // The Chisel projects we're dependendent on.
 val chiselDeps = chisel.dependencies(Seq(
-    ("edu.berkeley.cs" % "firrtl" % "1.1-SNAPSHOT", "firrtl"),
-    ("edu.berkeley.cs" % "firrtl-interpreter" % "1.1-SNAPSHOT", "firrtl-interpreter"),
-    ("edu.berkeley.cs" % "chisel3" % "3.1-SNAPSHOT", "chisel3")
+    ("edu.berkeley.cs" %% "firrtl" % "1.1-SNAPSHOT", "firrtl"),
+    ("edu.berkeley.cs" %% "firrtl-interpreter" % "1.1-SNAPSHOT", "firrtl-interpreter"),
+    ("edu.berkeley.cs" %% "chisel3" % "3.1-SNAPSHOT", "chisel3")
 ))
 
 val dependentProjects = chiselDeps.projects
