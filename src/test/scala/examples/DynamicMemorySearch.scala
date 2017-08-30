@@ -20,7 +20,7 @@ class DynamicMemorySearch(val n: Int, val w: Int) extends Module {
   val memVal = list(index)
   val over   = !io.en && ((memVal === io.data) || (index === (n-1).asUInt))
 
-  when(reset) {
+  when(reset.toBool) {
     for(i <- 0 until n) {
       list(i) := 0.U
     }
