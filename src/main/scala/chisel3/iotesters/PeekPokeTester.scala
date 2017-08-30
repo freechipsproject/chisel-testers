@@ -269,6 +269,12 @@ abstract class PeekPokeTester[+T <: Module](
     expect(signal, BigInt(expected), msg)
   }
 
+  def expectFixedPoint(signal: FixedPoint, expected: Double, msg: => String, epsilon: Double = 0.01): Boolean = {
+    val double = peekFixedPoint(signal)
+
+    expect((double - expected).abs < epsilon, msg )
+  }
+
   def expect (signal: Aggregate, expected: IndexedSeq[BigInt]): Boolean = {
     (extractElementBits(signal), expected.reverse).zipped.foldLeft(true) { (result, x) => result && expect(x._1.asInstanceOf[Bits], x._2)}
   }
