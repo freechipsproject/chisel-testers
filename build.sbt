@@ -2,22 +2,38 @@
 
 enablePlugins(BuildInfoPlugin)
 
+version := "1.2-SNAPSHOT"
+
+name := "Chisel.iotesters"
+
+scalaVersion := "2.11.11"
+
+crossScalaVersions := Seq("2.11.11", "2.12.3")
+
+// Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
+// The following are the default development versions, not the "release" versions.
+val defaultVersions = Map(
+  "chisel3" -> "3.1-SNAPSHOT",
+  "firrtl" -> "1.1-SNAPSHOT",
+  "firrtl-interpreter" -> "1.1-SNAPSHOT"
+  )
+
+def chiselVersion(proj: String): String = {
+  sys.props.getOrElse(proj + "Version", defaultVersions(proj))
+}
+
 ChiselProjectDependenciesPlugin.chiselBuildInfoSettings
 
 ChiselProjectDependenciesPlugin.chiselProjectSettings
 
-version := "1.2-SNAPSHOT"
-
 // The Chisel projects we're dependendent on.
 val chiselDeps = chisel.dependencies(Seq(
-    ("edu.berkeley.cs" %% "firrtl" % "1.1-SNAPSHOT", "firrtl"),
-    ("edu.berkeley.cs" %% "firrtl-interpreter" % "1.1-SNAPSHOT", "firrtl-interpreter"),
-    ("edu.berkeley.cs" %% "chisel3" % "3.1-SNAPSHOT", "chisel3")
+    ("edu.berkeley.cs" %% "firrtl" % chiselVersion("firrtl"), "firrtl"),
+    ("edu.berkeley.cs" %% "firrtl-interpreter" % chiselVersion("firrtl-interpreter"), "firrtl-interpreter"),
+    ("edu.berkeley.cs" %% "chisel3" % chiselVersion("chisel3"), "chisel3")
 ))
 
 val dependentProjects = chiselDeps.projects
-
-name := "chisel-iotesters"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1",
