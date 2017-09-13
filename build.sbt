@@ -38,7 +38,7 @@ val dependentProjects = chiselDeps.projects
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1",
   "org.scalacheck" %% "scalacheck" % "1.13.4",
-  "com.github.scopt" %% "scopt" % "3.5.0"
+  "com.github.scopt" %% "scopt" % "3.6.0"
 ) ++ chiselDeps.libraries
     
   pomExtra := pomExtra.value ++
