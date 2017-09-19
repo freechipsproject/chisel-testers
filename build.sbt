@@ -6,10 +6,6 @@ version := "1.2-SNAPSHOT"
 
 name := "Chisel.iotesters"
 
-scalaVersion := "2.11.11"
-
-crossScalaVersions := Seq("2.11.11", "2.12.3")
-
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
