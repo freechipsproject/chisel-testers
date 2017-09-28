@@ -120,19 +120,19 @@ object Driver {
                                       dutGenerator: () => T,
                                       optionsManager: ReplOptionsManager = new ReplOptionsManager): Boolean = {
 
-    Logger.makeScope(optionsManager) {
-      if (optionsManager.topName.isEmpty) {
-        if (optionsManager.targetDirName == ".") {
-          optionsManager.setTargetDirName("test_run_dir")
-        }
-        val genClassName = dutGenerator.getClass.getName
-        val testerName = genClassName.split("""\$\$""").headOption.getOrElse("") + genClassName.hashCode.abs
-        optionsManager.setTargetDirName(s"${optionsManager.targetDirName}/$testerName")
+    if (optionsManager.topName.isEmpty) {
+      if (optionsManager.targetDirName == ".") {
+        optionsManager.setTargetDirName("test_run_dir")
       }
+      val genClassName = dutGenerator.getClass.getName
+      val testerName = genClassName.split("""\$\$""").headOption.getOrElse("") + genClassName.hashCode.abs
+      optionsManager.setTargetDirName(s"${optionsManager.targetDirName}/$testerName")
+    }
 
-      optionsManager.chiselOptions = optionsManager.chiselOptions.copy(runFirrtlCompiler = false)
-      optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
+    optionsManager.chiselOptions = optionsManager.chiselOptions.copy(runFirrtlCompiler = false)
+    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
 
+    Logger.makeScope(optionsManager) {
       val chiselResult: ChiselExecutionResult = chisel3.Driver.execute(optionsManager, dutGenerator)
       chiselResult match {
         case ChiselExecutionSuccess(_, emitted, _) =>
