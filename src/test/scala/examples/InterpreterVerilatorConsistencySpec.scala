@@ -4,10 +4,7 @@ package examples
 
 import chisel3._
 import chisel3.util._
-import chisel3._
-import chisel3.util._
 import chisel3.iotesters._
-import org.scalatest.{Matchers, FlatSpec}
 
 class ExampleModule extends ImplicitInvalidateModule {
   val io = IO(new Bundle {
@@ -39,6 +36,8 @@ class ExampleModule extends ImplicitInvalidateModule {
       io.out.bits := 0.U
       wait_counter := wait_counter + 1.U
     }
+  }.otherwise {
+    io.out.bits := 0.U
   }
 
   io.out.valid := (io.out.bits === in_reg) && (wait_counter === delay_value) && busy

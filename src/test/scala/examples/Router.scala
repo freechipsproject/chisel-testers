@@ -3,9 +3,10 @@
 package examples
 
 import chisel3._
-import chisel3.util.{EnqIO, DeqIO, log2Ceil}
+import chisel3.util.{DeqIO, EnqIO, log2Ceil}
 import chisel3.iotesters.{ChiselFlatSpec, OrderedDecoupledHWIOTester}
-import chisel3.iotesters.{ImplicitInvalidateModule, implicitInvalidateOptions}
+// We have to run this in NotStrict mode until we sort out the issues with onRset() and DontCare's.
+import chisel3.core.ExplicitCompileOptions.NotStrict
 
 object Router {
   val addressWidth    = 32
@@ -58,8 +59,13 @@ class Router extends ImplicitInvalidateModule {
     io.read_routing_table_request.nodeq()
     io.load_routing_table_request.nodeq()
     io.read_routing_table_response.noenq()
+    io.read_routing_table_response.bits := 0.U
     io.in.nodeq()
-    io.outs.foreach { out => out.noenq() }
+    io.outs.foreach { out =>
+      out.bits.header := 0.U
+      out.bits.body := 0.U
+      out.noenq()
+    }
   }
 
   when(io.read_routing_table_request.valid && io.read_routing_table_response.ready) {

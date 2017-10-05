@@ -27,9 +27,11 @@ class SlowDecoupledAdder extends ImplicitInvalidateModule {
     val in  = Flipped(Decoupled(new SlowDecoupledAdderIn))
     val out = Decoupled(new SlowDecoupledAdderOut)
   })
+  // Initialize all elements. We don't want firrtl complaining about "not fully initialized" connections.
   val busy    = RegInit(false.B)
   val a_reg   = RegInit(0.U(16.W))
   val b_reg   = RegInit(0.U(16.W))
+  val o_reg   = RegInit(0.U(16.W))
   val wait_counter = RegInit(0.U(16.W))
 
   io.in.ready := !busy
@@ -46,11 +48,12 @@ class SlowDecoupledAdder extends ImplicitInvalidateModule {
   }
   when(busy) {
     when(wait_counter > delay_value.asUInt) {
-      io.out.bits.c := a_reg + b_reg
+      o_reg := a_reg + b_reg
     }.otherwise {
       wait_counter := wait_counter + 1.U
     }
   }
+  io.out.bits.c := o_reg
 
   io.out.valid := (io.out.bits.c === a_reg + b_reg ) && busy
 
