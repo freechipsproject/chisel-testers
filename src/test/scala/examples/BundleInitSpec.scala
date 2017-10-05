@@ -10,7 +10,6 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import chisel3.iotesters.{ImplicitInvalidateModule, implicitInvalidateOptions}
 import org.scalatest.{FreeSpec, Matchers}
 
 class MyBundle extends Bundle {
@@ -35,8 +34,6 @@ object MyBundle {
     * @return
     */
   def setYTo5(): MyBundle = {
-    // We don't want firrtl complaining about "not fully initialized" connections.
-    implicit val implicitCompileOptions = implicitInvalidateOptions
     val wire = Wire(new MyBundle)
     // Initialize all elements. We don't want firrtl complaining about "not fully initialized" connections.
     wire.x := 0.U
@@ -57,7 +54,7 @@ object MyBundle {
   }
 }
 
-class UseMyBundle extends ImplicitInvalidateModule {
+class UseMyBundle extends Module {
   val io = IO(new Bundle{
     val trigger = Input(UInt(2.W))
     val outB = Output(new MyBundle)

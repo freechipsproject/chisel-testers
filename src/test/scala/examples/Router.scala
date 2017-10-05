@@ -49,7 +49,7 @@ class RouterIO(n: Int) extends Bundle {
   * routes packets by using their header as an index into an externally loaded and readable table,
   * The number of addresses recognized does not need to match the number of outputs
   */
-class Router extends ImplicitInvalidateModule {
+class Router extends Module {
   val depth = Router.routeTableSize
   val n     = Router.numberOfOutputs
   val io    = IO(new RouterIO(n))

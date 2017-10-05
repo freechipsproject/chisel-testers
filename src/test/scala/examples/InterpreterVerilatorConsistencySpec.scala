@@ -6,7 +6,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 
-class ExampleModule extends ImplicitInvalidateModule {
+class ExampleModule extends Module {
   val io = IO(new Bundle {
     val in  = Flipped(Decoupled(Bits(16.W)))
     val out = Decoupled(Bits(16.W))
