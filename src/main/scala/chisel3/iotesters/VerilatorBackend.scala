@@ -38,7 +38,7 @@ object copyVerilatorHeaderFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object VerilatorCppHarnessGenerator {
-  def codeGen(dut: chisel3.Module, state: CircuitState, vcdFilePath: String): String = {
+  def codeGen(dut: chisel3.experimental.RawModule, state: CircuitState, vcdFilePath: String): String = {
     val codeBuffer = new StringBuilder
 
     def pushBack(vector: String, pathName: String, width: BigInt) {
@@ -62,40 +62,44 @@ object VerilatorCppHarnessGenerator {
     val dutName = dut.name
     val dutApiClassName = dutName + "_api_t"
     val dutVerilatorClassName = "V" + dutName
-    codeBuffer.append("#include \"%s.h\"\n".format(dutVerilatorClassName))
-    codeBuffer.append("#include \"verilated.h\"\n")
-    codeBuffer.append("#include \"veri_api.h\"\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("#include \"verilated_vcd_c.h\"\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("#include <iostream>\n")
-    codeBuffer.append(s"class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {\n")
-    codeBuffer.append("public:\n")
-    codeBuffer.append(s"    $dutApiClassName($dutVerilatorClassName* _dut) {\n")
-    codeBuffer.append("        dut = _dut;\n")
-    codeBuffer.append("        main_time = 0L;\n")
-    codeBuffer.append("        is_exit = false;\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("        tfp = NULL;\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    void init_sim_data() {\n")
-    codeBuffer.append("        sim_data.inputs.clear();\n")
-    codeBuffer.append("        sim_data.outputs.clear();\n")
-    codeBuffer.append("        sim_data.signals.clear();\n")
-    inputs.toList foreach { case (node, name) =>
-      pushBack("inputs", name replace (dutName, "dut"), node.getWidth)
+    codeBuffer.append(s"""#include "$dutVerilatorClassName.h"
+      |#include "verilated.h"
+      |#include "veri_api.h"
+      |#if VM_TRACE
+      |  #include "verilated_vcd_c.h"
+      |#endif
+      |#include <iostream>
+      |
+      |class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {
+      |public:
+      |    $dutApiClassName($dutVerilatorClassName* _dut) {
+      |        dut = _dut;
+      |        main_time = 0L;
+      |        is_exit = false;
+      |#if VM_TRACE
+      |        tfp = NULL;
+      |#endif
+      |    }
+      |    void init_sim_data() {
+      |        sim_data.inputs.clear();
+      |        sim_data.outputs.clear();
+      |        sim_data.signals.clear();
+      """.stripMargin)
+    inputs.toList foreach {
+      case (node, "reset") =>
+        pushBack("signals", "dut->reset", 1)
+        codeBuffer.append(s"""        sim_data.signal_map["%s"] = 0;\n""".format(node.pathName))
+      case (node, name) =>
+        pushBack("inputs", name replace (dutName, "dut"), node.getWidth)
     }
     outputs.toList foreach { case (node, name) =>
       pushBack("outputs", name replace (dutName, "dut"), node.getWidth)
     }
-    pushBack("signals", "dut->reset", 1)
-    codeBuffer.append(s"""        sim_data.signal_map["%s"] = 0;\n""".format(dut.reset.pathName))
-    codeBuffer.append("    }\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("     void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("    inline bool exit() { return is_exit; }\n")
+    codeBuffer.append(s"    }\n")
+    codeBuffer.append(s"#if VM_TRACE\n")
+    codeBuffer.append(s"     void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }\n")
+    codeBuffer.append(s"#endif\n")
+    codeBuffer.append(s"    inline bool exit() { return is_exit; }\n")
 
     // required for sc_time_stamp()
     codeBuffer.append("    virtual inline double get_time_stamp() {\n")
@@ -189,7 +193,7 @@ object VerilatorCppHarnessGenerator {
 }
 
 private[iotesters] object setupVerilatorBackend {
-  def apply[T <: chisel3.Module](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
+  def apply[T <: chisel3.experimental.RawModule](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
     import firrtl.{ChirrtlForm, CircuitState}
 
     optionsManager.makeTargetDir()
@@ -272,7 +276,7 @@ private[iotesters] object setupVerilatorBackend {
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: Module,
+private[iotesters] class VerilatorBackend(dut: chisel3.experimental.RawModule,
                                           cmd: Seq[String],
                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 

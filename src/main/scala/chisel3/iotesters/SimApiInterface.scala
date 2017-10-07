@@ -12,7 +12,7 @@ import scala.sys.process.{Process, ProcessLogger}
 import java.io.{File, PrintStream}
 import java.nio.channels.FileChannel
 
-private[iotesters] class SimApiInterface(dut: Module, cmd: Seq[String]) {
+private[iotesters] class SimApiInterface(dut: chisel3.experimental.RawModule, cmd: Seq[String]) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
     val (inputs, outputs) = getPorts(dut)
     def genChunk(args: (Data, String)) = args match {

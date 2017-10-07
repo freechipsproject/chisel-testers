@@ -6,6 +6,7 @@ import java.io.File
 
 import chisel3._
 import chisel3.core.{Aggregate, Element}
+import chisel3.experimental.BaseModule
 import PeekPokeTester.extractElementBits
 import chisel3.experimental.FixedPoint
 import chisel3.internal.firrtl.KnownBinaryPoint
@@ -51,7 +52,7 @@ object PeekPokeTester {
   }
 }
 
-abstract class PeekPokeTester[+T <: Module](
+abstract class PeekPokeTester[+T <: BaseModule](
     val dut: T,
     base: Int = 16,
     logFile: Option[File] = None) {

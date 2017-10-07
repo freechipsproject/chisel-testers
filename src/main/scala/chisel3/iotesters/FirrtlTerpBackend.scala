@@ -7,14 +7,17 @@ import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
 
 private[iotesters] class FirrtlTerpBackend(
-    dut: Module,
+    dut: chisel3.experimental.RawModule,
     firrtlIR: String,
     optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager)
   extends Backend(_seed = System.currentTimeMillis()) {
   val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
   reset(5) // reset firrtl interpreter on construction
 
-  private val portNames = getDataNames("io", dut.io).toMap
+  private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
+    val pathName = id.pathName
+    getDataNames(pathName.drop(pathName.indexOf('.') + 1), id)
+  }.toMap
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit = {
@@ -113,7 +116,7 @@ private[iotesters] class FirrtlTerpBackend(
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply[T <: chisel3.Module](
+  def apply[T <: chisel3.experimental.RawModule](
       dutGen: () => T,
       optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
 
