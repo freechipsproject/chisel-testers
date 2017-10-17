@@ -4,12 +4,12 @@ package chisel3.iotesters
 import chisel3._
 import chisel3.internal.InstanceId
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
-import firrtl_interpreter.InterpretiveTester
+import firrtl_interpreter.{HasInterpreterSuite, InterpretiveTester}
 
 private[iotesters] class FirrtlTerpBackend(
     dut: Module,
     firrtlIR: String,
-    optionsManager: TesterOptionsManager = new TesterOptionsManager)
+    optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager)
   extends Backend(_seed = System.currentTimeMillis()) {
   val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
   reset(5) // reset firrtl interpreter on construction
@@ -103,7 +103,7 @@ private[iotesters] class FirrtlTerpBackend(
 private[iotesters] object setupFirrtlTerpBackend {
   def apply[T <: chisel3.Module](
       dutGen: () => T,
-      optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
+      optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager): (T, Backend) = {
 
     // the backend must be firrtl if we are here, therefore we want the firrtl compiler
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
