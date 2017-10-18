@@ -5,8 +5,8 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
-import firrtl_interpreter.InterpreterOptions
-import org.scalatest.{Matchers, FlatSpec}
+import firrtl_interpreter.{HasReplConfig, InterpreterOptions, InterpreterOptionsManager}
+import org.scalatest.{FlatSpec, Matchers}
 
 object RealGCD2 {
   val num_width = 16
@@ -16,7 +16,7 @@ object RealGCD2 {
     * @param args command line arguments
     */
   def main(args: Array[String]) {
-    val optionsManager = new ReplOptionsManager
+    val optionsManager = new InterpreterOptionsManager with HasChiselExecutionOptions with HasReplConfig
     if(optionsManager.parse(args)) {
       iotesters.Driver.executeFirrtlRepl(() => new RealGCD2, optionsManager)
     }

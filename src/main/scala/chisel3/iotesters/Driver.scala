@@ -6,7 +6,7 @@ import chisel3._
 import java.io.File
 
 import firrtl.{ExecutionOptionsManager, HasFirrtlOptions}
-import firrtl_interpreter.{FirrtlRepl, HasInterpreterOptions, HasReplConfig, ReplConfig}
+import firrtl_interpreter._
 import logger.Logger
 
 import scala.util.DynamicVariable
@@ -118,7 +118,7 @@ object Driver {
     */
   def executeFirrtlRepl[T <: Module](
                                       dutGenerator: () => T,
-                                      optionsManager: ReplOptionsManager = new ReplOptionsManager): Boolean = {
+                                      optionsManager: InterpreterOptionsManager with HasChiselExecutionOptions with HasReplConfig = new InterpreterOptionsManager with HasChiselExecutionOptions with HasReplConfig): Boolean = {
 
     optionsManager.chiselOptions = optionsManager.chiselOptions.copy(runFirrtlCompiler = false)
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
@@ -155,7 +155,7 @@ object Driver {
                                     args: Array[String],
                                       dutGenerator: () => T
                                       ): Boolean = {
-    val optionsManager = new ReplOptionsManager
+    val optionsManager = new InterpreterOptionsManager with HasChiselExecutionOptions with HasReplConfig
 
     if(optionsManager.parse(args)) {
       executeFirrtlRepl(dutGenerator, optionsManager)
