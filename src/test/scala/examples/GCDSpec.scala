@@ -9,17 +9,6 @@ import org.scalatest.{Matchers, FlatSpec}
 
 object RealGCD2 {
   val num_width = 16
-
-  /**
-    * This is an example of how to launch the repl with the RealGCD2 module
-    * @param args command line arguments
-    */
-  def main(args: Array[String]) {
-    val optionsManager = new ReplOptionsManager
-    if(optionsManager.parse(args)) {
-      iotesters.Driver.executeFirrtlRepl(() => new RealGCD2, optionsManager)
-    }
-  }
 }
 
 class RealGCD2Input extends Bundle {
@@ -31,8 +20,9 @@ class RealGCD2Input extends Bundle {
 class RealGCD2 extends Module {
   private val theWidth = RealGCD2.num_width
   val io  = IO(new Bundle {
-    val in  = Flipped(Decoupled(new RealGCD2Input()))
-    val out = Valid(UInt(theWidth.W))
+    // we use quirky names here to test fixed bug in verilator backend
+    val RealGCD2in  = Flipped(Decoupled(new RealGCD2Input()))
+    val RealGCD2out = Valid(UInt(theWidth.W))
   })
 
   val x = Reg(UInt(theWidth.W))
@@ -42,11 +32,11 @@ class RealGCD2 extends Module {
   val ti = RegInit(0.U(theWidth.W))
   ti := ti + 1.U
 
-  io.in.ready := !p
+  io.RealGCD2in.ready := !p
 
-  when (io.in.valid && !p) {
-    x := io.in.bits.a
-    y := io.in.bits.b
+  when (io.RealGCD2in.valid && !p) {
+    x := io.RealGCD2in.bits.a
+    y := io.RealGCD2in.bits.b
     p := true.B
   }
 
@@ -55,9 +45,9 @@ class RealGCD2 extends Module {
       .otherwise    { y := y - x }
   }
 
-  io.out.bits  := x
-  io.out.valid := y === 0.U && p
-  when (io.out.valid) {
+  io.RealGCD2out.bits  := x
+  io.RealGCD2out.valid := y === 0.U && p
+  when (io.RealGCD2out.valid) {
     p := false.B
   }
 }
@@ -69,12 +59,12 @@ class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
   } {
     val (gcd_value, _) = GCDCalculator.computeGcdResultsAndCycles(i, j)
 
-    poke(c.io.in.bits.a, i)
-    poke(c.io.in.bits.b, j)
-    poke(c.io.in.valid, 1)
+    poke(c.io.RealGCD2in.bits.a, i)
+    poke(c.io.RealGCD2in.bits.b, j)
+    poke(c.io.RealGCD2in.valid, 1)
 
     var count = 0
-    while(peek(c.io.out.valid) == BigInt(0) && count < 20) {
+    while(peek(c.io.RealGCD2out.valid) == BigInt(0) && count < 20) {
       step(1)
       count += 1
     }
@@ -82,7 +72,7 @@ class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
       // println(s"Waited $count cycles on gcd inputs $i, $j, giving up")
       System.exit(0)
     }
-    expect(c.io.out.bits, gcd_value)
+    expect(c.io.RealGCD2out.bits, gcd_value)
     step(1)
   }
 }
