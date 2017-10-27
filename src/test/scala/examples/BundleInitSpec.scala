@@ -35,6 +35,8 @@ object MyBundle {
     */
   def setYTo5(): MyBundle = {
     val wire = Wire(new MyBundle)
+    // Initialize all elements. We don't want firrtl complaining about "not fully initialized" connections.
+    wire.x := 0.U
     wire.y := 5.U
     wire
   }
