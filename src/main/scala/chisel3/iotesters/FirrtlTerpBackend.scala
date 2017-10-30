@@ -103,7 +103,9 @@ private[iotesters] class FirrtlTerpBackend(
 private[iotesters] object setupFirrtlTerpBackend {
   def apply[T <: chisel3.Module](
       dutGen: () => T,
-      optionsManager: TesterOptionsManager = new TesterOptionsManager with HasInterpreterOptions): (T, Backend) = {
+      optionsManager: TesterOptionsManager = new TesterOptionsManager with HasInterpreterOptions,
+      firrtlSourceOverride: Option[String] = None
+  ): (T, Backend) = {
 
     // the backend must be firrtl if we are here, therefore we want the firrtl compiler
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
@@ -112,7 +114,8 @@ private[iotesters] object setupFirrtlTerpBackend {
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {
           case FirrtlExecutionSuccess(_, compiledFirrtl) =>
-            (dut, new FirrtlTerpBackend(dut, compiledFirrtl, optionsManager = optionsManager))
+            val firrtlText = firrtlSourceOverride.getOrElse(compiledFirrtl)
+            (dut, new FirrtlTerpBackend(dut, firrtlText, optionsManager = optionsManager))
           case FirrtlExecutionFailure(message) =>
             throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
         }

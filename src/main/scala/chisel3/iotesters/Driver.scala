@@ -29,7 +29,8 @@ object Driver {
     */
   def execute[T <: Module](
                             dutGenerator: () => T,
-                            optionsManager: TesterOptionsManager
+                            optionsManager: TesterOptionsManager,
+                            firrtlSourceOverride: Option[String] = None
                           )
                           (
                             testerGen: T => PeekPokeTester[T]
@@ -48,7 +49,7 @@ object Driver {
 
         val (dut, backend) = testerOptions.backendName match {
           case "firrtl" =>
-            setupFirrtlTerpBackend(dutGenerator, optionsManager)
+            setupFirrtlTerpBackend(dutGenerator, optionsManager, firrtlSourceOverride)
           case "verilator" =>
             setupVerilatorBackend(dutGenerator, optionsManager)
           case "vcs" =>
