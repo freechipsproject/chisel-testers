@@ -51,7 +51,7 @@ object Driver {
           case "firrtl" =>
             setupFirrtlTerpBackend(dutGenerator, optionsManager, firrtlSourceOverride)
           case "verilator" =>
-            setupVerilatorBackend(dutGenerator, optionsManager)
+            setupVerilatorBackend(dutGenerator, optionsManager, firrtlSourceOverride)
           case "vcs" =>
             setupVCSBackend(dutGenerator, optionsManager)
           case _ =>
