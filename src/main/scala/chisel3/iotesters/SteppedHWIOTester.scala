@@ -128,7 +128,6 @@ abstract class SteppedHWIOTester extends HWIOTester {
       }
     )
     input_port := input_values(counter.value)
-
   }
 
   private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
