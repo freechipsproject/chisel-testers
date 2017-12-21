@@ -128,6 +128,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
       }
     )
     input_port := input_values(counter.value)
+
   }
 
   private def createVectorsAndTestsForOutput(output_port: Data, counter: Counter): Unit = {
@@ -171,6 +172,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
 
   override def finish(): Unit = {
     io_info = new IOAccessor(device_under_test.io)
+    device_under_test.io := DontCare
 
     processEvents()
 
