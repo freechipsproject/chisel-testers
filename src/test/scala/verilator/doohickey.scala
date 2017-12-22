@@ -11,4 +11,8 @@ class doohickey() extends Module {
   val bobs = Seq.fill(16) {
     Module(new thingamabob()).io
   }
+  // Support the invalidate API
+  for (bob <- bobs) {
+    bob := DontCare
+  }
 }
