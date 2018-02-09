@@ -2,6 +2,14 @@
 
 enablePlugins(BuildInfoPlugin)
 
+// sbt-site - sbt-ghpages
+
+enablePlugins(SiteScaladocPlugin)
+
+enablePlugins(GhpagesPlugin)
+
+git.remoteRepo := "git@github.com:freechipsproject/chisel-testers.git"
+
 version := "1.2-SNAPSHOT"
 
 name := "Chisel.iotesters"
@@ -38,10 +46,6 @@ libraryDependencies ++= Seq(
 ) ++ chiselDeps.libraries
     
   pomExtra := pomExtra.value ++
-    <scm>
-      <url>https://github.com/ucb-bar/chisel-testers.git</url>
-      <connection>scm:git:github.com/ucb-bar/chisel-testers.git</connection>
-    </scm>
     <developers>
       <developer>
 	<id>jackbackrack</id>
