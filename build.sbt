@@ -10,7 +10,13 @@ enablePlugins(GhpagesPlugin)
 
 git.remoteRepo := "git@github.com:freechipsproject/chisel-testers.git"
 
+ChiselProjectDependenciesPlugin.chiselProjectSettings
+
+ChiselProjectDependenciesPlugin.chiselBuildInfoSettings
+
 version := "1.2-SNAPSHOT"
+
+scalaVersion := "2.11.12"
 
 name := "Chisel.iotesters"
 
@@ -25,10 +31,6 @@ val defaultVersions = Map(
 def chiselVersion(proj: String): String = {
   sys.props.getOrElse(proj + "Version", defaultVersions(proj))
 }
-
-ChiselProjectDependenciesPlugin.chiselBuildInfoSettings
-
-ChiselProjectDependenciesPlugin.chiselProjectSettings
 
 // The Chisel projects we're dependendent on.
 val chiselDeps = chisel.dependencies(Seq(
