@@ -93,8 +93,8 @@ class DecoupledRealGCDTestHandCodedExample extends OrderedDecoupledHWIOTester {
   val device_under_test = Module(new RealGCD())
   val c = device_under_test
 
-  val a_values = Vec(Array(12.U(16.W), 33.U(16.W)))
-  val b_values = Vec(Array(24.U(16.W), 24.U(16.W)))
+  val a_values = VecInit(Array(12.U(16.W), 33.U(16.W)))
+  val b_values = VecInit(Array(24.U(16.W), 24.U(16.W)))
 
   val ti = RegInit(0.U(16.W))
   val pc = RegInit(0.U(16.W))
@@ -120,7 +120,7 @@ class DecoupledRealGCDTestHandCodedExample extends OrderedDecoupledHWIOTester {
     }
   }
 
-  val c_values = Vec(Array(12.U(16.W), 3.U(16.W)))
+  val c_values = VecInit(Array(12.U(16.W), 3.U(16.W)))
 //  c.io.out.ready := true.B
 
   when(!out_done && c.io.out.valid) {
