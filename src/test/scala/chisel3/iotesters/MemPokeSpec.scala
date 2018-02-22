@@ -9,7 +9,7 @@ import org.scalatest.prop.Checkers
 
 class InnerMemModule extends Module {
   //noinspection TypeAnnotation
-  val io = IO(new Bundle)
+  val io = IO(new Bundle {})
   val nelly = Mem(1024, UInt(32.W))
 }
 
