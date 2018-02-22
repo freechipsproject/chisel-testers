@@ -13,7 +13,7 @@ class VF extends Module {
   })
 
   val vec = Wire(Vec(11, UInt(8.W)))
-  vec := Vec(Seq.tabulate(11)(n => n.U))
+  vec := VecInit(Seq.tabulate(11)(n => n.U))
 
   io.value := vec(io.addr)
 }
