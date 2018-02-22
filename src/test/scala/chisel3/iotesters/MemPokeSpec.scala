@@ -9,9 +9,7 @@ import org.scalatest.prop.Checkers
 
 class InnerMemModule extends Module {
   //noinspection TypeAnnotation
-  val io = IO(new Bundle {
-    val in = Input(Bool())
-  })
+  val io = IO(new Bundle {})
   val nelly = Mem(1024, UInt(32.W))
 }
 
@@ -23,7 +21,6 @@ class OuterMemModule extends Module {
   })
   val billy = Mem(1024, UInt(32.W))
   val inner = Module(new InnerMemModule)
-  inner.io.in := false.B
 
   io.readData := billy(io.readAddress)
 }
