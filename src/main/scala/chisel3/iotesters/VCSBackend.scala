@@ -7,6 +7,7 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 import chisel3.core.{ActualDirection, DataMirror}
 import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess}
+import chisel3.experimental.MultiIOModule
 import firrtl.{ChirrtlForm, CircuitState}
 import firrtl.annotations.CircuitName
 import firrtl.transforms.{BlackBoxSourceHelper, BlackBoxTargetDir}
@@ -44,11 +45,9 @@ object copyVpiFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object genVCSVerilogHarness {
-  def apply(dut: chisel3.Module, writer: Writer, vpdFilePath: String, isGateLevel: Boolean = false) {
+  def apply(dut: MultiIOModule, writer: Writer, vpdFilePath: String, isGateLevel: Boolean = false) {
     val dutName = dut.name
-    val (inputs, outputs) = getDataNames("io", dut.io).partition {
-      case (e, _) => DataMirror.directionOf(e) == ActualDirection.Input
-    }
+    val (inputs, outputs) = getPorts(dut)
 
     writer write "module test;\n"
     writer write "  reg clock = 1;\n"
@@ -118,7 +117,7 @@ object genVCSVerilogHarness {
 }
 
 private[iotesters] object setupVCSBackend {
-  def apply[T <: chisel3.Module](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
+  def apply[T <: MultiIOModule](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
     optionsManager.makeTargetDir()
     optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
       runFirrtlCompiler = false
@@ -185,7 +184,7 @@ private[iotesters] object setupVCSBackend {
   }
 }
 
-private[iotesters] class VCSBackend(dut: chisel3.Module,
+private[iotesters] class VCSBackend(dut: MultiIOModule,
                                     cmd: Seq[String],
                                     _seed: Long = System.currentTimeMillis)
            extends VerilatorBackend(dut, cmd, _seed)
