@@ -215,13 +215,8 @@ private[iotesters] object setupVerilatorBackend {
         The following block adds an annotation that tells the black box helper where the
         current build directory is, so that it can copy verilog resource files into the right place
          */
-        val annotations = optionsManager.firrtlOptions.annotations ++ List(
-          firrtl.annotations.Annotation(
-            CircuitName(circuit.name),
-            classOf[BlackBoxSourceHelper],
-            BlackBoxTargetDirAnno(optionsManager.targetDirName).serialize
-          )
-        )
+        val annotations = optionsManager.firrtlOptions.annotations ++
+          List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
 
         val transforms = optionsManager.firrtlOptions.customTransforms
 
