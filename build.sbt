@@ -43,7 +43,7 @@ scalaVersion := "2.11.12"
 crossScalaVersions := Seq("2.11.12", "2.12.4")
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
-// The following are the default development versions, not the "release" versions.
+// The following are the release versions, not the default development versions.
 val defaultVersions = Map(
   "chisel3" -> "3.1.0-RC1",
   "firrtl" -> "1.1.0-RC1",
@@ -91,7 +91,6 @@ publishTo := {
     Some("releases" at nexus + "service/local/staging/deploy/maven2")
   }
 }
-
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
