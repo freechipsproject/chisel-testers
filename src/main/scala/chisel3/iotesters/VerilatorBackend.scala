@@ -6,7 +6,7 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 
 import chisel3._
-import chisel3.experimental.FixedPoint
+import chisel3.experimental.{FixedPoint, MultiIOModule}
 import chisel3.internal.InstanceId
 import firrtl._
 import firrtl.annotations.CircuitName
@@ -38,7 +38,7 @@ object copyVerilatorHeaderFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object VerilatorCppHarnessGenerator {
-  def codeGen(dut: chisel3.Module, state: CircuitState, vcdFilePath: String): String = {
+  def codeGen(dut: MultiIOModule, state: CircuitState, vcdFilePath: String): String = {
     val codeBuffer = new StringBuilder
 
     def pushBack(vector: String, pathName: String, width: BigInt) {
@@ -191,7 +191,7 @@ object VerilatorCppHarnessGenerator {
 }
 
 private[iotesters] object setupVerilatorBackend {
-  def apply[T <: chisel3.Module](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
+  def apply[T <: MultiIOModule](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
     import firrtl.{ChirrtlForm, CircuitState}
 
     optionsManager.makeTargetDir()
@@ -269,7 +269,7 @@ private[iotesters] object setupVerilatorBackend {
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: Module,
+private[iotesters] class VerilatorBackend(dut: MultiIOModule,
                                           cmd: Seq[String],
                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 
