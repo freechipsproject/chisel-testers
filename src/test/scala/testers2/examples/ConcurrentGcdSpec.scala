@@ -89,9 +89,28 @@ class MultiGcdCalculator(val numberOfEngines: Int) extends Module {
 
 case class GcdTriplet(a: Int, b: Int, gcd: Int)
 
+
+class TripletQueue(triplets: Seq[GcdTriplet]) {
+  var counter = 0
+  val total = triplets.length
+
+  def get(): Option[GcdTriplet] = {
+    synchronized {
+      if (counter >= total) {
+        None
+      }
+      else {
+        val result = counter
+        counter += 1
+        Some(triplets(result))
+      }
+    }
+  }
+}
+
 class ConcurrentGcdSpec extends FreeSpec with ChiselScalatestTester with Matchers {
 
-  "it should run really nicely" in {
+  "Concurrent GCD should be testable with non decoupled primitives" in {
     test(new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)) { c =>
       val triplets = (1 to 10).flatMap { a =>
         (1 to 10).map {
@@ -100,27 +119,9 @@ class ConcurrentGcdSpec extends FreeSpec with ChiselScalatestTester with Matcher
       }
       println(triplets.toList)
 
-      class TripletQueue(triplets: Seq[GcdTriplet]) {
-        var counter = 0
-        val total = triplets.length
-
-        def get(): Option[GcdTriplet] = {
-          synchronized {
-            if (counter >= total) {
-              None
-            }
-            else {
-              val result = counter
-              counter += 1
-              Some(triplets(result))
-            }
-          }
-        }
-      }
-
       val tripletQueue = new TripletQueue(triplets)
 
-      def doOneGcd(engineNumber: Int)(): Unit = {
+      def driveEngine(engineNumber: Int)(): Unit = {
         tripletQueue.get() match {
           case Some(pair) =>
             var waitCount = 0
@@ -142,17 +143,21 @@ class ConcurrentGcdSpec extends FreeSpec with ChiselScalatestTester with Matcher
             )
 
             c.io.output(engineNumber).bits.gcd.expect(pair.gcd.U)
-            doOneGcd(engineNumber)()
+            driveEngine(engineNumber)()
           case _ =>
         }
       }
 
-      val firstHandler = fork(doOneGcd(0))
-      var handler = firstHandler
-      for(handlerNumber <- 1 until ConcurrentDecoupledTestingSpec.parallelEngines) {
-        handler = handler.fork(doOneGcd(handlerNumber))
-      }
-      handler.join()
+      /*
+      This creates an initial fork for engine 0 then
+      for subsequent engines forks each one of the previous one
+      and runs join on the last one.
+       */
+      (1 until ConcurrentDecoupledTestingSpec.parallelEngines)
+              .foldLeft(fork(driveEngine(0))) { (previousFork, engineNumber) =>
+                previousFork.fork(driveEngine(engineNumber))
+              }
+              .join()
     }
   }
 }
