@@ -7,7 +7,7 @@ import java.io.File
 import chisel3._
 import chisel3.core.{Aggregate, Element}
 import PeekPokeTester.extractElementBits
-import chisel3.experimental.FixedPoint
+import chisel3.experimental.{FixedPoint, MultiIOModule}
 import chisel3.internal.firrtl.KnownBinaryPoint
 
 import scala.collection.immutable.ListMap
@@ -51,7 +51,7 @@ object PeekPokeTester {
   }
 }
 
-abstract class PeekPokeTester[+T <: Module](
+abstract class PeekPokeTester[+T <: MultiIOModule](
     val dut: T,
     base: Int = 16,
     logFile: Option[File] = None) {

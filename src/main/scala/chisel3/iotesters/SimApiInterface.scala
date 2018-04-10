@@ -3,6 +3,7 @@ package chisel3.iotesters
 
 
 import chisel3._
+import chisel3.experimental.MultiIOModule
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.collection.immutable.ListMap
@@ -12,7 +13,7 @@ import scala.sys.process.{Process, ProcessLogger}
 import java.io.{File, PrintStream}
 import java.nio.channels.FileChannel
 
-private[iotesters] class SimApiInterface(dut: Module, cmd: Seq[String]) {
+private[iotesters] class SimApiInterface(dut: MultiIOModule, cmd: Seq[String]) {
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
     val (inputs, outputs) = getPorts(dut)
     def genChunk(args: (Data, String)) = args match {
