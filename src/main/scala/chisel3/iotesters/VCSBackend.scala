@@ -5,12 +5,10 @@ import java.io.{File, FileWriter, IOException, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-import chisel3.core.{ActualDirection, DataMirror}
-import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess}
+import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, Element}
 import chisel3.experimental.MultiIOModule
 import firrtl.{ChirrtlForm, CircuitState}
-import firrtl.annotations.CircuitName
-import firrtl.transforms.{BlackBoxSourceHelper, BlackBoxTargetDirAnno}
+import firrtl.transforms.BlackBoxTargetDirAnno
 
 /**
   * Copies the necessary header files used for verilator compilation to the specified destination folder
@@ -47,7 +45,18 @@ object copyVpiFiles {
 object genVCSVerilogHarness {
   def apply(dut: MultiIOModule, writer: Writer, vpdFilePath: String, isGateLevel: Boolean = false) {
     val dutName = dut.name
-    val (inputs, outputs) = getPorts(dut)
+    // getPorts() is going to return names prefixed with the dut name.
+    // These don't correspond to code currently generated for verilog modules,
+    //  so we have to strip the dut name prefix (and the delimiter) from the name.
+    // We tell getPorts() to use "_" as the delimiter to simplify the replacement regexp.
+    def fixnames(portSeq: (Seq[(Element, String)], Seq[(Element, String)])): (Seq[(Element, String)], Seq[(Element, String)]) = {
+      val replaceRegexp = ("^" + dutName + "_").r
+      (
+        portSeq._1 map { case (e: Element, s: String) => (e, replaceRegexp.replaceFirstIn(s, ""))},
+        portSeq._2 map { case (e: Element, s: String) => (e, replaceRegexp.replaceFirstIn(s, ""))}
+      )
+    }
+    val (inputs, outputs) = fixnames(getPorts(dut, "_"))
 
     writer write "module test;\n"
     writer write "  reg clock = 1;\n"
