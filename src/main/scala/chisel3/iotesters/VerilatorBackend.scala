@@ -209,14 +209,13 @@ private[iotesters] object setupVerilatorBackend {
         val dut = getTopModule(circuit).asInstanceOf[T]
 
         // This makes sure annotations for command line options get created
-        firrtl.Driver.loadAnnotations(optionsManager)
+        val externalAnnotations = firrtl.Driver.getAnnotations(optionsManager)
 
         /*
         The following block adds an annotation that tells the black box helper where the
         current build directory is, so that it can copy verilog resource files into the right place
          */
-        val annotations = optionsManager.firrtlOptions.annotations ++
-          List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
+        val annotations = externalAnnotations ++ List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
 
         val transforms = optionsManager.firrtlOptions.customTransforms
 
@@ -308,7 +307,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
       case f: FixedPoint => signConvert(bigIntU, f.getWidth)
       case _ => bigIntU
     }
-    if (verbose) logger info s"  PEEK ${path} -> ${bigIntToStr(result, base)}"
+    if (verbose) logger info s"  PEEK $path -> ${bigIntToStr(result, base)}"
     result
   }
 
@@ -319,7 +318,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
     val got = peek(signal, None)
     val good = got == expected
     if (verbose) logger info (
-      s"""${msg}  EXPECT ${path} -> ${bigIntToStr(got, base)} == """ +
+      s"""${msg}  EXPECT $path -> ${bigIntToStr(got, base)} == """ +
         s"""${bigIntToStr(expected, base)} ${if (good) "PASS" else "FAIL"}""")
     good
   }
@@ -331,7 +330,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
 
   def poke(path: String, value: BigInt)
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int) {
-    if (verbose) logger info s"  POKE ${path} <- ${bigIntToStr(value, base)}"
+    if (verbose) logger info s"  POKE $path <- ${bigIntToStr(value, base)}"
     simApiInterface.poke(path, value)
   }
 
@@ -343,7 +342,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
   def peek(path: String)
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): BigInt = {
     val result = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
-    if (verbose) logger info s"  PEEK ${path} -> ${bigIntToStr(result, base)}"
+    if (verbose) logger info s"  PEEK $path -> ${bigIntToStr(result, base)}"
     result
   }
 
@@ -352,7 +351,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
     val got = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
     val good = got == expected
     if (verbose) logger info (
-      s"""${msg}  EXPECT ${path} got ${bigIntToStr(got, base)} expected""" +
+      s"""${msg}  EXPECT $path got ${bigIntToStr(got, base)} expected""" +
         s"""${bigIntToStr(expected, base)} ${if (good) "PASS" else "FAIL"}""")
     good
   }
