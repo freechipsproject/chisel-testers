@@ -231,6 +231,8 @@ private:
         }
       }
 
+// It seems iverilog does not support vpiPrimitive yet
+#ifndef __ICARUS__
       // Find DFF
       vpiHandle udp_iter = vpi_iterate(vpiPrimitive, mod_handle);
       while (vpiHandle udp_handle = vpi_scan(udp_iter)) {
@@ -238,6 +240,7 @@ private:
           add_signal(udp_handle, modname);
         }
       }
+#endif
 
       vpiHandle sub_iter = vpi_iterate(vpiModule, mod_handle);
       while (vpiHandle sub_handle = vpi_scan(sub_iter)) {

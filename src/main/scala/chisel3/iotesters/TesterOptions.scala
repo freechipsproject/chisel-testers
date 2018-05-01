@@ -22,12 +22,16 @@ case class TesterOptions(
                           moreVcsFlags:    Seq[String] = Seq.empty,
                           moreVcsCFlags:   Seq[String] = Seq.empty,
                           vcsCommandEdits: String = "",
+                          moreIvlFlags:    Seq[String] = Seq.empty,
+                          moreIvlCFlags:   Seq[String] = Seq.empty,
+                          ivlCommandEdits: String = "",
                           backendName:     String  = "firrtl",
                           logFileName:     String  = "",
                           waveform:        Option[File] = None) extends ComposableOptions
 
 object TesterOptions {
   val VcsFileCommands: Regex = """file:(.+)""".r
+  val IvlFileCommands: Regex = """file:(.+)""".r
 }
 
 trait HasTesterOptions {
@@ -37,10 +41,10 @@ trait HasTesterOptions {
 
   parser.note("tester options")
 
-  parser.opt[String]("backend-name").valueName("<firrtl|verilator|vcs>")
+  parser.opt[String]("backend-name").valueName("<firrtl|verilator|ivl|vcs>")
     .abbr("tbn")
     .validate { x =>
-      if (Array("firrtl", "verilator", "vcs").contains(x.toLowerCase)) parser.success
+      if (Array("firrtl", "verilator", "ivl", "vcs").contains(x.toLowerCase)) parser.success
       else parser.failure(s"$x not a legal backend name")
     }
     .foreach { x => testerOptions = testerOptions.copy(backendName = x) }
@@ -90,6 +94,22 @@ trait HasTesterOptions {
     .abbr("tvce")
     .foreach { x =>
       testerOptions = testerOptions.copy(vcsCommandEdits = x) }
+    .text("a file containing regex substitutions, one per line s/pattern/replacement/")
+
+  parser.opt[String]("more-ivl-flags")
+    .abbr("tmif")
+    .foreach { x => testerOptions = testerOptions.copy(moreIvlFlags = x.split("""\s""")) }
+    .text("Add specified commands to the ivl command line")
+
+  parser.opt[String]("more-ivl-c-flags")
+    .abbr("tmicf")
+    .foreach { x => testerOptions = testerOptions.copy(moreIvlCFlags = x.split("""\s""")) }
+    .text("Add specified commands to the CFLAGS on the ivl command line")
+
+  parser.opt[String]("ivl-command-edits")
+    .abbr("tice")
+    .foreach { x =>
+      testerOptions = testerOptions.copy(ivlCommandEdits = x) }
     .text("a file containing regex substitutions, one per line s/pattern/replacement/")
 
   parser.opt[String]("log-file-name")

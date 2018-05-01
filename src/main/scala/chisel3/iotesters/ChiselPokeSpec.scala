@@ -20,6 +20,11 @@ case object VerilatorBackend extends TesterBackend {
     setupVerilatorBackend(dutGen, options)
   }
 }
+case object IvlBackend extends TesterBackend {
+  override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
+    setupIVLBackend(dutGen, options)
+  }
+}
 case object VcsBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
     setupVCSBackend(dutGen, options)
