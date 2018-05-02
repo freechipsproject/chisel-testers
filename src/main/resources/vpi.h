@@ -206,13 +206,12 @@ private:
       std::string modname = std::string(vpi_get_str(vpiFullName, mod_handle)).substr(offset);
       // Iterate its nets
       vpiHandle net_iter = vpi_iterate(vpiNet, mod_handle);
-      if(net_iter){
+      if(net_iter)
         while (vpiHandle net_handle = vpi_scan(net_iter)) {
           std::string netname = vpi_get_str(vpiName, net_handle);
           std::string netpath = modname + "." + netname;
           add_signal(net_handle, netpath);
         }
-      }
 
       // Iterate its regs
       vpiHandle reg_iter = vpi_iterate(vpiReg, mod_handle);
