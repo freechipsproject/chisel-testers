@@ -225,6 +225,9 @@ private[iotesters] object TesterProcess {
     while(!sim.exitValue.isCompleted) sim.process.destroy
     println("Exit Code: %d".format(sim.process.exitValue))
   }
+  def kill(p: IVLBackend) {
+    kill(p.simApiInterface)
+  }
   def kill(p: VCSBackend) {
     kill(p.simApiInterface)
   }

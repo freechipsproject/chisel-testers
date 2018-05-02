@@ -206,46 +206,53 @@ private:
       std::string modname = std::string(vpi_get_str(vpiFullName, mod_handle)).substr(offset);
       // Iterate its nets
       vpiHandle net_iter = vpi_iterate(vpiNet, mod_handle);
-      while (vpiHandle net_handle = vpi_scan(net_iter)) {
-        std::string netname = vpi_get_str(vpiName, net_handle);
-        std::string netpath = modname + "." + netname;
-        add_signal(net_handle, netpath);
+      if(net_iter){
+        while (vpiHandle net_handle = vpi_scan(net_iter)) {
+          std::string netname = vpi_get_str(vpiName, net_handle);
+          std::string netpath = modname + "." + netname;
+          add_signal(net_handle, netpath);
+        }
       }
 
       // Iterate its regs
       vpiHandle reg_iter = vpi_iterate(vpiReg, mod_handle);
-      while (vpiHandle reg_handle = vpi_scan(reg_iter)) {
-        std::string regname = vpi_get_str(vpiName, reg_handle);
-        std::string regpath = modname + "." + regname;
-        add_signal(reg_handle, regpath);
-      }
+      if(reg_iter)
+        while (vpiHandle reg_handle = vpi_scan(reg_iter)) {
+          std::string regname = vpi_get_str(vpiName, reg_handle);
+          std::string regpath = modname + "." + regname;
+          add_signal(reg_handle, regpath);
+        }
 
       // Iterate its mems
       vpiHandle mem_iter = vpi_iterate(vpiRegArray, mod_handle);
-      while (vpiHandle mem_handle = vpi_scan(mem_iter)) {
-        vpiHandle elm_iter = vpi_iterate(vpiReg, mem_handle);
-        while (vpiHandle elm_handle = vpi_scan(elm_iter)) {
-          std::string elmname = vpi_get_str(vpiName, elm_handle);
-          std::string elmpath = modname + "." + elmname;
-          add_signal(elm_handle, elmpath);
+      if(mem_iter)
+        while (vpiHandle mem_handle = vpi_scan(mem_iter)) {
+          vpiHandle elm_iter = vpi_iterate(vpiReg, mem_handle);
+          if(elm_iter)
+            while (vpiHandle elm_handle = vpi_scan(elm_iter)) {
+              std::string elmname = vpi_get_str(vpiName, elm_handle);
+              std::string elmpath = modname + "." + elmname;
+              add_signal(elm_handle, elmpath);
+            }
         }
-      }
 
 // It seems iverilog does not support vpiPrimitive yet
 #ifndef __ICARUS__
       // Find DFF
       vpiHandle udp_iter = vpi_iterate(vpiPrimitive, mod_handle);
-      while (vpiHandle udp_handle = vpi_scan(udp_iter)) {
-        if (vpi_get(vpiPrimType, udp_handle) == vpiSeqPrim) {
-          add_signal(udp_handle, modname);
+      if(udp_iter)
+        while (vpiHandle udp_handle = vpi_scan(udp_iter)) {
+          if (vpi_get(vpiPrimType, udp_handle) == vpiSeqPrim) {
+            add_signal(udp_handle, modname);
+          }
         }
-      }
 #endif
 
       vpiHandle sub_iter = vpi_iterate(vpiModule, mod_handle);
-      while (vpiHandle sub_handle = vpi_scan(sub_iter)) {
-        modules.push(sub_handle);
-      }
+      if(sub_iter)
+        while (vpiHandle sub_handle = vpi_scan(sub_iter)) {
+          modules.push(sub_handle);
+        }
     }
   }
 };
