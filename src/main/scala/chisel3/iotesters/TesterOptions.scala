@@ -3,6 +3,7 @@
 package chisel3.iotesters
 
 import java.io.File
+import scala.collection.mutable.Queue
 
 import chisel3.HasChiselExecutionOptions
 import firrtl.{ComposableOptions, ExecutionOptionsManager, HasFirrtlOptions}
@@ -24,7 +25,9 @@ case class TesterOptions(
                           vcsCommandEdits: String = "",
                           backendName:     String  = "firrtl",
                           logFileName:     String  = "",
-                          waveform:        Option[File] = None) extends ComposableOptions
+                          waveform:        Option[File] = None,
+                          intermediateReportFunc: Queue[Statement] => Unit = _.foreach { s => println(s.serialize) }
+                            ) extends ComposableOptions
 
 object TesterOptions {
   val VcsFileCommands: Regex = """file:(.+)""".r
@@ -40,7 +43,7 @@ trait HasTesterOptions {
   parser.opt[String]("backend-name").valueName("<firrtl|verilator|vcs>")
     .abbr("tbn")
     .validate { x =>
-      if (Array("firrtl", "verilator", "vcs").contains(x.toLowerCase)) parser.success
+      if (Array("firrtl", "verilator", "vcs", "intermediate").contains(x.toLowerCase)) parser.success
       else parser.failure(s"$x not a legal backend name")
     }
     .foreach { x => testerOptions = testerOptions.copy(backendName = x) }
