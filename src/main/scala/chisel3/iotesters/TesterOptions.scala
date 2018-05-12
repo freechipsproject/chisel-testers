@@ -22,12 +22,12 @@ case class TesterOptions(
                           moreVcsFlags:    Seq[String] = Seq.empty,
                           moreVcsCFlags:   Seq[String] = Seq.empty,
                           vcsCommandEdits: String = "",
-                          moreIvlFlags:    Seq[String] = Seq.empty,
-                          moreIvlCFlags:   Seq[String] = Seq.empty,
-                          ivlCommandEdits: String = "",
                           backendName:     String  = "firrtl",
                           logFileName:     String  = "",
-                          waveform:        Option[File] = None) extends ComposableOptions
+                          waveform:        Option[File] = None,
+                          moreIvlFlags:    Seq[String] = Seq.empty,
+                          moreIvlCFlags:   Seq[String] = Seq.empty,
+                          ivlCommandEdits: String = "") extends ComposableOptions
 
 object TesterOptions {
   val VcsFileCommands: Regex = """file:(.+)""".r
