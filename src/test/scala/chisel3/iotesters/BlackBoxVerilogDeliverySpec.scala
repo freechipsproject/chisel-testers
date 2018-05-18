@@ -76,17 +76,15 @@ class BlackBoxVerilogDeliverySpec extends FreeSpec with Matchers {
     } should be (true)
   }
 
-  //TODO: The following fails or succeeds depending on vcs in users path, figure out how to test
-//  "blackbox verilog implementation should end up accessible to vcs" in {
-//    val manager = new TesterOptionsManager {
-//      testerOptions = testerOptions.copy(backendName = "vcs")
-//    }
-//    intercept[AssertionError] {
-//      iotesters.Driver.execute(() => new UsesBBAddOne, manager) { c =>
-//        new UsesBBAddOneTester(c)
-//      } should be(true)
-//    }
-//    new java.io.File(
-//        manager.targetDirName, firrtl.transforms.BlackBoxSourceHelper.FileListName).exists() should be (true)
-//  }
+  "blackbox verilog implementation should end up accessible to vcs" in {
+    assume(firrtl.FileUtils.isVCSAvailable)
+    val manager = new TesterOptionsManager {
+      testerOptions = testerOptions.copy(backendName = "vcs")
+    }
+    iotesters.Driver.execute(() => new UsesBBAddOne, manager) { c =>
+      new UsesBBAddOneTester(c)
+    } should be(true)
+    new java.io.File(
+        manager.targetDirName, firrtl.transforms.BlackBoxSourceHelper.fileListName).exists() should be (true)
+  }
 }
