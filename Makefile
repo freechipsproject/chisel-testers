@@ -19,27 +19,27 @@ mill-tools:	$(MILL_BIN)
 
 # Compile and package jar
 mill.build: mill-tools
-	$(MILL) firrtlInterpreter.jar
+	$(MILL) chiselTesters.jar
 
 # Compile and test
 mill.test: mill-tools
-	$(MILL) firrtlInterpreter.test
+	$(MILL) chiselTesters.test
 
 # Build and publish jar
 mill.publishLocal: mill-tools
-	$(MILL) firrtlInterpreter.publishLocal
+	$(MILL) chiselTesters.publishLocal
 
 # Compile and package all jar
 mill.build.all: mill-tools
-	$(MILL) firrtlInterpreter[_].jar
+	$(MILL) chiselTesters[_].jar
 
 # Compile and test
 mill.test.all: mill-tools
-	$(MILL) firrtlInterpreter[_].test
+	$(MILL) chiselTesters[_].test
 
 # Build and publish jar
 mill.publishLocal.all: mill-tools
-	$(MILL) firrtlInterpreter[_].publishLocal
+	$(MILL) chiselTesters[_].publishLocal
 
 # Remove all generated code.
 # Until "mill clean" makes it into a release.

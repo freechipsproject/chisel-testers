@@ -18,11 +18,11 @@ trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
   def pomSettings = PomSettings(
     description = artifactName(),
     organization = "edu.berkeley.cs",
-    url = "https://github.com/freechipsproject/firrtl-interpreter.git",
+    url = "https://github.com/freechipsproject/chisel-testers.git",
     licenses = Seq(License.`BSD-3-Clause`),
-    versionControl = VersionControl.github("freechipsproject", "firrtl-interpreter"),
+    versionControl = VersionControl.github("freechipsproject", "chisel-testers"),
     developers = Seq(
-      Developer("chick",    "Charles Markley",      "https://aspire.eecs.berkeley.edu/author/chick/")
+      Developer("jackbackrack",    "Jonathan Bachrach",      "https://eecs.berkeley.edu/~jrb/")
     )
   )
 
@@ -42,47 +42,52 @@ trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
 val crossVersions = Seq("2.11.12", "2.12.4")
 
 // Make this available to external tools.
-object firrtlInterpreter extends Cross[FirrtlInterpreterModule](crossVersions: _*) {
+object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
   def defaultVersion(ev: Evaluator[Any]) = T.command{
     println(crossVersions.head)
   }
 
   def compile = T{
-    firrtlInterpreter(crossVersions.head).compile()
+    chiselTesters(crossVersions.head).compile()
   }
 
   def jar = T{
-    firrtlInterpreter(crossVersions.head).jar()
+    chiselTesters(crossVersions.head).jar()
   }
 
   def test = T{
-    firrtlInterpreter(crossVersions.head).test.test()
+    chiselTesters(crossVersions.head).test.test()
   }
 
   def publishLocal = T{
-    firrtlInterpreter(crossVersions.head).publishLocal()
+    chiselTesters(crossVersions.head).publishLocal()
   }
 
   def docJar = T{
-    firrtlInterpreter(crossVersions.head).docJar()
+    chiselTesters(crossVersions.head).docJar()
   }
 }
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
-val defaultVersions = Map("firrtl" -> "1.2-SNAPSHOT")
+// The following are the default development versions, not the "release" versions.
+val defaultVersions = Map(
+  "chisel3" -> "3.2-SNAPSHOT",
+  "firrtl" -> "1.2-SNAPSHOT",
+  "firrtl-interpreter" -> "1.2-SNAPSHOT"
+  )
 
 def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
   val version = sys.env.getOrElse(dep + "Version", defaultVersions(dep))
   ivy"$org::$dep:$version"
 }
 
-class FirrtlInterpreterModule(val crossScalaVersion: String) extends CommonModule {
-  override def artifactName = "firrtl-interpreter"
+class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
+  override def artifactName = "chisel-testers"
 
-  def chiselDeps = Agg("firrtl").map { d => getVersion(d) }
+  def chiselDeps = Agg("firrtl", "firrtl-interpreter", "chisel3").map { d => getVersion(d) }
 
   override def ivyDeps = Agg(
-    ivy"org.scala-lang.modules:scala-jline:2.12.1"
+    ivy"com.github.scopt::scopt:3.6.0"
   ) ++ chiselDeps
 
   object test extends Tests {
