@@ -51,8 +51,7 @@ class VcdVerilatorSuppressionSpec extends FreeSpec with Matchers {
     }
     "suppress the vcd output like this" in {
       val optionsManager = new TesterOptionsManager() {
-        testerOptions = testerOptions.copy(backendName = "verilator")
-        firrtlOptions = firrtlOptions.copy(suppressVerilatorVCD = true)
+        testerOptions = testerOptions.copy(backendName = "verilator", suppressVerilatorVcd = true)
       }
       Driver.execute(() => new Returns43, optionsManager) { c =>
         new Returns43Tester(c)

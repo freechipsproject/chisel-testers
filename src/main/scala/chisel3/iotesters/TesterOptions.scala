@@ -11,20 +11,22 @@ import firrtl_interpreter.HasInterpreterSuite
 import scala.util.matching.Regex
 
 case class TesterOptions(
-                          isGenVerilog:    Boolean = false,
-                          isGenHarness:    Boolean = false,
-                          isCompiling:     Boolean = false,
-                          isRunTest:       Boolean = false,
-                          isVerbose:       Boolean = false,
-                          displayBase:     Int     = 10,
-                          testerSeed:      Long    = System.currentTimeMillis,
-                          testCmd:         Seq[String] = Seq.empty,
-                          moreVcsFlags:    Seq[String] = Seq.empty,
-                          moreVcsCFlags:   Seq[String] = Seq.empty,
-                          vcsCommandEdits: String = "",
-                          backendName:     String  = "firrtl",
-                          logFileName:     String  = "",
-                          waveform:        Option[File] = None) extends ComposableOptions
+  isGenVerilog        : Boolean = false,
+  isGenHarness        : Boolean = false,
+  isCompiling         : Boolean = false,
+  isRunTest           : Boolean = false,
+  isVerbose           : Boolean = false,
+  displayBase         : Int     = 10,
+  testerSeed          : Long    = System.currentTimeMillis,
+  testCmd             : Seq[String] = Seq.empty,
+  moreVcsFlags        : Seq[String] = Seq.empty,
+  moreVcsCFlags       : Seq[String] = Seq.empty,
+  vcsCommandEdits     : String = "",
+  backendName         : String  = "firrtl",
+  logFileName         : String  = "",
+  waveform            : Option[File] = None,
+  suppressVerilatorVcd: Boolean = false
+) extends ComposableOptions
 
 object TesterOptions {
   val VcsFileCommands: Regex = """file:(.+)""".r
@@ -106,6 +108,12 @@ trait HasTesterOptions {
     .abbr("tts")
     .foreach { x => testerOptions = testerOptions.copy(testerSeed = x) }
     .text("provides a seed for random number generator")
+
+  parser.opt[Unit]("suppress-verilator-vcd")
+    .abbr("tsvv")
+    .foreach { _ => testerOptions = testerOptions.copy(suppressVerilatorVcd = true) }
+    .text("stop verilator's automatic VCD generation")
+
 }
 
 class TesterOptionsManager

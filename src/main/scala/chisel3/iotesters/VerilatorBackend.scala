@@ -251,7 +251,7 @@ private[iotesters] object setupVerilatorBackend {
             dir,
             vSources = Seq(),
             cppHarnessFile,
-            optionsManager.firrtlOptions
+            optionsManager.testerOptions.suppressVerilatorVcd
           ).! == 0
         )
         assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
