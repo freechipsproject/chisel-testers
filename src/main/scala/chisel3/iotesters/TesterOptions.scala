@@ -7,6 +7,7 @@ import java.io.File
 import chisel3.HasChiselExecutionOptions
 import firrtl.{ComposableOptions, ExecutionOptionsManager, HasFirrtlOptions}
 import firrtl_interpreter.HasInterpreterSuite
+import treadle.HasTreadleSuite
 
 import scala.util.matching.Regex
 
@@ -22,7 +23,7 @@ case class TesterOptions(
                           moreVcsFlags:    Seq[String] = Seq.empty,
                           moreVcsCFlags:   Seq[String] = Seq.empty,
                           vcsCommandEdits: String = "",
-                          backendName:     String  = "firrtl",
+                          backendName:     String  = "treadle",
                           logFileName:     String  = "",
                           waveform:        Option[File] = None,
                           moreIvlFlags:    Seq[String] = Seq.empty,
@@ -41,10 +42,10 @@ trait HasTesterOptions {
 
   parser.note("tester options")
 
-  parser.opt[String]("backend-name").valueName("<firrtl|verilator|ivl|vcs>")
+  parser.opt[String]("backend-name").valueName("<firrtl|treadle|verilator|ivl|vcs>")
     .abbr("tbn")
     .validate { x =>
-      if (Array("firrtl", "verilator", "ivl", "vcs").contains(x.toLowerCase)) parser.success
+      if (Array("firrtl", "treadle", "verilator", "ivl", "vcs").contains(x.toLowerCase)) parser.success
       else parser.failure(s"$x not a legal backend name")
     }
     .foreach { x => testerOptions = testerOptions.copy(backendName = x) }
@@ -133,6 +134,7 @@ class TesterOptionsManager
     with HasTesterOptions
     with HasInterpreterSuite
     with HasChiselExecutionOptions
-    with HasFirrtlOptions{
+    with HasFirrtlOptions
+    with HasTreadleSuite {
 }
 

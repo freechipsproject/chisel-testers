@@ -47,10 +47,11 @@ crossScalaVersions := Seq("2.11.12", "2.12.4")
 val defaultVersions = Map(
   "chisel3" -> "3.2-SNAPSHOT",
   "firrtl" -> "1.2-SNAPSHOT",
-  "firrtl-interpreter" -> "1.2-SNAPSHOT"
+  "firrtl-interpreter" -> "1.2-SNAPSHOT",
+  "treadle" -> "1.1-SNAPSHOT"
   )
 
-libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: String =>
+libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").map { dep: String =>
     "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
 }
 
