@@ -50,6 +50,8 @@ object Driver {
         val (dut, backend) = testerOptions.backendName match {
           case "firrtl" =>
             setupFirrtlTerpBackend(dutGenerator, optionsManager)
+          case "treadle" =>
+            setupTreadleBackend(dutGenerator, optionsManager)
           case "verilator" =>
             setupVerilatorBackend(dutGenerator, optionsManager)
           case "ivl" =>
