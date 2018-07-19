@@ -7,7 +7,7 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import chisel3.util.{ChiselLoadMemoryAnnotation, log2Ceil}
+import chisel3.util.{loadMemoryFromFile, log2Ceil}
 import firrtl.FileUtils
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -25,7 +25,8 @@ class HasComplexMemory(memoryDepth: Int) extends Module {
 
   val memory = Mem(memoryDepth, new MemoryShape)
 
-  chisel3.experimental.annotate(ChiselLoadMemoryAnnotation(memory, "test_run_dir/complex_mem_test/mem"))
+  loadMemoryFromFile(memory, "test_run_dir/complex_mem_test/mem")
+
   io.value := memory(io.address)
 }
 

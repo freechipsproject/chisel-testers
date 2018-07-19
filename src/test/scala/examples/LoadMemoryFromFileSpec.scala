@@ -9,7 +9,7 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import chisel3.util.ChiselLoadMemoryAnnotation
+import chisel3.util.loadMemoryFromFile
 import firrtl.FileUtils
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -23,7 +23,8 @@ class UsesMem(memoryDepth: Int, memoryType: Bits) extends Module {
 
   val memory = Mem(memoryDepth, memoryType)
 
-  chisel3.experimental.annotate(ChiselLoadMemoryAnnotation(memory, "test_run_dir/load_mem_test/mem1.txt"))
+  loadMemoryFromFile(memory, "test_run_dir/load_mem_test/mem1.txt")
+
   io.value := memory(io.address)
 
   val low = Module(new UsesMemLow(memoryDepth, memoryType))
@@ -40,7 +41,8 @@ class UsesMemLow(memoryDepth: Int, memoryType: Data) extends Module {
 
   val memory = Mem(memoryDepth, memoryType)
 
-  chisel3.experimental.annotate(ChiselLoadMemoryAnnotation(memory, "test_run_dir/load_mem_test/mem2.txt"))
+  loadMemoryFromFile(memory, "test_run_dir/load_mem_test/mem2.txt")
+
   io.value := memory(io.address)
 }
 
