@@ -7,10 +7,27 @@ import chisel3.util.log2Ceil
 import org.scalacheck.Prop._
 import org.scalatest.prop.Checkers
 
+/**
+  * This whole test is about checking whether memory can be directly poked.
+  * To this end the circuit design is a bit of a mess.
+  * Trying to make sure memory does not get DCE'd or flagged as unitialized.
+  * Don't look here for anything other than how to poke a memory using the test harness
+  * with a scala based simulator
+  */
 class InnerMemModule extends Module {
   //noinspection TypeAnnotation
-  val io = IO(new Bundle {})
+  val io = IO(new Bundle {
+    val enable = Input(Bool())
+    val addr = Input(UInt(log2Ceil(1024).W))
+    val data = Input(UInt(32.W))
+    val out  = Output(UInt(32.W))
+  })
   val nelly = Mem(1024, UInt(32.W))
+
+  when(io.enable) {
+    nelly(io.addr) := io.data
+  }
+  io.out := nelly(io.addr)
 }
 
 class OuterMemModule extends Module {
@@ -18,9 +35,15 @@ class OuterMemModule extends Module {
   val io = IO(new Bundle {
     val readAddress = Input(UInt(log2Ceil(1024).W))
     val readData    = Output(UInt(32.W))
+    val readData2   = Output(UInt(32.W))
   })
   val billy = Mem(1024, UInt(32.W))
   val inner = Module(new InnerMemModule)
+  inner.io.enable := false.B
+
+  inner.io.addr := 1.U
+  inner.io.data := 7.U
+  io.readData2 := inner.io.out
 
   io.readData := billy(io.readAddress)
 }
@@ -55,5 +78,6 @@ class MemPokeSpec extends ChiselFlatSpec with Checkers {
   behavior of "Peeking and Poking straight into underlying memory, in interpreter"
 
   it should "return peek values exactly as poked" in
-    check(Driver.execute(Array(), () => new OuterMemModule) { m => new MemPokeTester(m) })
+//    check(Driver.execute(Array("--backend-name", "treadle"), () => new OuterMemModule) { m => new MemPokeTester(m) })
+    check(Driver.execute(Array("-tv", "--backend-name", "treadle"), () => new OuterMemModule) { m => new MemPokeTester(m) })
 }
