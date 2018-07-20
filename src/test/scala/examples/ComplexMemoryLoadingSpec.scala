@@ -17,7 +17,8 @@ class MemoryShape extends Bundle {
   val c = Bool()
 }
 
-class HasComplexMemory(memoryDepth: Int) extends Module {
+class HasComplexMemory(memoryDepth: Int, dirName: String) extends Module {
+  //noinspection TypeAnnotation
   val io = IO(new Bundle {
     val address = Input(UInt(log2Ceil(memoryDepth).W))
     val value   = Output(new MemoryShape)
@@ -25,7 +26,7 @@ class HasComplexMemory(memoryDepth: Int) extends Module {
 
   val memory = Mem(memoryDepth, new MemoryShape)
 
-  loadMemoryFromFile(memory, "test_run_dir/complex_mem_test/mem")
+  loadMemoryFromFile(memory, s"$dirName/mem")
 
   io.value := memory(io.address)
 }
@@ -45,9 +46,9 @@ class HasComplexMemoryTester(c: HasComplexMemory) extends PeekPokeTester(c) {
 
 
 class ComplexMemoryLoadingSpec extends  FreeSpec with Matchers {
-  "memory loading should be possible with complex memories" in {
+  "memory loading should be possible with complex memories with verilator" in {
 
-    val targetDirName = "test_run_dir/complex_mem_test"
+    val targetDirName = "test_run_dir/complex_mem_test_v"
     FileUtils.makeDirectory(targetDirName)
 
     val path1 = Paths.get(targetDirName + "/mem_a")
@@ -60,7 +61,28 @@ class ComplexMemoryLoadingSpec extends  FreeSpec with Matchers {
 
     iotesters.Driver.execute(
       args = Array("--backend-name", "verilator", "--target-dir", targetDirName, "--top-name", "complex_mem_test"),
-      dut = () => new HasComplexMemory(memoryDepth = 8)
+      dut = () => new HasComplexMemory(memoryDepth = 8, targetDirName)
+    ) { c =>
+      new HasComplexMemoryTester(c)
+    } should be (true)
+  }
+
+  "memory loading should be possible with complex memories with treadle" in {
+
+    val targetDirName = "test_run_dir/complex_mem_test_t"
+    FileUtils.makeDirectory(targetDirName)
+
+    val path1 = Paths.get(targetDirName + "/mem_a")
+    val path2 = Paths.get(targetDirName + "/mem_b")
+    val path3 = Paths.get(targetDirName + "/mem_c")
+
+    Files.copy(getClass.getResourceAsStream("/mem1.txt"), path1, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/mem2.txt"), path2, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/mem3.txt"), path3, REPLACE_EXISTING)
+
+    iotesters.Driver.execute(
+      args = Array("--backend-name", "treadle", "--target-dir", targetDirName, "--top-name", "complex_mem_test"),
+      dut = () => new HasComplexMemory(memoryDepth = 8, targetDirName)
     ) { c =>
       new HasComplexMemoryTester(c)
     } should be (true)

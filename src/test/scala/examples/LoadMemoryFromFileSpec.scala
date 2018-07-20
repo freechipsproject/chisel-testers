@@ -14,26 +14,32 @@ import firrtl.FileUtils
 import org.scalatest.{FreeSpec, Matchers}
 
 //noinspection TypeAnnotation
-class UsesMem(memoryDepth: Int, memoryType: Bits) extends Module {
+class UsesMem(memoryDepth: Int, memoryType: Bits, dirName: String) extends Module {
   val io = IO(new Bundle {
     val address = Input(UInt(memoryType.getWidth.W))
     val value   = Output(memoryType)
+    val value1  = Output(memoryType)
     val value2  = Output(memoryType)
   })
 
   val memory = Mem(memoryDepth, memoryType)
 
-  loadMemoryFromFile(memory, "test_run_dir/load_mem_test/mem1.txt")
+  loadMemoryFromFile(memory, s"$dirName/mem1.txt")
 
   io.value := memory(io.address)
 
-  val low = Module(new UsesMemLow(memoryDepth, memoryType))
+  val low1 = Module(new UsesMemLow(memoryDepth, memoryType, dirName))
+  val low2 = Module(new UsesMemLow(memoryDepth, memoryType, dirName))
 
-  low.io.address := io.address
-  io.value2 := low.io.value
+  low1.io.address := io.address
+  io.value1 := low1.io.value
+
+  low2.io.address := io.address
+  io.value2 := low2.io.value
 }
 
-class UsesMemLow(memoryDepth: Int, memoryType: Data) extends Module {
+//noinspection TypeAnnotation
+class UsesMemLow(memoryDepth: Int, memoryType: Data, dirName: String) extends Module {
   val io = IO(new Bundle {
     val address = Input(UInt(memoryType.getWidth.W))
     val value   = Output(memoryType)
@@ -41,7 +47,7 @@ class UsesMemLow(memoryDepth: Int, memoryType: Data) extends Module {
 
   val memory = Mem(memoryDepth, memoryType)
 
-  loadMemoryFromFile(memory, "test_run_dir/load_mem_test/mem2.txt")
+  loadMemoryFromFile(memory, s"$dirName/mem2.txt")
 
   io.value := memory(io.address)
 }
@@ -50,16 +56,17 @@ class LoadMemoryFromFileTester(c: UsesMem) extends PeekPokeTester(c) {
   for(addr <- 0 until 8) {
     poke(c.io.address, addr)
     step(1)
-    println(f"peek from $addr ${peek(c.io.value)}%x ${peek(c.io.value2)}%x")
+    println(f"peek from $addr ${peek(c.io.value)}%x ${peek(c.io.value1)}%x ${peek(c.io.value2)}%x")
     expect(c.io.value, addr)
+    expect(c.io.value1, 7 - addr)
     expect(c.io.value2, 7 - addr)
   }
 }
 
 class LoadMemoryFromFileSpec extends FreeSpec with Matchers {
-  "Users can specify a source file to load memory from" in {
+  "Users can specify a source file to load memory from with verilator" in {
 
-    val targetDirName = "test_run_dir/load_mem_test"
+    val targetDirName = "test_run_dir/load_mem_test_v"
     FileUtils.makeDirectory(targetDirName)
 
     val path1 = Paths.get(targetDirName + "/mem1.txt")
@@ -69,7 +76,25 @@ class LoadMemoryFromFileSpec extends FreeSpec with Matchers {
 
     iotesters.Driver.execute(
       args = Array("--backend-name", "verilator", "--target-dir", targetDirName, "--top-name", "load_mem_test"),
-      dut = () => new UsesMem(memoryDepth = 8, memoryType = UInt(16.W))
+      dut = () => new UsesMem(memoryDepth = 8, memoryType = UInt(16.W), targetDirName)
+    ) { c =>
+      new LoadMemoryFromFileTester(c)
+    } should be (true)
+  }
+
+  "Users can specify a source file to load memory from with treadle" in {
+
+    val targetDirName = "test_run_dir/load_mem_test_t"
+    FileUtils.makeDirectory(targetDirName)
+
+    val path1 = Paths.get(targetDirName + "/mem1.txt")
+    val path2 = Paths.get(targetDirName + "/mem2.txt")
+    Files.copy(getClass.getResourceAsStream("/mem1.txt"), path1, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/mem2.txt"), path2, REPLACE_EXISTING)
+
+    iotesters.Driver.execute(
+      args = Array("--backend-name", "treadle", "--target-dir", targetDirName, "--top-name", "load_mem_test"),
+      dut = () => new UsesMem(memoryDepth = 8, memoryType = UInt(16.W), targetDirName)
     ) { c =>
       new LoadMemoryFromFileTester(c)
     } should be (true)
