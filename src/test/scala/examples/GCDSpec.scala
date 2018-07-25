@@ -88,7 +88,7 @@ class GCDSpec extends FlatSpec with Matchers {
 
   it should "run verilator via command line arguments" in {
     // val args = Array.empty[String]
-    val args = Array("--backend-name", "gui")
+    val args = Array("--backend-name", "verilator")
     iotesters.Driver.execute(args, () => new RealGCD2) { c =>
       new GCDPeekPokeTester(c)
     } should be (true)
