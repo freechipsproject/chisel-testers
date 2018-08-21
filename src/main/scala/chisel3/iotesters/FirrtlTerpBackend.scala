@@ -4,15 +4,13 @@ package chisel3.iotesters
 import chisel3._
 import chisel3.experimental.MultiIOModule
 import chisel3.internal.InstanceId
-import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
+import firrtl.ir.Circuit
+import firrtl.{AnnotationSeq, FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
 
-private[iotesters] class FirrtlTerpBackend(
-    dut: MultiIOModule,
-    firrtlIR: String,
-    optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager)
-  extends Backend(_seed = System.currentTimeMillis()) {
-  val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
+private[iotesters] class FirrtlTerpBackend(circuit: Circuit, annotationSeq: AnnotationSeq) extends Backend {
+
+  val interpretiveTester = new InterpretiveTester(circuit.serialize, annotationSeq)
   reset(5) // reset firrtl interpreter on construction
 
   private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
@@ -116,11 +114,10 @@ private[iotesters] class FirrtlTerpBackend(
   }
 }
 
-private[iotesters] object setupFirrtlTerpBackend {
-  def apply[T <: MultiIOModule](
-      dutGen: () => T,
-      optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
+object FirrtlTerpBackend extends BackendFactory {
+  def apply(circuit: Circuit, annotationSeq: AnnotationSeq): FirrtlTerpBackend = {
 
+    new FirrtlTerpBackend(circuit, annotationSeq)
     // the backend must be firrtl if we are here, therefore we want the firrtl compiler
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
     // Workaround to propagate Annotations generated from command-line options to second Firrtl

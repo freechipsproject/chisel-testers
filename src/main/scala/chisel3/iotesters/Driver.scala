@@ -6,18 +6,61 @@ import chisel3._
 import chisel3.experimental.MultiIOModule
 import java.io.File
 
-import firrtl.{ExecutionOptionsManager, HasFirrtlOptions}
+import firrtl.{AnnotationSeq, HasFirrtlExecutionOptions, TargetDirAnnotation, TopNameAnnotation}
+import firrtl.options.{DriverExecutionResult, ExecutionOptionsManager}
 import firrtl_interpreter._
 import logger.Logger
 
 import scala.util.DynamicVariable
 
-object Driver {
+object Driver extends firrtl.options.Driver {
   private val backendVar = new DynamicVariable[Option[Backend]](None)
   private[iotesters] def backend = backendVar.value
 
-  private val optionsManagerVar = new DynamicVariable[Option[TesterOptionsManager]](None)
-  def optionsManager = optionsManagerVar.value.getOrElse(new TesterOptionsManager)
+  val DefaultTargetDir: String = "test_run_dir"
+  val DefaultBackendName: String = "treadle"
+
+//  private val optionsManagerVar = new DynamicVariable[Option[TesterOptionsManager]](None)
+//  def optionsManager = optionsManagerVar.value.getOrElse(new TesterOptionsManager)
+
+  val optionsManager: ExecutionOptionsManager = {
+    new ExecutionOptionsManager("testers") with HasFirrtlExecutionOptions
+  }
+
+  case object TestersExecutionSuccess extends DriverExecutionResult
+  case object TestersExecutionFailure extends DriverExecutionResult
+
+  def execute(args: Array[String], initialAnnotations: AnnotationSeq): DriverExecutionResult = {
+    var annotations: AnnotationSeq = initialAnnotations
+    val circuit = initialAnnotations.collectFirst { case ChiselCircuitAnnotation(circuit) => circuit } match {
+      case Some(circuit) => circuit
+      case _ =>
+        throw new Exception(s"Could not find dut generator, you should be using a Driver.execute method that" +
+          s"specifies a dut generator")
+    }
+    val topNameAnnotation = annotations.collectFirst { case a: TopNameAnnotation => a }
+    val targetDirAnnotaton = annotations.collectFirst { case a: TargetDirAnnotation => a }
+
+    // create chisel testers working directory
+    annotations = annotations ++ Seq(topNameAnnotation, targetDirAnnotaton) match {
+      case (_, Some(TargetDirAnnotation(targetDirName))) =>
+        Seq.empty
+      case (Some(TopNameAnnotation(topName)), None) =>
+        Seq(TargetDirAnnotation(s"${DefaultTargetDir}/$topName"))
+    }
+
+    val backendClass = annotations.collectFirst { case TesterBackendAnnotation(backendName) => backendName } match {
+      case Some(name) => name
+      case _ => DefaultBackendName
+    }
+
+    backendName match {
+      case "treadle" => TreadleBackend(circuit, annotations)
+      case "firrtl"  => FirrtlTerpBackend(circuit, annotations)
+      case "verilator" => VerilatorBackend(circuit, annotations)
+    }
+
+  }
 
   /**
     * This executes a test harness that extends peek-poke tester upon a device under test
@@ -29,12 +72,13 @@ object Driver {
     * @return                Returns true if all tests in testerGen pass
     */
   def execute[T <: MultiIOModule](
-                            dutGenerator: () => T,
-                            optionsManager: TesterOptionsManager
-                          )
-                          (
-                            testerGen: T => PeekPokeTester[T]
-                          ): Boolean = {
+    dutGenerator: () => T,
+    optionsManager: TesterOptionsManager
+  )
+  (
+    testerGen: T => PeekPokeTester[T]
+  ): DriverExecutionResult = {
+
     optionsManagerVar.withValue(Some(optionsManager)) {
       Logger.makeScope(optionsManager) {
         if (optionsManager.topName.isEmpty) {
@@ -93,14 +137,9 @@ object Driver {
   def execute[T <: MultiIOModule](args: Array[String], dut: () => T)(
     testerGen: T => PeekPokeTester[T]
   ): Boolean = {
-    val optionsManager = new TesterOptionsManager
+    val circuitAnnotation = ChiselCircuitAnnotation(dut)
 
-    optionsManager.parse(args) match {
-      case true =>
-        execute(dut, optionsManager)(testerGen)
-      case _ =>
-        false
-    }
+    execute(args, Seq(circuitAnnotation))
   }
 
   /**

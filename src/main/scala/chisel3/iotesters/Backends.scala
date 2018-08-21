@@ -4,12 +4,18 @@ package chisel3.iotesters
 import chisel3.internal.InstanceId
 import java.io.PrintStream
 
+import firrtl.AnnotationSeq
+import firrtl.FirrtlProtos.Firrtl.Circuit
+
+trait BackendFactory {
+  def apply(circuit: Circuit, annotationSeq: AnnotationSeq): Backend
+}
 /**
   * define interface for ClassicTester backend implementations such as verilator and firrtl interpreter
   */
-
-private[iotesters] abstract class Backend(private[iotesters] val _seed: Long = System.currentTimeMillis) {
-  val rnd = new scala.util.Random(_seed)
+private[iotesters] abstract class Backend {
+  def circuit: Circuit
+  def annotationSeq: AnnotationSeq
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit
