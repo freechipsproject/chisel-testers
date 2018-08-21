@@ -30,7 +30,8 @@ object Driver {
     */
   def execute[T <: MultiIOModule](
                             dutGenerator: () => T,
-                            optionsManager: TesterOptionsManager
+                            optionsManager: TesterOptionsManager,
+                            firrtlSourceOverride: Option[String] = None
                           )
                           (
                             testerGen: T => PeekPokeTester[T]
@@ -49,7 +50,7 @@ object Driver {
 
         val (dut, backend) = testerOptions.backendName match {
           case "firrtl" =>
-            setupFirrtlTerpBackend(dutGenerator, optionsManager)
+            setupFirrtlTerpBackend(dutGenerator, optionsManager, firrtlSourceOverride)
           case "treadle" =>
             setupTreadleBackend(dutGenerator, optionsManager)
           case "verilator" =>
@@ -124,7 +125,7 @@ object Driver {
     */
   def executeFirrtlRepl[T <: MultiIOModule](
                                       dutGenerator: () => T,
-                                      optionsManager: ReplOptionsManager = new ReplOptionsManager): Boolean = {
+                                      optionsManager: InterpreterOptionsManager with HasChiselExecutionOptions with HasReplConfig = new InterpreterOptionsManager with HasChiselExecutionOptions with HasReplConfig): Boolean = {
 
     if (optionsManager.topName.isEmpty) {
       if (optionsManager.targetDirName == ".") {
@@ -172,7 +173,7 @@ object Driver {
                                     args: Array[String],
                                       dutGenerator: () => T
                                       ): Boolean = {
-    val optionsManager = new ReplOptionsManager
+    val optionsManager = new InterpreterOptionsManager with HasChiselExecutionOptions with HasReplConfig
 
     if(optionsManager.parse(args)) {
       executeFirrtlRepl(dutGenerator, optionsManager)
@@ -281,3 +282,10 @@ class ReplOptionsManager
     with HasChiselExecutionOptions
     with HasReplConfig
 
+//
+//class ReplOptionsManager
+//  extends ExecutionOptionsManager("chisel-testers")
+//    with HasInterpreterOptions
+//    with HasChiselExecutionOptions
+//    with HasFirrtlOptions
+//    with HasReplConfig
