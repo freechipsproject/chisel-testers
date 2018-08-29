@@ -2,17 +2,14 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.experimental.MultiIOModule
+import chisel3.experimental.{MultiIOModule, RawModule}
 import chisel3.internal.InstanceId
-import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
+import firrtl.{AnnotationSeq, CompilerNameAnnotation, FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
 
-private[iotesters] class FirrtlTerpBackend(
-    dut: MultiIOModule,
-    firrtlIR: String,
-    optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager)
+private[iotesters] class FirrtlTerpBackend(dut: RawModule, firrtlIR: String, annotationSeq: AnnotationSeq)
   extends Backend(_seed = System.currentTimeMillis()) {
-  val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
+  val interpretiveTester = new InterpretiveTester(firrtlIR, annotationSeq)
   reset(5) // reset firrtl interpreter on construction
 
   private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
@@ -117,24 +114,17 @@ private[iotesters] class FirrtlTerpBackend(
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply[T <: MultiIOModule](
-      dutGen: () => T,
-      optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
+  def apply[T <: RawModule](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+    val annotations = annotationSeq :+ CompilerNameAnnotation("low")
 
-    // the backend must be firrtl if we are here, therefore we want the firrtl compiler
-    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
-    // Workaround to propagate Annotations generated from command-line options to second Firrtl
-    // invocation, run after updating compilerName so we only get one emitCircuit annotation
-    val annos = firrtl.Driver.getAnnotations(optionsManager)
-    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
-    chisel3.Driver.execute(optionsManager, dutGen) match {
+    chisel3.Driver.execute(Array.empty, dutGen, annotations) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {
           case FirrtlExecutionSuccess(_, compiledFirrtl) =>
-            (dut, new FirrtlTerpBackend(dut, compiledFirrtl, optionsManager = optionsManager))
+            (dut, new FirrtlTerpBackend(dut, compiledFirrtl, annotations))
           case FirrtlExecutionFailure(message) =>
-            throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
+            throw new Exception(s"FirrtlBackend: failed firrtl compile message: $message")
         }
       case _ =>
         throw new Exception("Problem with compilation")

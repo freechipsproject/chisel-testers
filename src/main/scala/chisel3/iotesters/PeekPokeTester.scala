@@ -7,8 +7,10 @@ import java.io.File
 import chisel3._
 import chisel3.core.{Aggregate, Element}
 import PeekPokeTester.extractElementBits
-import chisel3.experimental.{FixedPoint, MultiIOModule}
+import chisel3.experimental.{FixedPoint, MultiIOModule, RawModule}
 import chisel3.internal.firrtl.KnownBinaryPoint
+import firrtl.options.Viewer.view
+import iotesters.TesterOptionsViewer._
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
@@ -51,7 +53,7 @@ object PeekPokeTester {
   }
 }
 
-abstract class PeekPokeTester[+T <: MultiIOModule](
+abstract class PeekPokeTester[+T <: RawModule](
     val dut: T,
     base: Int = 16,
     logFile: Option[File] = None) {
@@ -59,10 +61,13 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
   implicit val logger = new TestErrorLog
 
   implicit def longToInt(x: Long) = x.toInt
-  val optionsManager = Driver.optionsManager
 
-  implicit val _verbose = optionsManager.testerOptions.isVerbose
-  implicit val _base    = optionsManager.testerOptions.displayBase
+  val globalAnnotations = Driver.globalAnnotations.get
+
+  val testerOptions = view[TesterOptions](globalAnnotations).get
+
+  implicit val _verbose = testerOptions.isVerbose
+  implicit val _base    = testerOptions.displayBase
 
   def println(msg: String = "") {
     logger.info(msg)
@@ -90,8 +95,8 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
   }
 
   val rnd = backend.rnd
-  rnd.setSeed(optionsManager.testerOptions.testerSeed)
-  println(s"SEED ${optionsManager.testerOptions.testerSeed}")
+  rnd.setSeed(testerOptions.testerSeed)
+  println(s"SEED ${testerOptions.testerSeed}")
 
   /** Convert a Boolean to BigInt */
   implicit def int(x: Boolean): BigInt = if (x) 1 else 0

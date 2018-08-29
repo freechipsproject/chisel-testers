@@ -51,19 +51,19 @@ object chiselMain {
     val dir = context.targetDir
     context.backendType match {
       case "firrtl" => // skip
-      case "verilator" =>
-        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.cpp"))
-        val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
-        harness.write(VerilatorCppHarnessGenerator.codeGen(dut, CircuitState(chirrtl, ChirrtlForm), waveform))
-        harness.close()
-      case "ivl" =>
-        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
-        val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
-        genIVLVerilogHarness(dut, harness, waveform.toString)
-      case "vcs" | "glsim" =>
-        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
-        val waveform = new File(dir, s"${chirrtl.main}.vpd").toString
-        genVCSVerilogHarness(dut, harness, waveform.toString, context.backendType == "glsim")
+//      case "verilator" =>
+//        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.cpp"))
+//        val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
+//        harness.write(VerilatorCppHarnessGenerator.codeGen(dut, CircuitState(chirrtl, ChirrtlForm), waveform))
+//        harness.close()
+//      case "ivl" =>
+//        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
+//        val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
+//        genIVLVerilogHarness(dut, harness, waveform.toString)
+//      case "vcs" | "glsim" =>
+//        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
+//        val waveform = new File(dir, s"${chirrtl.main}.vpd").toString
+//        genVCSVerilogHarness(dut, harness, waveform.toString, context.backendType == "glsim")
       case b => throw BackendException(b)
     }
   }
@@ -72,22 +72,22 @@ object chiselMain {
     val dir = context.targetDir
     context.backendType match {
       case "firrtl" => // skip
-      case "verilator" =>
-        // Copy API files
-        copyVerilatorHeaderFiles(context.targetDir.toString)
-        // Generate Verilator
-        assert(chisel3.Driver.verilogToCpp(
-          dutName,
-          dir,
-          Seq(),
-          new File(dir, s"$dutName-harness.cpp")).! == 0)
-        // Compile Verilator
-        assert(chisel3.Driver.cppToExe(dutName, dir).! == 0)
-      case "vcs" | "glsim" =>
-        // Copy API files
-        copyVpiFiles(context.targetDir.toString)
-        // Compile VCS
-        assert(verilogToVCS(dutName, dir, new File(s"$dutName-harness.v")).! == 0)
+//      case "verilator" =>
+//        // Copy API files
+//        copyVerilatorHeaderFiles(context.targetDir.toString)
+//        // Generate Verilator
+//        assert(chisel3.Driver.verilogToCpp(
+//          dutName,
+//          dir,
+//          Seq(),
+//          new File(dir, s"$dutName-harness.cpp")).! == 0)
+//        // Compile Verilator
+//        assert(chisel3.Driver.cppToExe(dutName, dir).! == 0)
+//      case "vcs" | "glsim" =>
+//        // Copy API files
+//        copyVpiFiles(context.targetDir.toString)
+//        // Compile VCS
+//        assert(verilogToVCS(dutName, dir, new File(s"$dutName-harness.v")).! == 0)
       case b => throw BackendException(b)
     }
   }
@@ -157,11 +157,11 @@ object chiselMain {
       case "firrtl" =>
         val file = new java.io.File(context.targetDir, s"${dut.name}.ir")
         val ir = io.Source.fromFile(file).getLines mkString "\n"
-        new FirrtlTerpBackend(dut, ir)
-      case "verilator" =>
-        new VerilatorBackend(dut, context.testCmd.toList, context.testerSeed)
-      case "vcs" | "glsim" =>
-        new VCSBackend(dut, context.testCmd.toList, context.testerSeed)
+        new FirrtlTerpBackend(dut, ir, Seq.empty)
+//      case "verilator" =>
+//        new VerilatorBackend(dut, context.testCmd.toList, context.testerSeed)
+//      case "vcs" | "glsim" =>
+//        new VCSBackend(dut, context.testCmd.toList, context.testerSeed)
       case b => throw BackendException(b)
     })
   }
@@ -183,13 +183,13 @@ object chiselMain {
           testerGen(dut).finish
         } catch { case e: Throwable =>
           e.printStackTrace()
-          context.backend match {
-            case Some(b: VCSBackend) =>
-              TesterProcess kill b
-            case Some(b: VerilatorBackend) =>
-              TesterProcess kill b
-            case _ =>
-          }
+//          context.backend match {
+//            case Some(b: VCSBackend) =>
+//              TesterProcess kill b
+//            case Some(b: VerilatorBackend) =>
+//              TesterProcess kill b
+//            case _ =>
+//          }
           false
         }, "Test failed")
       }

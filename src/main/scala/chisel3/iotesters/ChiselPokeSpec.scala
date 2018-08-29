@@ -3,40 +3,45 @@
 package chisel3.iotesters.experimental
 
 import org.scalatest._
-
 import chisel3._
 import chisel3.iotesters._
+import firrtl.AnnotationSeq
+
+import firrtl.options.Viewer.view
+import iotesters.TesterOptionsViewer._
+
 
 sealed trait TesterBackend {
-  def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend)
+  def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend)
 }
 case object FirrtlInterpreterBackend extends TesterBackend {
-  override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
-    setupFirrtlTerpBackend(dutGen, options)
+  override def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+    setupFirrtlTerpBackend(dutGen, annotationSeq)
   }
 }
-case object VerilatorBackend extends TesterBackend {
-  override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
-    setupVerilatorBackend(dutGen, options)
-  }
-}
-case object IvlBackend extends TesterBackend {
-  override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
-    setupIVLBackend(dutGen, options)
-  }
-}
-case object VcsBackend extends TesterBackend {
-  override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
-    setupVCSBackend(dutGen, options)
-  }
-}
+//case object VerilatorBackend extends TesterBackend {
+//  override def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+//    setupVerilatorBackend(dutGen, annotationSeq)
+//  }
+//}
+//case object IvlBackend extends TesterBackend {
+//  override def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+//    setupIVLBackend(dutGen, annotationSeq)
+//  }
+//}
+//case object VcsBackend extends TesterBackend {
+//  override def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+//    setupVCSBackend(dutGen, annotationSeq)
+//  }
+//}
 
 trait ChiselPokeTesterUtils extends Assertions {
-  class InnerTester(val backend: Backend, val options: TesterOptionsManager) {
+  class InnerTester(val backend: Backend, val annotationSeq: AnnotationSeq) {
     // Implicit configuration options for backend
     implicit val logger = new TestErrorLog
-    implicit val verbose = options.testerOptions.isVerbose
-    implicit val displayBase = options.testerOptions.displayBase
+    implicit val testerOptions = view[TesterOptions](annotationSeq).get
+    implicit val verbose = testerOptions.isVerbose
+    implicit val displayBase = testerOptions.displayBase
 
     // Circuit state
     private var currCycle = 0
@@ -94,10 +99,10 @@ trait ChiselPokeTesterUtils extends Assertions {
 
   /** Instantiates a tester from a module generator, using default Tester options.
     */
-  protected def runTester[T <: Module](dutGen: => T, testerBackend: TesterBackend, options: TesterOptionsManager)(block: (InnerTester, T) => Unit) {
+  protected def runTester[T <: Module](dutGen: => T, testerBackend: TesterBackend, annotations: AnnotationSeq)(block: (InnerTester, T) => Unit) {
     val dutGenShim: () => T = () => dutGen
-    val (dut, backend) = testerBackend.create(dutGenShim, options)
-    val innerTester = new InnerTester(backend, options)
+    val (dut, backend) = testerBackend.create(dutGenShim, annotations)
+    val innerTester = new InnerTester(backend, annotations)
     try {
       block(innerTester, dut)
     } catch { case e: Throwable =>
@@ -111,12 +116,12 @@ trait ChiselPokeTesterUtils extends Assertions {
 /** Basic peek-poke test system where failures are handled and reported within ScalaTest.
   */
 trait PokeTester extends ChiselPokeTesterUtils {
-  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend, options: TesterOptionsManager)(block: (InnerTester, T) => Unit) {
+  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend, options: AnnotationSeq)(block: (InnerTester, T) => Unit) {
     runTester(dutGen, testerBackend, options) { (tester, dut) => block(tester, dut) }
   }
 
   def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: (InnerTester, T) => Unit) {
-    val options = new TesterOptionsManager
+    val options = Seq.empty
     test(dutGen, testerBackend, options)(block)
   }
 }
@@ -178,7 +183,7 @@ trait ImplicitPokeTester extends ChiselPokeTesterUtils {
 
   /** The advanced version of test, allowing custom options and requiring a custom backend.
    */
-  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend, options: TesterOptionsManager)(block: InnerTester => (T => Unit)) {
+  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend, options: AnnotationSeq)(block: InnerTester => (T => Unit)) {
     runTester(dutGen, testerBackend, options) { (tester, dut) => block(tester)(dut) }
   }
 
@@ -196,7 +201,7 @@ trait ImplicitPokeTester extends ChiselPokeTesterUtils {
     * }}}
     */
   def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: InnerTester => (T => Unit)) {
-    val options = new TesterOptionsManager
+    val options = Seq.empty
     test(dutGen, testerBackend, options)(block)
   }
 }
