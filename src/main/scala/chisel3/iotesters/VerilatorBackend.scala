@@ -202,11 +202,10 @@ int main(int argc, char **argv, char **env) {
 }
 
 private[iotesters] object setupVerilatorBackend {
-  def apply[T <: MultiIOModule](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
-  def apply[T <: chisel3.Module](
-      dutGen: () => T,
-      optionsManager: TesterOptionsManager,
-      firrtlSourceOverride: Option[String] = None
+  def apply[T <: MultiIOModule](
+    dutGen: () => T,
+    optionsManager: TesterOptionsManager,
+    firrtlSourceOverride: Option[String] = None
   ): (T, Backend) = {
 
     import firrtl.{ChirrtlForm, CircuitState}

@@ -15,7 +15,7 @@ private[iotesters] class FirrtlTerpBackend(
   val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
   reset(5) // reset firrtl interpreter on construction
 
-  private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
+  private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, _) =>
     val pathName = id.pathName
     getDataNames(pathName.drop(pathName.indexOf('.') + 1), id)
   }.toMap
@@ -122,7 +122,6 @@ private[iotesters] object setupFirrtlTerpBackend {
       optionsManager: TesterOptionsManager = new TesterOptionsManager,
       firrtlSourceOverride: Option[String] = None
   ): (T, Backend) = {
-      optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
 
     // the backend must be firrtl if we are here, therefore we want the firrtl compiler
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
@@ -138,7 +137,7 @@ private[iotesters] object setupFirrtlTerpBackend {
             val firrtlText = firrtlSourceOverride.getOrElse(compiledFirrtl)
             (dut, new FirrtlTerpBackend(dut, firrtlText, optionsManager = optionsManager))
           case FirrtlExecutionFailure(message) =>
-            throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
+            throw new Exception(s"FirrtlBackend: failed firrtl compile message: $message")
         }
       case _ =>
         throw new Exception("Problem with compilation")
