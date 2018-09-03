@@ -7,7 +7,8 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import chisel3.util.{loadMemoryFromFile, log2Ceil}
+import chisel3.util.experimental.loadMemoryFromFile
+import chisel3.util.log2Ceil
 import firrtl.FileUtils
 import org.scalatest.{FreeSpec, Matchers}
 

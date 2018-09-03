@@ -2,18 +2,16 @@
 
 package examples
 
-// See LICENSE for license details.
-
 import java.nio.file.{Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import chisel3.util.loadMemoryFromFile
+import chisel3.util.experimental.loadMemoryFromFile
 import firrtl.FileUtils
 import org.scalatest.{FreeSpec, Matchers}
 
-//noinspection TypeAnnotation
+
 class UsesMem(memoryDepth: Int, memoryType: Bits) extends Module {
   val io = IO(new Bundle {
     val address = Input(UInt(memoryType.getWidth.W))
