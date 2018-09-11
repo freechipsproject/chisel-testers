@@ -35,7 +35,7 @@ def javacOptionsVersion(scalaVersion: String): Seq[String] = {
 }
 
 organization := "edu.berkeley.cs"
-version := "1.2.3"
+version := "1.2.4"
 name := "Chisel.iotesters"
 
 scalaVersion := "2.11.12"
@@ -45,10 +45,10 @@ crossScalaVersions := Seq("2.11.12", "2.12.4")
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the release versions, not the default development versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.1.2",
-  "firrtl" -> "1.1.2",
-  "firrtl-interpreter" -> "1.1.2",
-  "treadle" -> "1.0.0"
+  "chisel3" -> "3.1.3",
+  "firrtl" -> "1.1.3",
+  "firrtl-interpreter" -> "1.1.3",
+  "treadle" -> "1.0.1"
   )
 
 libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").map { dep: String =>
