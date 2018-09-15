@@ -12,23 +12,25 @@ import treadle.HasTreadleSuite
 import scala.util.matching.Regex
 
 case class TesterOptions(
-                          isGenVerilog:    Boolean = false,
-                          isGenHarness:    Boolean = false,
-                          isCompiling:     Boolean = false,
-                          isRunTest:       Boolean = false,
-                          isVerbose:       Boolean = false,
-                          displayBase:     Int     = 10,
-                          testerSeed:      Long    = System.currentTimeMillis,
-                          testCmd:         Seq[String] = Seq.empty,
-                          moreVcsFlags:    Seq[String] = Seq.empty,
-                          moreVcsCFlags:   Seq[String] = Seq.empty,
-                          vcsCommandEdits: String = "",
-                          backendName:     String  = "treadle",
-                          logFileName:     String  = "",
-                          waveform:        Option[File] = None,
-                          moreIvlFlags:    Seq[String] = Seq.empty,
-                          moreIvlCFlags:   Seq[String] = Seq.empty,
-                          ivlCommandEdits: String = "") extends ComposableOptions
+  isGenVerilog:         Boolean = false,
+  isGenHarness:         Boolean = false,
+  isCompiling:          Boolean = false,
+  isRunTest:            Boolean = false,
+  isVerbose:            Boolean = false,
+  displayBase:          Int     = 10,
+  testerSeed:           Long    = System.currentTimeMillis,
+  testCmd:              Seq[String] = Seq.empty,
+  moreVcsFlags:         Seq[String] = Seq.empty,
+  moreVcsCFlags:        Seq[String] = Seq.empty,
+  vcsCommandEdits:      String = "",
+  backendName:          String  = "treadle",
+  logFileName:          String  = "",
+  waveform:             Option[File] = None,
+  moreIvlFlags:         Seq[String] = Seq.empty,
+  moreIvlCFlags:        Seq[String] = Seq.empty,
+  ivlCommandEdits:      String = "",
+  suppressVerilatorVCD: Boolean = false
+) extends ComposableOptions
 
 object TesterOptions {
   val VcsFileCommands: Regex = """file:(.+)""".r
@@ -127,6 +129,11 @@ trait HasTesterOptions {
     .abbr("tts")
     .foreach { x => testerOptions = testerOptions.copy(testerSeed = x) }
     .text("provides a seed for random number generator")
+
+  parser.opt[Unit]("suppress-verilator-vcd")
+    .abbr("tsvv")
+    .foreach { _ => testerOptions = testerOptions.copy(suppressVerilatorVCD = true) }
+    .text(s"provides a way to turn of the default generation of vcd files in verilator simulations")
 }
 
 class TesterOptionsManager
