@@ -210,6 +210,7 @@ private[iotesters] object setupVerilatorBackend {
     optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
       runFirrtlCompiler = false
     )
+
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
@@ -219,7 +220,7 @@ private[iotesters] object setupVerilatorBackend {
         val chirrtl = firrtl.Parser.parse(emitted)
         val dut = getTopModule(circuit).asInstanceOf[T]
 
-        val suppressVerilatorVCD = optionsManager.testerOptions.suppressVerilatorVCD
+        val suppressVerilatorVCD = optionsManager.testerOptions.generateVcdOutput == "off"
 
         // This makes sure annotations for command line options get created
         val externalAnnotations = firrtl.Driver.getAnnotations(optionsManager)

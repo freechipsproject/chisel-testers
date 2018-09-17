@@ -130,6 +130,12 @@ private[iotesters] object setupTreadleBackend {
     // invocation, run after updating compilerName so we only get one emitCircuit annotation
     val annos = firrtl.Driver.getAnnotations(optionsManager)
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
+
+    // generate VcdOutput overrides setting of writeVcd
+    if(optionsManager.testerOptions.generateVcdOutput == "on") {
+      optionsManager.treadleOptions = optionsManager.treadleOptions.copy(writeVCD = true)
+    }
+
     chisel3.Driver.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]

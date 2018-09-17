@@ -115,7 +115,7 @@ class GCDSpec extends FlatSpec with Matchers {
 
   "using verilator backend with suppress-verilator-backend" should "not create a vcd" in {
     iotesters.Driver.execute(
-      Array("--backend-name", "verilator", "--suppress-verilator-vcd",
+      Array("--backend-name", "verilator", "--generate-vcd-output", "off",
         "--target-dir", "test_run_dir/gcd_no_vcd", "--top-name", "gcd_no_vcd"),
       () => new RealGCD2
     ) {

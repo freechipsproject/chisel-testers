@@ -29,7 +29,7 @@ case class TesterOptions(
   moreIvlFlags:         Seq[String] = Seq.empty,
   moreIvlCFlags:        Seq[String] = Seq.empty,
   ivlCommandEdits:      String = "",
-  suppressVerilatorVCD: Boolean = false
+  generateVcdOutput:    String = ""
 ) extends ComposableOptions
 
 object TesterOptions {
@@ -130,10 +130,17 @@ trait HasTesterOptions {
     .foreach { x => testerOptions = testerOptions.copy(testerSeed = x) }
     .text("provides a seed for random number generator")
 
-  parser.opt[Unit]("suppress-verilator-vcd")
-    .abbr("tsvv")
-    .foreach { _ => testerOptions = testerOptions.copy(suppressVerilatorVCD = true) }
-    .text(s"provides a way to turn of the default generation of vcd files in verilator simulations")
+  parser.opt[String]("generate-vcd-output")
+    .abbr("tgvo")
+    .validate { x =>
+      if(Seq("on", "off").contains(x.toLowerCase)) {
+        parser.success
+      } else {
+        parser.failure("generateVcdOutput must be set to on or off")
+      }
+    }
+    .foreach { x => testerOptions = testerOptions.copy(generateVcdOutput = x) }
+    .text(s"""set this flag to "on" or "off", otherwise it defaults to on for verilator, off for scala backends""")
 }
 
 class TesterOptionsManager
