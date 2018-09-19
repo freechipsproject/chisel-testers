@@ -50,8 +50,12 @@ object Driver {
         val (dut, backend) = testerOptions.backendName match {
           case "firrtl" =>
             setupFirrtlTerpBackend(dutGenerator, optionsManager)
+          case "treadle" =>
+            setupTreadleBackend(dutGenerator, optionsManager)
           case "verilator" =>
             setupVerilatorBackend(dutGenerator, optionsManager)
+          case "ivl" =>
+            setupIVLBackend(dutGenerator, optionsManager)
           case "vcs" =>
             setupVCSBackend(dutGenerator, optionsManager)
           case _ =>
@@ -65,6 +69,7 @@ object Driver {
             case e: Throwable =>
               e.printStackTrace()
               backend match {
+                case b: IVLBackend => TesterProcess.kill(b)
                 case b: VCSBackend => TesterProcess.kill(b)
                 case b: VerilatorBackend => TesterProcess.kill(b)
                 case _ =>
@@ -208,6 +213,7 @@ object Driver {
     * @param dutGen      This is the device under test.
     * @param backendType The default backend is "firrtl" which uses the firrtl interperter. Other options
     *                    "verilator" will use the verilator c++ simulation generator
+    *                    "ivl" will use the Icarus Verilog simulation
     *                    "vcs" will use the VCS simulation
     * @param verbose     Setting this to true will make the tester display information on peeks,
     *                    pokes, steps, and expects.  By default only failed expects will be printed
@@ -243,6 +249,8 @@ object Driver {
       } catch { case e: Throwable =>
         e.printStackTrace()
         backend match {
+          case Some(b: IVLBackend) =>
+            TesterProcess kill b
           case Some(b: VCSBackend) =>
             TesterProcess kill b
           case Some(b: VerilatorBackend) =>

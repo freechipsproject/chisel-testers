@@ -38,19 +38,20 @@ organization := "edu.berkeley.cs"
 version := "1.3-SNAPSHOT"
 name := "Chisel.iotesters"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.6"
 
-crossScalaVersions := Seq("2.11.12", "2.12.4")
+crossScalaVersions := Seq("2.12.6", "2.11.12")
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
   "chisel3" -> "3.2-SNAPSHOT",
   "firrtl" -> "1.2-SNAPSHOT",
-  "firrtl-interpreter" -> "1.2-SNAPSHOT"
+  "firrtl-interpreter" -> "1.2-SNAPSHOT",
+  "treadle" -> "1.1-SNAPSHOT"
   )
 
-libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter").map { dep: String =>
+libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").map { dep: String =>
     "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
 }
 

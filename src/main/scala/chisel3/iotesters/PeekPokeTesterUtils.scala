@@ -86,6 +86,69 @@ private[iotesters] object bigIntToStr {
   }
 }
 
+private[iotesters] object verilogToIVL {
+  def constructIvlFlags(
+      topModule: String,
+      dir: java.io.File,
+      moreIvlFlags: Seq[String] = Seq.empty[String]): Seq[String] = {
+
+    val blackBoxVerilogList = {
+      val list_file = new File(dir, firrtl.transforms.BlackBoxSourceHelper.fileListName)
+      if(list_file.exists()) {
+        Seq("-f", list_file.getAbsolutePath)
+      }
+      else {
+        Seq.empty[String]
+      }
+    }
+
+    val ivlFlags = Seq(
+      "-m ./%s/%s.vpi".format(dir.toString, topModule),
+      "-g2005-sv",
+      "-DCLOCK_PERIOD=1") ++
+      moreIvlFlags ++
+      blackBoxVerilogList
+
+    ivlFlags
+  }
+
+  def constructIvlCFlags(
+      topModule: String,
+      dir: java.io.File,
+      moreIvlCFlags: Seq[String] = Seq.empty[String]): Seq[String] = {
+
+    val DefaultCcFlags = Seq("-I$IVL_HOME", s"-I$dir", "-fPIC", "-std=c++11", "-lvpi", "-lveriuser", "-shared")
+
+    val ivlCFlags = Seq(
+      s"-o $topModule.vpi", "-D__ICARUS__") ++ 
+      DefaultCcFlags ++ moreIvlCFlags
+
+    ivlCFlags
+  }
+
+  def apply(
+    topModule: String,
+    dir: java.io.File,
+    ivlHarness: java.io.File,
+    moreIvlFlags: Seq[String] = Seq.empty[String],
+    moreIvlCFlags: Seq[String] = Seq.empty[String],
+    editCommands: String = ""): ProcessBuilder = {
+
+    val ivlFlags = constructIvlFlags(topModule, dir, moreIvlFlags)
+    val ivlCFlags = constructIvlCFlags(topModule, dir, moreIvlCFlags)
+
+    val cmd = Seq("cd", dir.toString, "&&") ++
+                Seq("g++") ++ ivlCFlags ++ Seq("vpi.cpp", "vpi_register.cpp", "&&") ++
+                Seq("iverilog") ++ ivlFlags ++ Seq("-o", topModule, s"$topModule.v", ivlHarness.toString) mkString " "
+
+    val commandEditor = CommandEditor(editCommands, "ivl-command-edit")
+    val finalCommand = commandEditor(cmd)
+    println(s"$finalCommand")
+
+    Seq("bash", "-c", finalCommand)
+  }
+}
+
 private[iotesters] object verilogToVCS {
   def constructVcsFlags(
       topModule: String,
@@ -146,7 +209,7 @@ private[iotesters] object verilogToVCS {
 }
 
 private[iotesters] case class BackendException(b: String)
-  extends Exception(s"Unknown backend: $b. Backend should be firrtl, verilator, vcs, or glsim")
+  extends Exception(s"Unknown backend: $b. Backend should be firrtl, verilator, ivl, vcs, or glsim")
 
 private[iotesters] case class TestApplicationException(exitVal: Int, lastMessage: String)
   extends RuntimeException(lastMessage)
@@ -161,6 +224,9 @@ private[iotesters] object TesterProcess {
   def kill(sim: SimApiInterface) {
     while(!sim.exitValue.isCompleted) sim.process.destroy
     println("Exit Code: %d".format(sim.process.exitValue))
+  }
+  def kill(p: IVLBackend) {
+    kill(p.simApiInterface)
   }
   def kill(p: VCSBackend) {
     kill(p.simApiInterface)

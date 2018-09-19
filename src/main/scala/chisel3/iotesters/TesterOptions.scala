@@ -7,29 +7,34 @@ import java.io.File
 import chisel3.HasChiselExecutionOptions
 import firrtl.{ComposableOptions, ExecutionOptionsManager, HasFirrtlOptions}
 import firrtl_interpreter.HasInterpreterSuite
+import treadle.HasTreadleSuite
 
 import scala.util.matching.Regex
 
 case class TesterOptions(
-  isGenVerilog        : Boolean = false,
-  isGenHarness        : Boolean = false,
-  isCompiling         : Boolean = false,
-  isRunTest           : Boolean = false,
-  isVerbose           : Boolean = false,
-  displayBase         : Int     = 10,
-  testerSeed          : Long    = System.currentTimeMillis,
-  testCmd             : Seq[String] = Seq.empty,
-  moreVcsFlags        : Seq[String] = Seq.empty,
-  moreVcsCFlags       : Seq[String] = Seq.empty,
-  vcsCommandEdits     : String = "",
-  backendName         : String  = "firrtl",
-  logFileName         : String  = "",
-  waveform            : Option[File] = None,
-  suppressVerilatorVcd: Boolean = false
+  isGenVerilog:         Boolean = false,
+  isGenHarness:         Boolean = false,
+  isCompiling:          Boolean = false,
+  isRunTest:            Boolean = false,
+  isVerbose:            Boolean = false,
+  displayBase:          Int     = 10,
+  testerSeed:           Long    = System.currentTimeMillis,
+  testCmd:              Seq[String] = Seq.empty,
+  moreVcsFlags:         Seq[String] = Seq.empty,
+  moreVcsCFlags:        Seq[String] = Seq.empty,
+  vcsCommandEdits:      String = "",
+  backendName:          String  = "treadle",
+  logFileName:          String  = "",
+  waveform:             Option[File] = None,
+  moreIvlFlags:         Seq[String] = Seq.empty,
+  moreIvlCFlags:        Seq[String] = Seq.empty,
+  ivlCommandEdits:      String = "",
+  generateVcdOutput:    String = ""
 ) extends ComposableOptions
 
 object TesterOptions {
   val VcsFileCommands: Regex = """file:(.+)""".r
+  val IvlFileCommands: Regex = """file:(.+)""".r
 }
 
 trait HasTesterOptions {
@@ -39,10 +44,10 @@ trait HasTesterOptions {
 
   parser.note("tester options")
 
-  parser.opt[String]("backend-name").valueName("<firrtl|verilator|vcs>")
+  parser.opt[String]("backend-name").valueName("<firrtl|treadle|verilator|ivl|vcs>")
     .abbr("tbn")
     .validate { x =>
-      if (Array("firrtl", "verilator", "vcs").contains(x.toLowerCase)) parser.success
+      if (Array("firrtl", "treadle", "verilator", "ivl", "vcs").contains(x.toLowerCase)) parser.success
       else parser.failure(s"$x not a legal backend name")
     }
     .foreach { x => testerOptions = testerOptions.copy(backendName = x) }
@@ -94,6 +99,22 @@ trait HasTesterOptions {
       testerOptions = testerOptions.copy(vcsCommandEdits = x) }
     .text("a file containing regex substitutions, one per line s/pattern/replacement/")
 
+  parser.opt[String]("more-ivl-flags")
+    .abbr("tmif")
+    .foreach { x => testerOptions = testerOptions.copy(moreIvlFlags = x.split("""\s""")) }
+    .text("Add specified commands to the ivl command line")
+
+  parser.opt[String]("more-ivl-c-flags")
+    .abbr("tmicf")
+    .foreach { x => testerOptions = testerOptions.copy(moreIvlCFlags = x.split("""\s""")) }
+    .text("Add specified commands to the CFLAGS on the ivl command line")
+
+  parser.opt[String]("ivl-command-edits")
+    .abbr("tice")
+    .foreach { x =>
+      testerOptions = testerOptions.copy(ivlCommandEdits = x) }
+    .text("a file containing regex substitutions, one per line s/pattern/replacement/")
+
   parser.opt[String]("log-file-name")
     .abbr("tlfn")
     .foreach { x => testerOptions = testerOptions.copy(logFileName = x) }
@@ -109,11 +130,17 @@ trait HasTesterOptions {
     .foreach { x => testerOptions = testerOptions.copy(testerSeed = x) }
     .text("provides a seed for random number generator")
 
-  parser.opt[Unit]("suppress-verilator-vcd")
-    .abbr("tsvv")
-    .foreach { _ => testerOptions = testerOptions.copy(suppressVerilatorVcd = true) }
-    .text("stop verilator's automatic VCD generation")
-
+  parser.opt[String]("generate-vcd-output")
+    .abbr("tgvo")
+    .validate { x =>
+      if(Seq("on", "off").contains(x.toLowerCase)) {
+        parser.success
+      } else {
+        parser.failure("generateVcdOutput must be set to on or off")
+      }
+    }
+    .foreach { x => testerOptions = testerOptions.copy(generateVcdOutput = x) }
+    .text(s"""set this flag to "on" or "off", otherwise it defaults to on for verilator, off for scala backends""")
 }
 
 class TesterOptionsManager
@@ -121,6 +148,7 @@ class TesterOptionsManager
     with HasTesterOptions
     with HasInterpreterSuite
     with HasChiselExecutionOptions
-    with HasFirrtlOptions{
+    with HasFirrtlOptions
+    with HasTreadleSuite {
 }
 
