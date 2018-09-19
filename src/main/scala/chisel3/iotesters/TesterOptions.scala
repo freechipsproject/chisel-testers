@@ -268,6 +268,3 @@ object TesterOptionsViewer {
 }
 
 
-
-class TesterOptionsManager
-
