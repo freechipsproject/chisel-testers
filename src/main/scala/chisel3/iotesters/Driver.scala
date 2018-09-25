@@ -11,7 +11,8 @@ import firrtl.options.Viewer.view
 import firrtl.{AnnotationSeq, FirrtlExecutionOptions, FirrtlSourceAnnotation, HasFirrtlExecutionOptions}
 import firrtl.FirrtlViewer._
 import iotesters.TesterOptionsViewer._
-import logger.Logger
+import logger.LoggerViewer._
+import logger.{Logger, LoggerOptions}
 
 import scala.util.DynamicVariable
 
@@ -25,7 +26,7 @@ object Driver extends firrtl.options.Driver {
   private[iotesters] def globalAnnotations = globalAnnotationsVar.value
 
   val optionsManager: ExecutionOptionsManager = {
-    new ExecutionOptionsManager("treadle") with HasFirrtlExecutionOptions
+    new ExecutionOptionsManager("testers") with HasFirrtlExecutionOptions
   }
 
   case class IoTestersExecutionResult(result: Boolean = true) extends DriverExecutionResult
@@ -33,10 +34,11 @@ object Driver extends firrtl.options.Driver {
   def execute(args: Array[String], initialAnnotations: AnnotationSeq): DriverExecutionResult = {
     val annotations = optionsManager.parse(args) ++ Seq(FirrtlSourceAnnotation("firrtl"))
 
-    val firrtlOptions = view[FirrtlExecutionOptions](initialAnnotations).get
-    val testerOptions = view[TesterOptions](initialAnnotations).get
+    val loggerOptions = view[LoggerOptions](annotations).get
+    val firrtlOptions = view[FirrtlExecutionOptions](annotations).get
+    val testerOptions = view[TesterOptions](annotations).get
 
-    Logger.makeScope(firrtlOptions) {
+    Logger.makeScope(loggerOptions) {
       globalAnnotationsVar.withValue(Some(initialAnnotations)) {
 
         val dutGenerator = initialAnnotations.collectFirst { case gen: ChiselDutGeneratorAnnotation => gen } match {
@@ -313,7 +315,7 @@ object Driver extends firrtl.options.Driver {
       case None => Nil
       case Some(f) => Seq(s"+waveform=$f")
     }
-    run(dutGen, binary.toString +: args.toSeq)(testerGen)
+    run(dutGen, binary.toString +: args)(testerGen)
   }
 }
 //}
