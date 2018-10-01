@@ -88,7 +88,7 @@ class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
   def chiselDeps = Agg("firrtl", "firrtl-interpreter", "treadle", "chisel3").map { d => getVersion(d) }
 
   override def ivyDeps = Agg(
-    ivy"com.github.scopt::scopt:3.6.0"
+    ivy"com.github.scopt::scopt:3.7.0"
   ) ++ chiselDeps
 
   object test extends Tests {

@@ -57,7 +57,7 @@ libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").
 
 libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "3.0.1",
                             "org.scalacheck" %% "scalacheck" % "1.13.4",
-                            "com.github.scopt" %% "scopt" % "3.6.0")
+                            "com.github.scopt" %% "scopt" % "3.7.0")
     
 publishMavenStyle := true
 
