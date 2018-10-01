@@ -2,7 +2,7 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.experimental.{MultiIOModule, RawModule}
+import chisel3.experimental.RawModule
 import chisel3.internal.InstanceId
 import firrtl.{AnnotationSeq, CompilerNameAnnotation, FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
@@ -12,7 +12,7 @@ private[iotesters] class FirrtlTerpBackend(dut: RawModule, firrtlIR: String, ann
   val interpretiveTester = new InterpretiveTester(firrtlIR, annotationSeq)
   reset(5) // reset firrtl interpreter on construction
 
-  private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
+  private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, _) =>
     val pathName = id.pathName
     getDataNames(pathName.drop(pathName.indexOf('.') + 1), id)
   }.toMap
@@ -114,10 +114,10 @@ private[iotesters] class FirrtlTerpBackend(dut: RawModule, firrtlIR: String, ann
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply[T <: RawModule](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+  def apply[T <: RawModule](dutGenerator: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
     val annotations = annotationSeq :+ CompilerNameAnnotation("low")
 
-    chisel3.Driver.execute(Array.empty, dutGen, annotations) match {
+    chisel3.Driver.execute(Array.empty[String], annotations) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {

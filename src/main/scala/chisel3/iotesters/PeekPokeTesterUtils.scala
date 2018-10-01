@@ -25,7 +25,7 @@ private[iotesters] object getDataNames {
     case b: Record => b.elements.toSeq flatMap {case (n, e) => apply(s"${name}_$n", e)}
     case v: Vec[_] => v.zipWithIndex flatMap {case (e, i) => apply(s"${name}_$i", e)}
   }
-  def apply(dut: MultiIOModule, separator: String = "."): Seq[(Element, String)] =
+  def apply(dut: RawModule, separator: String = "."): Seq[(Element, String)] =
     dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(data, _) =>
       apply(data.pathName replace (".", separator), data)
     }
@@ -33,7 +33,7 @@ private[iotesters] object getDataNames {
 }
 
 private[iotesters] object getPorts {
-  def apply(dut: MultiIOModule, separator: String = "."): (Seq[(Element, String)], Seq[(Element, String)]) =
+  def apply(dut: RawModule, separator: String = "."): (Seq[(Element, String)], Seq[(Element, String)]) =
     getDataNames(dut, separator) partition { case (e, _) => DataMirror.directionOf(e) == ActualDirection.Input }
 }
 
@@ -46,8 +46,8 @@ private[iotesters] object flatten {
 }
 
 private[iotesters] object getTopModule {
-  def apply(circuit: Circuit): BaseModule = {
-    (circuit.components find (_.name == circuit.name)).get.id
+  def apply(circuit: Circuit): RawModule = {
+    (circuit.components find (_.name == circuit.name)).get.id.asInstanceOf[RawModule]
   }
 }
 

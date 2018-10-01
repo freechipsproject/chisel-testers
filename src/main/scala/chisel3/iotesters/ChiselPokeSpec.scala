@@ -4,23 +4,27 @@ package chisel3.iotesters.experimental
 
 import org.scalatest._
 import chisel3._
+import chisel3.experimental.{BaseModule, RawModule}
 import chisel3.iotesters._
 import firrtl.AnnotationSeq
-
 import firrtl.options.Viewer.view
 import iotesters.TesterOptionsViewer._
 
 
 sealed trait TesterBackend {
-  def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend)
+  def create[T <: RawModule](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend)
 }
 case object FirrtlInterpreterBackend extends TesterBackend {
-  override def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
-    setupFirrtlTerpBackend(dutGen, annotationSeq)
+  override def create[T <: RawModule](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+    val dutAnnotation = ChiselDutGeneratorAnnotation(dutGen)
+    setupFirrtlTerpBackend(dutGen, annotationSeq :+ dutAnnotation)
   }
 }
+
+//TODO: (CHICK) Decide if these should be revived, or deprecated or removed.
 //case object VerilatorBackend extends TesterBackend {
 //  override def create[T <: Module](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+//    val dutAnnotation = ChiselDutGeneratorAnnotation(dutGen)
 //    setupVerilatorBackend(dutGen, annotationSeq)
 //  }
 //}

@@ -116,17 +116,17 @@ extends Backend(_seed = System.currentTimeMillis()) {
 }
 
 private[iotesters] object setupTreadleBackend {
-  def apply[T <: RawModule](dutGen: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
+  def apply[T <: RawModule](dutGenerator: () => T, annotationSeq: AnnotationSeq): (T, Backend) = {
     val annotations = annotationSeq :+ CompilerNameAnnotation("low")
 
-    chisel3.Driver.execute(Array.empty, dutGen, annotations) match {
+    chisel3.Driver.execute(Array.empty[String], annotations) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {
           case FirrtlExecutionSuccess(_, compiledFirrtl) =>
             (dut, new TreadleBackend(dut, compiledFirrtl, annotations))
           case FirrtlExecutionFailure(message) =>
-            throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
+            throw new Exception(s"TreadleBackend: failed firrtl compile message: $message")
         }
       case _ =>
         throw new Exception("Problem with compilation")

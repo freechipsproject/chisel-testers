@@ -110,6 +110,12 @@ class SignedAdderSpec extends FreeSpec with Matchers {
     } should be (true)
   }
 
+  "tester should returned signed values with treadle" in {
+    iotesters.Driver.execute(Array("--backend-name", "treadle", "--target-dir", "test_run_dir"), () => new SignedAdder(16)) { c =>
+      new SignedAdderTester(c)
+    } should be (true)
+  }
+
   "tester should returned signed values with verilator" in {
     iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"), () => new SignedAdder(16)) { c =>
       new SignedAdderTester(c)

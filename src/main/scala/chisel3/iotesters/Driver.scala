@@ -12,6 +12,7 @@ import firrtl.{AnnotationSeq, FirrtlExecutionOptions, FirrtlSourceAnnotation, Ha
 import firrtl.FirrtlViewer._
 import iotesters.TesterOptionsViewer._
 import logger.LoggerViewer._
+import firrtl.FirrtlViewer._
 import logger.{Logger, LoggerOptions}
 
 import scala.util.DynamicVariable
@@ -32,21 +33,21 @@ object Driver extends firrtl.options.Driver {
   case class IoTestersExecutionResult(result: Boolean = true) extends DriverExecutionResult
 
   def execute(args: Array[String], initialAnnotations: AnnotationSeq): DriverExecutionResult = {
-    val annotations = optionsManager.parse(args) ++ Seq(FirrtlSourceAnnotation("firrtl"))
+    val annotations = optionsManager.parse(args) ++ initialAnnotations
 
     val loggerOptions = view[LoggerOptions](annotations).get
-    val firrtlOptions = view[FirrtlExecutionOptions](annotations).get
     val testerOptions = view[TesterOptions](annotations).get
 
     Logger.makeScope(loggerOptions) {
-      globalAnnotationsVar.withValue(Some(initialAnnotations)) {
+      globalAnnotationsVar.withValue(Some(annotations)) {
 
-        val dutGenerator = initialAnnotations.collectFirst { case gen: ChiselDutGeneratorAnnotation => gen } match {
+        val dutGenerator = annotations.collectFirst { case gen: ChiselDutGeneratorAnnotation[_] => gen } match {
           case Some(ChiselDutGeneratorAnnotation(gen)) => gen
           case _ =>
             throw new Exception(s"CircuitGenerator (dutGenerator) not specified")
         }
-        val testerGenerator = initialAnnotations.collectFirst { case gen: PeekPokeTesterAnnotation[_] => gen } match {
+
+        val testerGenerator = annotations.collectFirst { case gen: PeekPokeTesterAnnotation[_] => gen } match {
           case Some(PeekPokeTesterAnnotation(gen)) => gen
           case _ =>
             throw new Exception(s"CircuitGenerator (testerGenerator) not specified")
@@ -54,12 +55,13 @@ object Driver extends firrtl.options.Driver {
 
         val (dut, backend) = testerOptions.backendName match {
           case "firrtl" =>
-            setupFirrtlTerpBackend(dutGenerator, initialAnnotations)
+            val (tempdut, tempannos) = setupFirrtlTerpBackend(dutGenerator, annotations)
+            (tempdut, tempannos)
           case "treadle" =>
-            setupTreadleBackend(dutGenerator, initialAnnotations)
+            setupTreadleBackend(dutGenerator, annotations)
+          case "verilator" =>
+            setupVerilatorBackend(dutGenerator, annotations)
           //TODO: chick fix these backends
-          //        case "verilator" =>
-          //          setupVerilatorBackend(dutGenerator, optionsManager)
           //        case "ivl" =>
           //          setupIVLBackend(dutGenerator, optionsManager)
           //        case "vcs" =>
