@@ -13,7 +13,7 @@ trait CrossUnRootedSbtModule extends CrossSbtModule {
 }
 
 trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
-  def publishVersion = "1.2-SNAPSHOT"
+  def publishVersion = "1.3-SNAPSHOT"
 
   def pomSettings = PomSettings(
     description = artifactName(),
@@ -82,19 +82,17 @@ def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
 }
 
 class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
-  override def artifactName = "chisel-testers"
+  override def artifactName = "chisel-iotesters"
 
   def chiselDeps = Agg("firrtl", "firrtl-interpreter", "chisel3").map { d => getVersion(d) }
 
   override def ivyDeps = Agg(
-    ivy"com.github.scopt::scopt:3.6.0"
+    ivy"com.github.scopt::scopt:3.6.0",
+    ivy"org.scalatest::scalatest:3.0.1",
+    ivy"org.scalacheck::scalacheck:1.13.4"
   ) ++ chiselDeps
 
   object test extends Tests {
-    override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.1",
-      ivy"org.scalacheck::scalacheck:1.13.4"
-    )
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
 
