@@ -104,6 +104,94 @@ object Driver {
   }
 
   /**
+    * This executes a test harness that extends peek-poke tester upon a device under test
+    * with an optionsManager to control all the options of the toolchain components
+    *
+    * @param dutGenerator    The device under test, a subclass of a Chisel3 module
+    * @param optionsManager  Use this to control options like which backend to use
+    * @param testerGen       A peek poke tester with tests for the dut
+    * @return                Returns true if all tests in testerGen pass
+    */
+  def timedExecute[T <: MultiIOModule](
+                            dutGenerator: () => T,
+                            optionsManager: TesterOptionsManager,
+                            timer: treadle.chronometry.Timer
+                          )
+                          (
+                            testerGen: T => PeekPokeTester[T]
+                          ): Boolean = {
+    optionsManagerVar.withValue(Some(optionsManager)) {
+      Logger.makeScope(optionsManager) {
+        if (optionsManager.topName.isEmpty) {
+          if (optionsManager.targetDirName == ".") {
+            optionsManager.setTargetDirName("test_run_dir")
+          }
+          val genClassName = testerGen.getClass.getName
+          val testerName = genClassName.split("""\$\$""").headOption.getOrElse("") + genClassName.hashCode.abs
+          optionsManager.setTargetDirName(s"${optionsManager.targetDirName}/$testerName")
+        }
+        val testerOptions = optionsManager.testerOptions
+
+
+        val (dut, backend) = timer("compile") {
+          testerOptions.backendName match {
+            case "firrtl" =>
+              setupFirrtlTerpBackend(dutGenerator, optionsManager)
+            case "treadle" =>
+              setupTreadleBackend(dutGenerator, optionsManager)
+            case "verilator" =>
+              setupVerilatorBackend(dutGenerator, optionsManager)
+            case "ivl" =>
+              setupIVLBackend(dutGenerator, optionsManager)
+            case "vcs" =>
+              setupVCSBackend(dutGenerator, optionsManager)
+            case _ =>
+              throw new Exception(s"Unrecognized backend name ${testerOptions.backendName}")
+          }
+        }
+
+        backendVar.withValue(Some(backend)) {
+          try {
+            testerGen(dut).finish
+          } catch {
+            case e: Throwable =>
+              e.printStackTrace()
+              backend match {
+                case b: IVLBackend => TesterProcess.kill(b)
+                case b: VCSBackend => TesterProcess.kill(b)
+                case b: VerilatorBackend => TesterProcess.kill(b)
+                case _ =>
+              }
+              throw e
+          }
+        }
+      }
+    }
+  }
+
+  /**
+    * This executes the test with options provide from an array of string -- typically provided from the
+    * command line
+    *
+    * @param args       A *main* style array of string options
+    * @param dut        The device to be tested, (device-under-test)
+    * @param testerGen  A peek-poke tester with test for the dey
+    * @return           Returns true if all tests in testerGen pass
+    */
+  def timedExecute[T <: MultiIOModule](args: Array[String], dut: () => T, timer: treadle.chronometry.Timer)(
+    testerGen: T => PeekPokeTester[T]
+  ): Boolean = {
+    val optionsManager = new TesterOptionsManager
+
+    optionsManager.parse(args) match {
+      case true =>
+        timedExecute(dut, optionsManager, timer)(testerGen)
+      case _ =>
+        false
+    }
+  }
+
+  /**
     * Start up the interpreter repl with the given circuit
     * To test a `class X extends Module {}`, add the following code to the end
     * of the file that defines
