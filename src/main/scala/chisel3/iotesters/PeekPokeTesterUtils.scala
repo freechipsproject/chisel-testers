@@ -208,6 +208,70 @@ private[iotesters] object verilogToVCS {
   }
 }
 
+private[iotesters] object verilogToVerilator {
+  def constructVerilatorFlags(
+                           topModule: String,
+                           dir: File,
+                           cppHarness: File,
+                           moreVerilatorFlags: Seq[String] = Seq.empty[String],
+                           moreVerilatorCFlags: Seq[String] = Seq.empty[String]): Seq[String] = {
+
+    val DefaultCcFlags = Seq(
+      "-Wno-undefined-bool-conversion",
+      "-O1",
+      s"-DTOP_TYPE=V$topModule",
+      "-DVL_USER_FINISH",
+      s"-include V$topModule.h"    )
+    val ccFlags = DefaultCcFlags ++ moreVerilatorCFlags
+
+    val blackBoxVerilogList = {
+      val list_file = new File(dir, firrtl.transforms.BlackBoxSourceHelper.fileListName)
+      if(list_file.exists()) {
+        Seq("-f", list_file.getAbsolutePath)
+      }
+      else {
+        Seq.empty[String]
+      }
+    }
+
+    val verilatorFlags = blackBoxVerilogList ++ Seq("--assert",
+      "-Wno-fatal",
+      "-Wno-WIDTH",
+      "-Wno-STMTDLY",
+      "-O1",
+      "--top-module", topModule,
+      "+define+TOP_TYPE=V" + topModule,
+      s"+define+PRINTF_COND=!$topModule.reset",
+      s"+define+STOP_COND=!$topModule.reset",
+      "-CFLAGS", "\"%s\"".format(ccFlags mkString " "),
+      "-Mdir", dir.getAbsolutePath,
+      "--exe", cppHarness.getAbsolutePath
+    ) ++ moreVerilatorFlags
+
+    verilatorFlags
+  }
+
+  def apply(
+               topModule: String,
+               dir: File,
+               vSources: Seq[File],
+               verilatorHarness: File,
+               moreVerilatorFlags: Seq[String] = Seq.empty[String],
+               moreVerilatorCFlags: Seq[String] = Seq.empty[String],
+               editCommands: String = ""): ProcessBuilder = {
+
+    val verilatorFlags = constructVerilatorFlags(topModule, dir, verilatorHarness, moreVerilatorFlags, moreVerilatorCFlags)
+
+    val cmd = Seq("cd", dir.getAbsolutePath, "&&", "verilator", "--cc", s"$topModule.v") ++ verilatorFlags mkString " "
+
+    val commandEditor = CommandEditor(editCommands, "vcs-command-edit")
+    val finalCommand = commandEditor(cmd)
+    println(s"$finalCommand")
+
+    Seq("bash", "-c", finalCommand)
+  }
+}
+
 private[iotesters] case class BackendException(b: String)
   extends Exception(s"Unknown backend: $b. Backend should be firrtl, verilator, ivl, vcs, or glsim")
 

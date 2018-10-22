@@ -258,13 +258,16 @@ private[iotesters] object setupVerilatorBackend {
         cppHarnessWriter.append(emittedStuff)
         cppHarnessWriter.close()
 
+        val verilatorFlags = optionsManager.testerOptions.moreVcsFlags ++ { if (suppressVerilatorVCD) Seq() else Seq("--trace") }
         assert(
-          chisel3.Driver.verilogToCpp(
+          verilogToVerilator(
             circuit.name,
             dir,
             vSources = Seq(),
             cppHarnessFile,
-            suppressVerilatorVCD
+            moreVerilatorFlags = verilatorFlags,
+            moreVerilatorCFlags = optionsManager.testerOptions.moreVcsCFlags,
+            editCommands = optionsManager.testerOptions.vcsCommandEdits
           ).! == 0
         )
         assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
