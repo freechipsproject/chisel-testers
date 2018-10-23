@@ -56,6 +56,10 @@ object chiselMain {
         val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
         harness.write(VerilatorCppHarnessGenerator.codeGen(dut, CircuitState(chirrtl, ChirrtlForm), waveform))
         harness.close()
+      case "ivl" =>
+        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
+        val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
+        genIVLVerilogHarness(dut, harness, waveform.toString)
       case "vcs" | "glsim" =>
         val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
         val waveform = new File(dir, s"${chirrtl.main}.vpd").toString

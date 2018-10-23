@@ -8,7 +8,7 @@ import scala.io.Source
 import scala.util.matching.Regex
 
 /**
-  * This function applies a last chance method of making final alteration of the vcs command line.
+  * This function applies a last chance method of making final alteration of the ivl/vcs command line.
   * Alterations are made from a text file containing ed style regex substitutions
   * s/regex-pattern/substitution/ or more generally
   * s<<separator>>regex-pattern<<separator>>substitution<<separator>>
@@ -49,7 +49,7 @@ class CommandEditor(val editCommands: Seq[String], messagePrefix: String) {
           verbose = true
           show(s"""$messagePrefix applying edits to "$currentCommandLine" """)
         case _ =>
-          show(s"""vcs-command-edit ignoring edit command "$line" """)
+          show(s"""ivl/vcs-command-edit ignoring edit command "$line" """)
       }
     }
     currentCommandLine
@@ -65,6 +65,16 @@ object CommandEditor {
     val editCommands = fileOrEditor match {
       case "" =>
         Seq.empty
+      case TesterOptions.IvlFileCommands(fileName) =>
+        val file = new java.io.File(fileName)
+        if (!file.exists()) {
+          val currDir = new File(".").getAbsolutePath
+          println(s"""$DefaultPrefix can't find specified file $fileName, cur dir is $currDir""")
+          Seq.empty
+        }
+        else {
+          Source.fromFile(file).getLines.toSeq
+        }
       case TesterOptions.VcsFileCommands(fileName) =>
         val file = new java.io.File(fileName)
         if (!file.exists()) {

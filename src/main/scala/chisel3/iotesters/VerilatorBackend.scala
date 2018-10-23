@@ -62,27 +62,30 @@ object VerilatorCppHarnessGenerator {
     val dutName = dut.name
     val dutApiClassName = dutName + "_api_t"
     val dutVerilatorClassName = "V" + dutName
-    codeBuffer.append("#include \"%s.h\"\n".format(dutVerilatorClassName))
-    codeBuffer.append("#include \"verilated.h\"\n")
-    codeBuffer.append("#include \"veri_api.h\"\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("#include \"verilated_vcd_c.h\"\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("#include <iostream>\n")
-    codeBuffer.append(s"class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {\n")
-    codeBuffer.append("public:\n")
-    codeBuffer.append(s"    $dutApiClassName($dutVerilatorClassName* _dut) {\n")
-    codeBuffer.append("        dut = _dut;\n")
-    codeBuffer.append("        main_time = 0L;\n")
-    codeBuffer.append("        is_exit = false;\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("        tfp = NULL;\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    void init_sim_data() {\n")
-    codeBuffer.append("        sim_data.inputs.clear();\n")
-    codeBuffer.append("        sim_data.outputs.clear();\n")
-    codeBuffer.append("        sim_data.signals.clear();\n")
+    codeBuffer.append(s"""
+#include "${dutVerilatorClassName}.h"
+#include "verilated.h"
+#include "veri_api.h"
+#if VM_TRACE
+#include "verilated_vcd_c.h"
+#endif
+#include <iostream>
+class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {
+    public:
+    $dutApiClassName($dutVerilatorClassName* _dut) {
+        dut = _dut;
+        main_time = 0L;
+        is_exit = false;
+#if VM_TRACE
+        tfp = NULL;
+#endif
+    }
+    void init_sim_data() {
+        sim_data.inputs.clear();
+        sim_data.outputs.clear();
+        sim_data.signals.clear();
+
+""")
     inputs.toList foreach { case (node, name) =>
       // replaceFirst used here in case port name contains the dutName
       pushBack("inputs", name replaceFirst (dutName, "dut"), node.getWidth)
@@ -92,100 +95,108 @@ object VerilatorCppHarnessGenerator {
       pushBack("outputs", name replaceFirst (dutName, "dut"), node.getWidth)
     }
     pushBack("signals", "dut->reset", 1)
-    codeBuffer.append(s"""        sim_data.signal_map["%s"] = 0;\n""".format(dut.reset.pathName))
-    codeBuffer.append("    }\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("     void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("    inline bool exit() { return is_exit; }\n")
+    codeBuffer.append(s"""        sim_data.signal_map["${dut.reset.pathName}"] = 0;
+    }
+#if VM_TRACE
+     void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }
+#endif
+    inline bool exit() { return is_exit; }
 
     // required for sc_time_stamp()
-    codeBuffer.append("    virtual inline double get_time_stamp() {\n")
-    codeBuffer.append("        return main_time;\n")
-    codeBuffer.append("    }\n")
+    virtual inline double get_time_stamp() {
+        return main_time;
+    }
 
-    codeBuffer.append("private:\n")
-    codeBuffer.append(s"    $dutVerilatorClassName* dut;\n")
-    codeBuffer.append("    bool is_exit;\n")
-    codeBuffer.append("    vluint64_t main_time;\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("    VerilatedVcdC* tfp;\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("    virtual inline size_t put_value(VerilatorDataWrapper* &sig, uint64_t* data, bool force=false) {\n")
-    codeBuffer.append("        return sig->put_value(data);\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    virtual inline size_t get_value(VerilatorDataWrapper* &sig, uint64_t* data) {\n")
-    codeBuffer.append("        return sig->get_value(data);\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    virtual inline size_t get_chunk(VerilatorDataWrapper* &sig) {\n")
-    codeBuffer.append("        return sig->get_num_words();\n")
-    codeBuffer.append("    } \n")
-    codeBuffer.append("    virtual inline void reset() {\n")
-    codeBuffer.append("        dut->reset = 1;\n")
-    codeBuffer.append("        step();\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    virtual inline void start() {\n")
-    codeBuffer.append("        dut->reset = 0;\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    virtual inline void finish() {\n")
-    codeBuffer.append("        dut->eval();\n")
-    codeBuffer.append("        is_exit = true;\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    virtual inline void step() {\n")
-    codeBuffer.append("        dut->clock = 0;\n")
-    codeBuffer.append("        dut->eval();\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("        if (tfp) tfp->dump(main_time);\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("        main_time++;\n")
-    codeBuffer.append("        dut->clock = 1;\n")
-    codeBuffer.append("        dut->eval();\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("        if (tfp) tfp->dump(main_time);\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("        main_time++;\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("    virtual inline void update() {\n")
-    codeBuffer.append("        dut->_eval_settle(dut->__VlSymsp);\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("};\n")
+    private:
+    ${dutVerilatorClassName}* dut;
+    bool is_exit;
+    vluint64_t main_time;
+#if VM_TRACE
+    VerilatedVcdC* tfp;
+#endif
+    virtual inline size_t put_value(VerilatorDataWrapper* &sig, uint64_t* data, bool force=false) {
+        return sig->put_value(data);
+    }
+    virtual inline size_t get_value(VerilatorDataWrapper* &sig, uint64_t* data) {
+        return sig->get_value(data);
+    }
+    virtual inline size_t get_chunk(VerilatorDataWrapper* &sig) {
+        return sig->get_num_words();
+    }
+    virtual inline void reset() {
+        dut->reset = 1;
+        step();
+    }
+    virtual inline void start() {
+        dut->reset = 0;
+    }
+    virtual inline void finish() {
+        dut->eval();
+        is_exit = true;
+    }
+    virtual inline void step() {
+        dut->clock = 0;
+        dut->eval();
+#if VM_TRACE
+        if (tfp) tfp->dump(main_time);
+#endif
+        main_time++;
+        dut->clock = 1;
+        dut->eval();
+#if VM_TRACE
+        if (tfp) tfp->dump(main_time);
+#endif
+        main_time++;
+    }
+    virtual inline void update() {
+        dut->_eval_settle(dut->__VlSymsp);
+    }
+};
 
-    // The following isn't strictly required unless we emit (possibly indirectly) something
-    // requiring a time-stamp (such as an assert).
-    codeBuffer.append(s"static $dutApiClassName * _Top_api;\n")
-    codeBuffer.append("double sc_time_stamp () { return _Top_api->get_time_stamp(); }\n")
+// The following isn't strictly required unless we emit (possibly indirectly) something
+// requiring a time-stamp (such as an assert).
+static ${dutApiClassName} * _Top_api;
+double sc_time_stamp () { return _Top_api->get_time_stamp(); }
 
-    codeBuffer.append("int main(int argc, char **argv, char **env) {\n")
-    codeBuffer.append("    Verilated::commandArgs(argc, argv);\n")
-    codeBuffer.append(s"    $dutVerilatorClassName* top = new $dutVerilatorClassName;\n")
-    codeBuffer.append("    std::string vcdfile = \"%s\";\n".format(vcdFilePath))
-    codeBuffer.append("    std::vector<std::string> args(argv+1, argv+argc);\n")
-    codeBuffer.append("    std::vector<std::string>::const_iterator it;\n")
-    codeBuffer.append("    for (it = args.begin() ; it != args.end() ; it++) {\n")
-    codeBuffer.append("      if (it->find(\"+waveform=\") == 0) vcdfile = it->c_str()+10;\n")
-    codeBuffer.append("    }\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("    Verilated::traceEverOn(true);\n")
-    codeBuffer.append("    VL_PRINTF(\"Enabling waves..\");\n")
-    codeBuffer.append("    VerilatedVcdC* tfp = new VerilatedVcdC;\n")
-    codeBuffer.append("    top->trace(tfp, 99);\n")
-    codeBuffer.append("    tfp->open(vcdfile.c_str());\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append(s"    $dutApiClassName api(top);\n")
-    codeBuffer.append("    _Top_api = &api; /* required for sc_time_stamp() */\n")
-    codeBuffer.append("    api.init_sim_data();\n")
-    codeBuffer.append("    api.init_channels();\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("    api.init_dump(tfp);\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("    while(!api.exit()) api.tick();\n")
-    codeBuffer.append("#if VM_TRACE\n")
-    codeBuffer.append("    if (tfp) tfp->close();\n")
-    codeBuffer.append("    delete tfp;\n")
-    codeBuffer.append("#endif\n")
-    codeBuffer.append("    delete top;\n")
-    codeBuffer.append("    exit(0);\n")
-    codeBuffer.append("}\n")
+// Override Verilator definition so first $$finish ends simulation
+// Note: VL_USER_FINISH needs to be defined when compiling Verilator code
+void vl_finish(const char* filename, int linenum, const char* hier) {
+  Verilated::flushCall();
+  exit(0);
+}
+
+int main(int argc, char **argv, char **env) {
+    Verilated::commandArgs(argc, argv);
+    $dutVerilatorClassName* top = new $dutVerilatorClassName;
+    std::string vcdfile = "${vcdFilePath}";
+    std::vector<std::string> args(argv+1, argv+argc);
+    std::vector<std::string>::const_iterator it;
+    for (it = args.begin() ; it != args.end() ; it++) {
+        if (it->find("+waveform=") == 0) vcdfile = it->c_str()+10;
+    }
+#if VM_TRACE
+    Verilated::traceEverOn(true);
+    VL_PRINTF(\"Enabling waves..\");
+    VerilatedVcdC* tfp = new VerilatedVcdC;
+    top->trace(tfp, 99);
+    tfp->open(vcdfile.c_str());
+#endif
+    ${dutApiClassName} api(top);
+    _Top_api = &api; /* required for sc_time_stamp() */
+    api.init_sim_data();
+    api.init_channels();
+#if VM_TRACE
+    api.init_dump(tfp);
+#endif
+    while(!api.exit()) api.tick();
+#if VM_TRACE
+    if (tfp) tfp->close();
+    delete tfp;
+#endif
+    delete top;
+    exit(0);
+}
+""")
     codeBuffer.toString()
   }
 }
@@ -209,14 +220,13 @@ private[iotesters] object setupVerilatorBackend {
         val dut = getTopModule(circuit).asInstanceOf[T]
 
         // This makes sure annotations for command line options get created
-        firrtl.Driver.loadAnnotations(optionsManager)
+        val externalAnnotations = firrtl.Driver.getAnnotations(optionsManager)
 
         /*
         The following block adds an annotation that tells the black box helper where the
         current build directory is, so that it can copy verilog resource files into the right place
          */
-        val annotations = optionsManager.firrtlOptions.annotations ++
-          List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
+        val annotations = externalAnnotations ++ List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
 
         val transforms = optionsManager.firrtlOptions.customTransforms
 
@@ -308,7 +318,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
       case f: FixedPoint => signConvert(bigIntU, f.getWidth)
       case _ => bigIntU
     }
-    if (verbose) logger info s"  PEEK ${path} -> ${bigIntToStr(result, base)}"
+    if (verbose) logger info s"  PEEK $path -> ${bigIntToStr(result, base)}"
     result
   }
 
@@ -319,7 +329,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
     val got = peek(signal, None)
     val good = got == expected
     if (verbose) logger info (
-      s"""${msg}  EXPECT ${path} -> ${bigIntToStr(got, base)} == """ +
+      s"""${msg}  EXPECT $path -> ${bigIntToStr(got, base)} == """ +
         s"""${bigIntToStr(expected, base)} ${if (good) "PASS" else "FAIL"}""")
     good
   }
@@ -331,7 +341,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
 
   def poke(path: String, value: BigInt)
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int) {
-    if (verbose) logger info s"  POKE ${path} <- ${bigIntToStr(value, base)}"
+    if (verbose) logger info s"  POKE $path <- ${bigIntToStr(value, base)}"
     simApiInterface.poke(path, value)
   }
 
@@ -343,7 +353,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
   def peek(path: String)
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): BigInt = {
     val result = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
-    if (verbose) logger info s"  PEEK ${path} -> ${bigIntToStr(result, base)}"
+    if (verbose) logger info s"  PEEK $path -> ${bigIntToStr(result, base)}"
     result
   }
 
@@ -352,7 +362,7 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
     val got = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
     val good = got == expected
     if (verbose) logger info (
-      s"""${msg}  EXPECT ${path} got ${bigIntToStr(got, base)} expected""" +
+      s"""${msg}  EXPECT $path got ${bigIntToStr(got, base)} expected""" +
         s"""${bigIntToStr(expected, base)} ${if (good) "PASS" else "FAIL"}""")
     good
   }

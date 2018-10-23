@@ -7,6 +7,7 @@ import java.io.File
 import chisel3.HasChiselExecutionOptions
 import firrtl.{ComposableOptions, ExecutionOptionsManager, HasFirrtlOptions}
 import firrtl_interpreter.HasInterpreterSuite
+import treadle.HasTreadleSuite
 
 import scala.util.matching.Regex
 
@@ -22,12 +23,16 @@ case class TesterOptions(
                           moreVcsFlags:    Seq[String] = Seq.empty,
                           moreVcsCFlags:   Seq[String] = Seq.empty,
                           vcsCommandEdits: String = "",
-                          backendName:     String  = "firrtl",
+                          backendName:     String  = "treadle",
                           logFileName:     String  = "",
-                          waveform:        Option[File] = None) extends ComposableOptions
+                          waveform:        Option[File] = None,
+                          moreIvlFlags:    Seq[String] = Seq.empty,
+                          moreIvlCFlags:   Seq[String] = Seq.empty,
+                          ivlCommandEdits: String = "") extends ComposableOptions
 
 object TesterOptions {
   val VcsFileCommands: Regex = """file:(.+)""".r
+  val IvlFileCommands: Regex = """file:(.+)""".r
 }
 
 trait HasTesterOptions {
@@ -37,10 +42,10 @@ trait HasTesterOptions {
 
   parser.note("tester options")
 
-  parser.opt[String]("backend-name").valueName("<firrtl|verilator|vcs>")
+  parser.opt[String]("backend-name").valueName("<firrtl|treadle|verilator|ivl|vcs>")
     .abbr("tbn")
     .validate { x =>
-      if (Array("firrtl", "verilator", "vcs").contains(x.toLowerCase)) parser.success
+      if (Array("firrtl", "treadle", "verilator", "ivl", "vcs").contains(x.toLowerCase)) parser.success
       else parser.failure(s"$x not a legal backend name")
     }
     .foreach { x => testerOptions = testerOptions.copy(backendName = x) }
@@ -92,6 +97,22 @@ trait HasTesterOptions {
       testerOptions = testerOptions.copy(vcsCommandEdits = x) }
     .text("a file containing regex substitutions, one per line s/pattern/replacement/")
 
+  parser.opt[String]("more-ivl-flags")
+    .abbr("tmif")
+    .foreach { x => testerOptions = testerOptions.copy(moreIvlFlags = x.split("""\s""")) }
+    .text("Add specified commands to the ivl command line")
+
+  parser.opt[String]("more-ivl-c-flags")
+    .abbr("tmicf")
+    .foreach { x => testerOptions = testerOptions.copy(moreIvlCFlags = x.split("""\s""")) }
+    .text("Add specified commands to the CFLAGS on the ivl command line")
+
+  parser.opt[String]("ivl-command-edits")
+    .abbr("tice")
+    .foreach { x =>
+      testerOptions = testerOptions.copy(ivlCommandEdits = x) }
+    .text("a file containing regex substitutions, one per line s/pattern/replacement/")
+
   parser.opt[String]("log-file-name")
     .abbr("tlfn")
     .foreach { x => testerOptions = testerOptions.copy(logFileName = x) }
@@ -113,6 +134,7 @@ class TesterOptionsManager
     with HasTesterOptions
     with HasInterpreterSuite
     with HasChiselExecutionOptions
-    with HasFirrtlOptions{
+    with HasFirrtlOptions
+    with HasTreadleSuite {
 }
 
