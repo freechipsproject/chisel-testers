@@ -263,7 +263,6 @@ private[iotesters] object setupVerilatorBackend {
           verilogToVerilator(
             circuit.name,
             dir,
-            vSources = Seq(),
             cppHarnessFile,
             moreVerilatorFlags = verilatorFlags,
             moreVerilatorCFlags = optionsManager.testerOptions.moreVcsCFlags,
