@@ -20,7 +20,7 @@ class ToolChainSpec extends FreeSpec with Matchers {
   val editableBuildCommandTests = List(
     EditableBuildCommandTest("verilogToVCS", verilogToVCS, "--more-vcs-flags", "moreVcsFlags", "--more-vcs-c-flags", "moreVcsCFlags", "--vcs-command-edits", "vcsCommandEdits"),
     EditableBuildCommandTest("verilogToIVL", verilogToIVL, "--more-ivl-flags", "moreIvlFlags", "--more-ivl-c-flags", "moreIvlCFlags", "--ivl-command-edits", "ivlCommandEdits"),
-    EditableBuildCommandTest("verilogToVerilator", verilogToVerilator, "--more-vcs-flags", "moreVcsFlags", "--more-vcs-c-flags", "moreVcsCFlags", "--vcs-command-edits", "vcsCommandEdits"),
+    EditableBuildCommandTest("verilogToVerilator", verilogToVerilator, "--more-vcs-flags", "moreVcsFlags", "--more-vcs-c-flags", "moreVcsCFlags", "--vcs-command-edits", "vcsCommandEdits")
   )
 
   val dummyTop = "top"
