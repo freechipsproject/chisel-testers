@@ -23,7 +23,7 @@ private[iotesters] class FirrtlTerpBackend(
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit = {
     signal match {
-      case port: Bits =>
+      case port: Element =>
         val name = portNames(port)
         interpretiveTester.poke(name, value)
         if (verbose) logger info s"  POKE $name <- ${bigIntToStr(value, base)}"
@@ -45,7 +45,7 @@ private[iotesters] class FirrtlTerpBackend(
   def peek(signal: InstanceId, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): BigInt = {
     signal match {
-      case port: Bits =>
+      case port: Element =>
         val name = portNames(port)
         val result = interpretiveTester.peek(name)
         if (verbose) logger info s"  PEEK $name -> ${bigIntToStr(result, base)}"
@@ -63,7 +63,7 @@ private[iotesters] class FirrtlTerpBackend(
   def expect(signal: InstanceId, expected: BigInt, msg: => String)
             (implicit logger: TestErrorLog, verbose: Boolean, base: Int) : Boolean = {
     signal match {
-      case port: Bits =>
+      case port: Element =>
         val name = portNames(port)
         val got = interpretiveTester.peek(name)
         val good = got == expected

@@ -44,7 +44,7 @@ abstract class AdvTester[+T <: Module](dut: T,
   // Also, to ensure difference enforced, poke 'deprecated' and replaced with wire_poke
   def wire_poke(port: Bits, target: BigInt) = super.poke(port, target)
 
-  override def poke(port: Bits, target: BigInt) {
+  /*override*/ def poke(port: Bits, target: BigInt) {
     require(false, "poke hidden for AdvTester, use wire_poke or reg_poke")
   }
 
