@@ -55,9 +55,12 @@ libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").
     "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
 }
 
-libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "3.0.1",
-                            "org.scalacheck" %% "scalacheck" % "1.13.4",
-                            "com.github.scopt" %% "scopt" % "3.7.0")
+libraryDependencies ++= Seq(
+  "junit" % "junit" % "4.12",
+  "org.scalatest" %% "scalatest" % "3.0.5",
+  "org.scalacheck" %% "scalacheck" % "1.14.0",
+  "com.github.scopt" %% "scopt" % "3.7.0"
+)
     
 publishMavenStyle := true
 
