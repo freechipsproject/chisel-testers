@@ -11,8 +11,8 @@ import java.io.{PrintWriter, StringWriter}
 // Provides a template to define advanced tester transactions
 trait AdvTests extends PeekPokeTests {
   def cycles: Long
-  def wire_poke(port: Bits, target: BigInt):  Unit
-  def reg_poke(port: Bits, target: BigInt):   Unit
+  def wire_poke[T <: Element: Pokeable](port: T, target: BigInt):  Unit
+  def reg_poke[T <: Element: Pokeable](port: T, target: BigInt):   Unit
   def takestep(work: => Unit = {}): Unit
   def takesteps(n: Int)(work: =>Unit = {}): Unit
   def until(pred: =>Boolean, maxCycles: Long = 0L)(work: =>Unit): Boolean
@@ -42,19 +42,21 @@ abstract class AdvTester[+T <: Module](dut: T,
   // This section of code lets testers easily emulate have registers right before dut inputs
   //   This testing style conforms with the general ASPIRE testbench style
   // Also, to ensure difference enforced, poke 'deprecated' and replaced with wire_poke
-  def wire_poke(port: Bits, target: BigInt) = super.poke(port, target)
+  def wire_poke[T <: Element: Pokeable](port: T, target: BigInt) = super.poke(port, target)
 
-  override def poke(port: Bits, target: BigInt) {
+  override def poke[T <: Element: Pokeable](port: T, target: BigInt) {
     require(false, "poke hidden for AdvTester, use wire_poke or reg_poke")
   }
 
-  private val registered_bits_updates = new scala.collection.mutable.HashMap[Bits,BigInt]()
+  private val registered_bits_updates = new scala.collection.mutable.HashMap[Element,BigInt]()
   private def do_registered_updates() = {
-    registered_bits_updates.foreach( kv => wire_poke(kv._1,kv._2) )
+    registered_bits_updates.foreach{case (key, value) => key match {
+      case Pokeable(p) => wire_poke(p, value)
+    }}
     registered_bits_updates.clear
   }
 
-  def reg_poke(port: Bits, target: BigInt) { registered_bits_updates(port) = target }
+  def reg_poke[T <: Element: Pokeable](port: T, target: BigInt) { registered_bits_updates(port) = target }
 
   // This function replaces step in the advanced tester and makes sure all tester features are clocked in the appropriate order
   def takestep(work: => Unit = {}): Unit = {
@@ -134,7 +136,7 @@ abstract class AdvTester[+T <: Module](dut: T,
   }
 
   object IrrevocableSink {
-    def apply[T<:Bits](socket: ReadyValidIO[T]) = 
+    def apply[T<:Element: Pokeable](socket: ReadyValidIO[T]) =
       new IrrevocableSink(socket, (socket_bits: T) => peek(socket_bits))
   }
 
@@ -145,7 +147,7 @@ abstract class AdvTester[+T <: Module](dut: T,
   }
 
   object DecoupledSink {
-    def apply[T<:Bits](socket: ReadyValidIO[T]) = 
+    def apply[T<:Element: Pokeable](socket: ReadyValidIO[T]) =
       new DecoupledSink(socket, (socket_bits: T) => peek(socket_bits))
   }
 
@@ -164,7 +166,7 @@ abstract class AdvTester[+T <: Module](dut: T,
     preprocessors += this
   }
   object ValidSink {
-    def apply[T<:Bits](socket: ValidIO[T]) =
+    def apply[T<:Element: Pokeable](socket: ValidIO[T]) =
       new ValidSink(socket, (socket_bits: T) => peek(socket_bits))
   }
 
@@ -195,7 +197,7 @@ abstract class AdvTester[+T <: Module](dut: T,
     postprocessors += this
   }
   object DecoupledSource {
-    def apply[T<:Bits](socket: DecoupledIO[T]) =
+    def apply[T<:Element: Pokeable](socket: DecoupledIO[T]) =
       new DecoupledSource(socket, (socket_bits: T, in: BigInt) => reg_poke(socket_bits, in))
   }
 
@@ -223,7 +225,7 @@ abstract class AdvTester[+T <: Module](dut: T,
     postprocessors += this
   }
   object ValidSource {
-    def apply[T<:Bits](socket: ValidIO[T]) =
+    def apply[T<:Element: Pokeable](socket: ValidIO[T]) =
       new ValidSource(socket, (socket_bits: T, in: BigInt) => reg_poke(socket_bits, in))
   }
 }

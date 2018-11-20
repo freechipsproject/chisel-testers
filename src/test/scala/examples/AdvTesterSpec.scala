@@ -69,6 +69,7 @@ class GCDAdvTester(c: RealGCD3) extends AdvTester(c)  {
   val gcdOutputHandler = new ValidSink(c.io.out, (outPort: UInt) => {
     peek(outPort)
   })
+
   val gcdInputDriver = new DecoupledSource(c.io.in, (inPorts: RealGCD3Input, inValues: TestGCD3Values) => {
     wire_poke(inPorts.a, inValues.a)
     wire_poke(inPorts.b, inValues.b)
@@ -83,7 +84,8 @@ class GCDAdvTester(c: RealGCD3) extends AdvTester(c)  {
     gcdInputDriver.process()
     eventually(gcdOutputHandler.outputs.size != 0, nCycles + 2)
     val result = gcdOutputHandler.outputs.dequeue()
-    assert(result == gcd_value)
+    println(s"result = $result")
+    assert(result == gcd_value, "gcd did not compute the correct value")
   }
 }
 

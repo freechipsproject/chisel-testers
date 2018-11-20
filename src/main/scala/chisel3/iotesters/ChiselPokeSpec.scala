@@ -44,7 +44,7 @@ trait ChiselPokeTesterUtils extends Assertions {
     // TODO: statically-typed Bundle constructors
     // Map-based Bundle expect/pokes currently not supported because those don't compile-time check
 
-    def expect(ref: Bits, value: BigInt, msg: String="") {
+    def expect[T <: Element: Pokeable](ref: T, value: BigInt, msg: String="") {
       val actualValue = backend.peek(ref, None)
       val postfix = if (msg != "") s": $msg" else ""
       assert(actualValue == value, s"(cycle $currCycle: expected ${ref.instanceName} == $value, got $actualValue$postfix)")
@@ -52,7 +52,7 @@ trait ChiselPokeTesterUtils extends Assertions {
 
     /** Write a value into the circuit.
       */
-    def poke(ref: Bits, value: BigInt) {
+    def poke[T <: Element](ref: T, value: BigInt) {
       assert(!ref.isLit, s"(attempted to poke literal ${ref.instanceName})")
       backend.poke(ref, value, None)
       val verifyVal = backend.peek(ref, None)
@@ -87,7 +87,7 @@ trait ChiselPokeTesterUtils extends Assertions {
     // Dynamic testbenches may be a specialized option later.
     /** Internal: read a value into the circuit.
       */
-    private[iotesters] def peek(ref: Bits): BigInt = {
+    private[iotesters] def peek[T <: Element: Pokeable](ref: T): BigInt = {
       backend.peek(ref, None)
     }
   }
@@ -129,7 +129,7 @@ trait PokeTester extends ChiselPokeTesterUtils {
 trait ImplicitPokeTester extends ChiselPokeTesterUtils {
   /** Pokes a value into the circuit.
     */
-  def poke(ref: Bits, value: BigInt)(implicit t: InnerTester) {
+  def poke[T <: Element: Pokeable](ref: T, value: BigInt)(implicit t: InnerTester) {
     t.poke(ref, value)
   }
 
@@ -140,12 +140,12 @@ trait ImplicitPokeTester extends ChiselPokeTesterUtils {
 
   // Wrapper for check when no explicit message is passed in.
   // Scala doesn't allow multiple overloaded functions with default arguments.
-  def check(ref: Bits, value: BigInt)(implicit t: InnerTester) {
+  def check[T <: Element: Pokeable](ref: T, value: BigInt)(implicit t: InnerTester) {
     check(ref, value, "")
   }
   /** Asserts that the node's simulation value is equal to the given value.
     */
-  def check(ref: Bits, value: BigInt, msg: String)(implicit t: InnerTester) {
+  def check[T <: Element: Pokeable](ref: T, value: BigInt, msg: String)(implicit t: InnerTester) {
     t.expect(ref, value, msg)
   }
 
