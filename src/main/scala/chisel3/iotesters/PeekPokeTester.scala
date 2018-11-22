@@ -46,7 +46,7 @@ object PeekPokeTester {
     signal match {
       case elt: Aggregate => elt.getElements.toIndexedSeq flatMap {extractElementBits(_)}
       case elt: Element => IndexedSeq(elt)
-      case elt => throw new Exception(s"Cannot extractElementBits for type ${elt.getClass}")
+      case elt => throw new Exception(s"Cannot extractElementBits for type ${elt.getClass.getName}")
     }
   }
 }
@@ -180,7 +180,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
       val element = getBundleElement(subKeys, circuitElements)
       element match {
         case Pokeable(e) => poke(e, value)
-        case _ => throw new Exception(s"Cannot poke type ${element.getClass}")
+        case _ => throw new Exception(s"Cannot poke type ${element.getClass.getName}")
       }
     }
   }
@@ -189,7 +189,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     (extractElementBits(signal) zip value.reverse).foreach{ case (elem, value) =>
       elem match {
         case Pokeable(e) => poke(e, value)
-        case _ => throw new Exception(s"Cannot poke type ${elem.getClass}")
+        case _ => throw new Exception(s"Cannot poke type ${elem.getClass.getName}")
       }
     }
   }
@@ -251,6 +251,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     val bigIntMap = mutable.LinkedHashMap[String, BigInt]()
     elemMap.foreach {
       case (name, Pokeable(e)) => bigIntMap(name) = peek(e)
+      case default => throw new Exception(s"Cannot peek type ${default.getClass.getName}")
     }
 
     bigIntMap
@@ -288,6 +289,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     (extractElementBits(signal), expected.reverse).zipped.forall { case (elem, value) =>
       elem match {
         case Pokeable(e) => expect(e, value)
+        case default => throw new Exception(s"Cannot expect type ${default.getClass.getName}")
       }
     }
   }
@@ -308,7 +310,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     expected.forall { case (name, value) =>
       elemMap(name) match {
         case Pokeable(e) => expect(e, value)
-        case default => throw new Exception(s"Cannot poke type ${default.getClass}")
+        case default => throw new Exception(s"Cannot expect type ${default.getClass.getName}")
       }
     }
   }
