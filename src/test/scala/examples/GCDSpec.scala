@@ -2,10 +2,12 @@
 
 package examples
 
+import java.io.File
+
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 object RealGCD2 {
   val num_width = 16
@@ -109,6 +111,32 @@ class GCDSpec extends FlatSpec with Matchers {
     iotesters.Driver.execute(() => new RealGCD2, manager) { c =>
       new GCDPeekPokeTester(c)
     } should be (true)
+  }
+
+  "using verilator backend with suppress-verilator-backend" should "not create a vcd" in {
+    iotesters.Driver.execute(
+      Array("--backend-name", "verilator", "--generate-vcd-output", "off",
+        "--target-dir", "test_run_dir/gcd_no_vcd", "--top-name", "gcd_no_vcd"),
+      () => new RealGCD2
+    ) {
+
+      c => new GCDPeekPokeTester(c)
+    } should be(true)
+
+    new File("test_run_dir/gcd_no_vcd/RealGCD2.vcd").exists() should be (false)
+  }
+
+  "using verilator default behavior" should "create a vcd" in {
+    iotesters.Driver.execute(
+      Array("--backend-name", "verilator",
+        "--target-dir", "test_run_dir/gcd_make_vcd", "--top-name", "gcd_make_vcd"),
+      () => new RealGCD2
+    ) {
+
+      c => new GCDPeekPokeTester(c)
+    } should be(true)
+
+    new File("test_run_dir/gcd_make_vcd/RealGCD2.vcd").exists() should be (true)
   }
 }
 

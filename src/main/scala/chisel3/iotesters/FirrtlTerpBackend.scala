@@ -125,6 +125,12 @@ private[iotesters] object setupFirrtlTerpBackend {
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
     // Workaround to propagate Annotations generated from command-line options to second Firrtl
     // invocation, run after updating compilerName so we only get one emitCircuit annotation
+
+    // generate VcdOutput overrides setting of writeVcd
+    if(optionsManager.testerOptions.generateVcdOutput == "on") {
+      optionsManager.interpreterOptions = optionsManager.interpreterOptions.copy(writeVCD = true)
+    }
+
     val annos = firrtl.Driver.getAnnotations(optionsManager)
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
     chisel3.Driver.execute(optionsManager, dutGen) match {
