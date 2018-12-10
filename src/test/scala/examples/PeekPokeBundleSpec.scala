@@ -3,6 +3,7 @@
 package examples
 
 import chisel3._
+import chisel3.experimental.ChiselEnum
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -17,11 +18,16 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
     override def cloneType: ABundle.this.type = new ABundle().asInstanceOf[ABundle.this.type]
   }
 
- class MyBundle extends Bundle {
+  object MyEnum extends ChiselEnum {
+    val e0, e1 = Value
+  }
+
+  class MyBundle extends Bundle {
    val aUInt4 = UInt(4.W)
    val aSInt5 = SInt(5.W)
    val aBundle = new ABundle()
    val aBottomBool = Bool()
+   val anEnum = MyEnum()
 
    // Since this bundle is defined within a class, we need an explicit cloneType method.
    override def cloneType: MyBundle.this.type = new MyBundle().asInstanceOf[MyBundle.this.type]
@@ -45,7 +51,8 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
       ("aUInt4"	-> BigInt(3) ),
       ("aSInt5"	-> BigInt(2) ),
       ("aBundle.aBool"	-> BigInt(1) ),
-      ("aBottomBool"	-> BigInt(0) )
+      ("aBottomBool"	-> BigInt(0) ),
+      ("anEnum" -> MyEnum.e1)
     )
     poke(dut.io.in, myBundleMap.values.toArray)
     step(1)
@@ -59,10 +66,12 @@ class PeekPokeBundleSpec extends FlatSpec with Matchers {
       ("aUInt4"	-> BigInt(4) ),
       ("aSInt5"	-> BigInt(5) ),
       ("aBundle.aBool"	-> BigInt(0) ),
-      ("aBottomBool"	-> BigInt(1) )
+      ("aBottomBool"	-> BigInt(1) ),
+      ("anEnum" -> MyEnum.e1)
     )
     poke(dut.io.in, myBundleMap.toMap)
     step(1)
+
     expect(dut.io.out, myBundleMap.toMap)
   }
 

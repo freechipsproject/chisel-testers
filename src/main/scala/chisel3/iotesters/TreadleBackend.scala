@@ -2,7 +2,7 @@
 
 package chisel3.iotesters
 
-import chisel3.{Bits, ChiselExecutionSuccess, Mem, assert}
+import chisel3.{Element, ChiselExecutionSuccess, Mem, assert}
 import chisel3.experimental.MultiIOModule
 import chisel3.internal.InstanceId
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
@@ -26,7 +26,7 @@ extends Backend(_seed = System.currentTimeMillis()) {
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
     (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit = {
     signal match {
-      case port: Bits =>
+      case port: Element =>
         val name = portNames(port)
         treadleTester.poke(name, value)
         if (verbose) logger info s"  POKE $name <- ${bigIntToStr(value, base)}"
@@ -48,7 +48,7 @@ extends Backend(_seed = System.currentTimeMillis()) {
   def peek(signal: InstanceId, off: Option[Int])
     (implicit logger: TestErrorLog, verbose: Boolean, base: Int): BigInt = {
     signal match {
-      case port: Bits =>
+      case port: Element =>
         val name = portNames(port)
         val result = treadleTester.peek(name)
         if (verbose) logger info s"  PEEK $name -> ${bigIntToStr(result, base)}"
@@ -66,7 +66,7 @@ extends Backend(_seed = System.currentTimeMillis()) {
   def expect(signal: InstanceId, expected: BigInt, msg: => String)
     (implicit logger: TestErrorLog, verbose: Boolean, base: Int) : Boolean = {
     signal match {
-      case port: Bits =>
+      case port: Element =>
         val name = portNames(port)
         val got = treadleTester.peek(name)
         val good = got == expected

@@ -21,18 +21,18 @@ trait PeekPokeTests {
   implicit def int(x: Boolean): BigInt
   implicit def int(x: Int):     BigInt
   implicit def int(x: Long):    BigInt
-  implicit def int(x: Bits):    BigInt
+  implicit def int[T <: Element: Pokeable](x: T): BigInt
   def println(msg: String = ""): Unit
   def reset(n: Int): Unit
   def step(n: Int): Unit
   def poke(path: String, x: BigInt): Unit
   def peek(path: String): BigInt
-  def poke(signal: Bits, x: BigInt): Unit
-  def pokeAt[T <: Bits](signal: Mem[T], x: BigInt, off: Int): Unit
-  def peek(signal: Bits): BigInt
-  def peekAt[T <: Bits](signal: Mem[T], off: Int): BigInt
+  def poke[T <: Element: Pokeable](signal: T, x: BigInt): Unit
+  def pokeAt[T <: Element: Pokeable](signal: Mem[T], x: BigInt, off: Int): Unit
+  def peek[T <: Element: Pokeable](signal: T): BigInt
+  def peekAt[T <: Element: Pokeable](signal: Mem[T], off: Int): BigInt
   def expect(good: Boolean, msg: => String): Boolean
-  def expect(signal: Bits, expected: BigInt, msg: => String = ""): Boolean
+  def expect[T <: Element: Pokeable](signal: T, expected: BigInt, msg: => String = ""): Boolean
   def finish: Boolean
 }
 
@@ -46,7 +46,7 @@ object PeekPokeTester {
     signal match {
       case elt: Aggregate => elt.getElements.toIndexedSeq flatMap {extractElementBits(_)}
       case elt: Element => IndexedSeq(elt)
-      case elt => throw new Exception(s"Cannot extractElementBits for type ${elt.getClass}")
+      case elt => throw new Exception(s"Cannot extractElementBits for type ${elt.getClass.getName}")
     }
   }
 }
@@ -95,8 +95,8 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
 
   /** Convert a Boolean to BigInt */
   implicit def int(x: Boolean): BigInt = if (x) 1 else 0
-  /** Convert Bits to BigInt */
-  implicit def int(x: Bits):    BigInt = x.litValue()
+  /** Convert Pokeables to BigInt */
+  implicit def int[T <: Element: Pokeable](x: T): BigInt = x.litValue()
 
   /**
     * Convert an Int to unsigned (effectively 32-bit) BigInt
@@ -135,16 +135,16 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
 
   def peek(path: String) = backend.peek(path)
 
-  def poke(signal: Bits, value: BigInt): Unit = {
+  def poke[T <: Element: Pokeable](signal: T, value: BigInt): Unit = {
     if (!signal.isLit) backend.poke(signal, value, None)
     // TODO: Warn if signal.isLit
   }
 
-  def poke(signal: Bits, value: Int) {
+  def poke[T <: Element: Pokeable](signal: T, value: Int) {
     poke(signal, BigInt(value))
   }
 
-  def poke(signal: Bits, value: Long) {
+  def poke[T <: Element: Pokeable](signal: T, value: Long) {
     poke(signal, BigInt(value))
   }
 
@@ -156,13 +156,13 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
   /** Locate a specific bundle element, given a name path.
     * TODO: Handle Vecs
     *
-    * @param path - list of element names (presumably bundles) terminating in a non-bundle (i.e., Bits) element.
+    * @param path - js (presumably bundles) terminating in a non-bundle (e.g., Bits) element.
     * @param bundle - bundle containing the element
-    * @return the element (as Bits)
+    * @return the element (as Element)
     */
-  private def getBundleElement(path: List[String], bundle: ListMap[String, Data]): Bits = {
+  private def getBundleElement(path: List[String], bundle: ListMap[String, Data]): Element = {
     (path, bundle(path.head)) match {
-      case (head :: Nil, element: Bits) => element
+      case (head :: Nil, element: Element) => element
       case (head :: tail, b: Bundle) => getBundleElement(tail, b.elements)
       case _ => throw new Exception(s"peek/poke bundle element mismatch $path")
     }
@@ -178,19 +178,27 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     for ( (key, value) <- map) {
       val subKeys = key.split('.').toList
       val element = getBundleElement(subKeys, circuitElements)
-      poke(element, value)
+      element match {
+        case Pokeable(e) => poke(e, value)
+        case _ => throw new Exception(s"Cannot poke type ${element.getClass.getName}")
+      }
     }
   }
 
   def poke(signal: Aggregate, value: IndexedSeq[BigInt]): Unit =  {
-    (extractElementBits(signal) zip value.reverse).foreach(x => poke(x._1.asInstanceOf[Bits], x._2))
+    (extractElementBits(signal) zip value.reverse).foreach{ case (elem, value) =>
+      elem match {
+        case Pokeable(e) => poke(e, value)
+        case _ => throw new Exception(s"Cannot poke type ${elem.getClass.getName}")
+      }
+    }
   }
 
-  def pokeAt[TT <: Bits](data: Mem[TT], value: BigInt, off: Int): Unit = {
+  def pokeAt[TT <: Element: Pokeable](data: Mem[TT], value: BigInt, off: Int): Unit = {
     backend.poke(data, value, Some(off))
   }
 
-  def peek(signal: Bits):BigInt = {
+  def peek[T <: Element: Pokeable](signal: T):BigInt = {
     if (!signal.isLit) backend.peek(signal, None) else signal.litValue()
   }
 
@@ -203,10 +211,10 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
   }
 
   def peek(signal: Aggregate): Seq[BigInt] =  {
-    extractElementBits(signal) map (x => backend.peek(x.asInstanceOf[Bits], None))
+    extractElementBits(signal) map (x => backend.peek(x.asInstanceOf[Element], None))
   }
 
-  /** Populate a map of names ("dotted Bundles) to Bits.
+  /** Populate a map of names ("dotted Bundles) to Elements.
     * TODO: Deal with Vecs
     *
     * @param map the map to be constructed
@@ -214,16 +222,16 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     * @param signalName the signal to be added to the map
     * @param signalData the signal object to be added to the map
     */
-  private def setBundleElement(map: mutable.LinkedHashMap[String, Bits], indexPrefix: ArrayBuffer[String], signalName: String, signalData: Data): Unit = {
+  private def setBundleElement(map: mutable.LinkedHashMap[String, Element], indexPrefix: ArrayBuffer[String], signalName: String, signalData: Data): Unit = {
     indexPrefix += signalName
     signalData match {
       case bundle: Bundle =>
         for ((name, value) <- bundle.elements) {
           setBundleElement(map, indexPrefix, name, value)
         }
-      case bits: Bits =>
+      case elem: Element =>
         val index = indexPrefix.mkString(".")
-        map(index) = bits
+        map(index) = elem
     }
     indexPrefix.remove(indexPrefix.size - 1)
   }
@@ -234,20 +242,22 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     * @return a map of signal names ("dotted" Bundle) to BigInt values.
     */
   def peek(signal: Bundle): mutable.LinkedHashMap[String, BigInt] = {
-    val bitsMap = mutable.LinkedHashMap[String, Bits]()
+    val elemMap = mutable.LinkedHashMap[String, Element]()
     val index = ArrayBuffer[String]()
-    // Populate the Bits map.
+    // Populate the Element map.
     for ((elementName, elementValue) <- signal.elements) {
-      setBundleElement(bitsMap, index, elementName, elementValue)
+      setBundleElement(elemMap, index, elementName, elementValue)
     }
     val bigIntMap = mutable.LinkedHashMap[String, BigInt]()
-    for ((name, bits) <- bitsMap) {
-      bigIntMap(name) = peek(bits)
+    elemMap.foreach {
+      case (name, Pokeable(e)) => bigIntMap(name) = peek(e)
+      case default => throw new Exception(s"Cannot peek type ${default.getClass.getName}")
     }
+
     bigIntMap
   }
 
-  def peekAt[TT <: Bits](data: Mem[TT], off: Int): BigInt = {
+  def peekAt[TT <: Element: Pokeable](data: Mem[TT], off: Int): BigInt = {
     backend.peek(data, Some(off))
   }
 
@@ -257,7 +267,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     good
   }
 
-  def expect(signal: Bits, expected: BigInt, msg: => String = ""): Boolean = {
+  def expect[T <: Element: Pokeable](signal: T, expected: BigInt, msg: => String = ""): Boolean = {
     if (!signal.isLit) {
       val good = backend.expect(signal, expected, msg)
       if (!good) fail
@@ -265,7 +275,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     } else expect(signal.litValue() == expected, s"${signal.litValue()} == $expected")
   }
 
-  def expect(signal: Bits, expected: Int, msg: => String): Boolean = {
+  def expect[T <: Element: Pokeable](signal: T, expected: Int, msg: => String): Boolean = {
     expect(signal, BigInt(expected), msg)
   }
 
@@ -276,7 +286,12 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
   }
 
   def expect (signal: Aggregate, expected: IndexedSeq[BigInt]): Boolean = {
-    (extractElementBits(signal), expected.reverse).zipped.foldLeft(true) { (result, x) => result && expect(x._1.asInstanceOf[Bits], x._2)}
+    (extractElementBits(signal), expected.reverse).zipped.forall { case (elem, value) =>
+      elem match {
+        case Pokeable(e) => expect(e, value)
+        case default => throw new Exception(s"Cannot expect type ${default.getClass.getName}")
+      }
+    }
   }
 
   /** Return true or false if an aggregate signal (Bundle) matches the expected map of values.
@@ -287,12 +302,17 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     * @return true if the specified values match, false otherwise.
     */
   def expect (signal: Bundle, expected: Map[String, BigInt]): Boolean = {
-    val bitsMap = mutable.LinkedHashMap[String, Bits]()
+    val elemMap = mutable.LinkedHashMap[String, Element]()
     val index = ArrayBuffer[String]()
     for ((elementName, elementValue) <- signal.elements) {
-      setBundleElement(bitsMap, index, elementName, elementValue)
+      setBundleElement(elemMap, index, elementName, elementValue)
     }
-    expected.forall{ case ((name, value)) => expect(bitsMap(name), value) }
+    expected.forall { case (name, value) =>
+      elemMap(name) match {
+        case Pokeable(e) => expect(e, value)
+        case default => throw new Exception(s"Cannot expect type ${default.getClass.getName}")
+      }
+    }
   }
 
   def finish: Boolean = {
