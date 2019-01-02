@@ -46,7 +46,7 @@ class HasComplexMemoryTester(c: HasComplexMemory) extends PeekPokeTester(c) {
 
 
 class ComplexMemoryLoadingSpec extends  FreeSpec with Matchers {
-  "memory loading should be possible with complex memories" in {
+  "memory loading should be possible with complex memories" - {
 
     val targetDirName = "test_run_dir/complex_mem_test"
     FileUtils.makeDirectory(targetDirName)
@@ -59,11 +59,22 @@ class ComplexMemoryLoadingSpec extends  FreeSpec with Matchers {
     Files.copy(getClass.getResourceAsStream("/mem2.txt"), path2, REPLACE_EXISTING)
     Files.copy(getClass.getResourceAsStream("/mem3.txt"), path3, REPLACE_EXISTING)
 
-    iotesters.Driver.execute(
-      args = Array("--backend-name", "verilator", "--target-dir", targetDirName, "--top-name", "complex_mem_test"),
-      dut = () => new HasComplexMemory(memoryDepth = 8)
-    ) { c =>
-      new HasComplexMemoryTester(c)
-    } should be (true)
+    "should work with treadle" in {
+      iotesters.Driver.execute(
+        args = Array("--backend-name", "treadle", "--target-dir", targetDirName, "--top-name", "complex_mem_test"),
+        dut = () => new HasComplexMemory(memoryDepth = 8)
+      ) { c =>
+        new HasComplexMemoryTester(c)
+      } should be(true)
+    }
+
+    "should work with verilator" in {
+      iotesters.Driver.execute(
+        args = Array("--backend-name", "verilator", "--target-dir", targetDirName, "--top-name", "complex_mem_test"),
+        dut = () => new HasComplexMemory(memoryDepth = 8)
+      ) { c =>
+        new HasComplexMemoryTester(c)
+      } should be(true)
+    }
   }
 }

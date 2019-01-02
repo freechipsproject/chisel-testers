@@ -140,7 +140,11 @@ private[iotesters] object setupTreadleBackend {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {
-          case FirrtlExecutionSuccess(_, compiledFirrtl) =>
+          case success: FirrtlExecutionSuccess =>
+            val compiledFirrtl = success.emitted
+            optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(
+              annotations = success.circuitState.annotations.toList
+            )
             (dut, new TreadleBackend(dut, compiledFirrtl, optionsManager = optionsManager))
           case FirrtlExecutionFailure(message) =>
             throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
