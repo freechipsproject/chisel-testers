@@ -12,6 +12,8 @@ import firrtl._
 import firrtl.annotations.CircuitName
 import firrtl.transforms._
 
+import scala.sys.process.ProcessBuilder
+
 /**
   * Copies the necessary header files used for verilator compilation to the specified destination folder
   */
@@ -165,6 +167,7 @@ void vl_finish(const char* filename, int linenum, const char* hier) {
   exit(0);
 }
 
+#ifdef INCLUDE_MAIN
 int main(int argc, char **argv, char **env) {
     Verilated::commandArgs(argc, argv);
     $dutVerilatorClassName* top = new $dutVerilatorClassName;
@@ -196,6 +199,159 @@ int main(int argc, char **argv, char **env) {
     delete top;
     exit(0);
 }
+int main(int argc, char **argv, char **env) {
+  entry(argc, char**argv, char **env);
+}
+#else /* INCLUDE_MAIN */
+#include <jni.h>
+
+static $dutVerilatorClassName* dut = NULL;
+static VerilatedVcdC* tfp = NULL;
+static vluint64_t main_time = 0;
+static sim_data_t<VerilatorDataWrapper*> sim_data;
+
+extern "C" {
+JNIEXPORT void JNICALL Java_chisel3_iotesters_TesterSharedLib_sim_1init(JNIEnv *env, jobject obj) {
+    // Verilated::commandArgs(argc, argv);
+    dut = new $dutVerilatorClassName;
+    std::string vcdfile = "${vcdFilePath}";
+    // std::vector<std::string> args(argv+1, argv+argc);
+    // std::vector<std::string>::const_iterator it;
+    // for (it = args.begin() ; it != args.end() ; it++) {
+    //     if (it->find("+waveform=") == 0) vcdfile = it->c_str()+10;
+    // }
+#if VM_TRACE
+    Verilated::traceEverOn(true);
+    VL_PRINTF(\"Enabling waves..\");
+    tfp = new VerilatedVcdC;
+    main_time = 0;
+    dut->trace(tfp, 99);
+    tfp->open(vcdfile.c_str());
+#endif
+  sim_data.inputs.clear();
+  sim_data.outputs.clear();
+  sim_data.signals.clear();
+
+""")
+    var signalMapCnt = 0
+  inputs.toList foreach { case (node, name) =>
+    // TODO this won't work if circuit name has underscore in it
+    val mapName = node.pathName.replace(".", "_").replaceFirst("_", ".")
+    // replaceFirst used here in case port name contains the dutName
+    pushBack("signals", name replaceFirst (dutName, "dut"), node.getWidth)
+    codeBuffer.append(s"""        sim_data.signal_map["$mapName"] = $signalMapCnt;""")
+    signalMapCnt += 1
+  }
+  outputs.toList foreach { case (node, name) =>
+    val mapName = node.pathName.replace(".", "_").replaceFirst("_", ".")
+    // replaceFirst used here in case port name contains the dutName
+    pushBack("signals", name replaceFirst (dutName, "dut"), node.getWidth)
+    codeBuffer.append(s"""        sim_data.signal_map["$mapName"] = $signalMapCnt;""")
+    signalMapCnt += 1
+  }
+  pushBack("signals", "dut->reset", 1)
+  codeBuffer.append(s"""        sim_data.signal_map["${dut.reset.pathName}"] = $signalMapCnt;
+}
+
+JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_step(JNIEnv *env, jobject obj) {
+  // std::cout << "Stepping" << std::endl;
+  dut->clock = 0;
+  dut->eval();
+#if VM_TRACE
+  if (tfp) tfp->dump(main_time);
+#endif /* VM_TRACE */
+  dut->clock = 1;
+  dut->eval();
+#if VM_TRACE
+  if (tfp) tfp->dump(main_time);
+#endif /* VM_TRACE */
+  main_time++;
+}
+
+JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_reset(JNIEnv *env, jobject obj) {
+  dut->reset = 1;
+  Java_chisel3_iotesters_TesterSharedLib_step(env, obj);
+}
+
+JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_update(JNIEnv *env, jobject obj) {
+  dut->_eval_settle(dut->__VlSymsp);
+}
+
+JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_start(JNIEnv *env, jobject obj) {
+  dut->reset = 0;
+}
+
+JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_finish(JNIEnv *env, jobject obj) {
+  dut->eval();
+}
+
+JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_poke(JNIEnv *env, jobject obj, jint id, jint value) {
+  VerilatorDataWrapper *sig = sim_data.signals[id];
+  if (!sig) {
+    std::cerr << "Cannot find the object of id = " << id << std::endl;
+    Java_chisel3_iotesters_TesterSharedLib_finish(env, obj);
+    // TODO what?
+  } else {
+    // std::cout << "Poking signal " << id << " with value " << value << std::endl;
+  }
+  uint64_t toput = value;
+  sig->put_value(&toput);
+}
+
+JNIEXPORT jint Java_chisel3_iotesters_TesterSharedLib_peek(JNIEnv *env, jobject obj, jint id) {
+  VerilatorDataWrapper *sig = sim_data.signals[id];
+  if (!sig) {
+    std::cerr << "Cannot find the object of id = " << id << std::endl;
+    Java_chisel3_iotesters_TesterSharedLib_finish(env, obj);
+    // TODO what?
+  } else {
+    // std::cout << "Peeking signal " << id << std::endl;
+  }
+  uint64_t toret;
+  sig->get_value(&toret);
+  return toret;
+}
+
+JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_force(JNIEnv *env, jobject obj) {
+}
+
+JNIEXPORT jint Java_chisel3_iotesters_TesterSharedLib_getid(JNIEnv *env, jobject obj, jstring jniPath) {
+  const char *path = env->GetStringUTFChars(jniPath, NULL);
+
+  std::map<std::string, size_t>::iterator it;
+
+  it = sim_data.signal_map.find(path);
+  jint id = -1;
+
+  if (it != sim_data.signal_map.end()) {
+    id = it->second;
+    // std::cout << "Found " << path << " with id " << id << std::endl;
+  } else {
+    // id = search(path);
+    // if (id < 0) {
+      std::cerr << "Cannot find the object " << path << std::endl;
+    // }
+  }
+
+  env->ReleaseStringUTFChars(jniPath, path);
+
+  return id;
+}
+
+JNIEXPORT jint Java_chisel3_iotesters_TesterSharedLib_getchk(JNIEnv *env, jobject obj, jint id) {
+  VerilatorDataWrapper *sig = sim_data.signals[id];
+  if (!sig) {
+    std::cerr << "Cannot find the object of id = " << id << std::endl;
+    Java_chisel3_iotesters_TesterSharedLib_finish(env, obj);
+    // TODO what?
+  } else {
+    // std::cout << "Peeking signal " << id << std::endl;
+  }
+  return sig->get_num_words();
+}
+
+}
+#endif /* INCLUDE_MAIN */
 """)
     codeBuffer.toString()
   }
@@ -269,7 +425,8 @@ private[iotesters] object setupVerilatorBackend {
             editCommands = optionsManager.testerOptions.vcsCommandEdits
           ).! == 0
         )
-        assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
+        // assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
+        assert(cppToSo(circuit.name, dir).! == 0)
 
         val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
@@ -282,6 +439,22 @@ private[iotesters] object setupVerilatorBackend {
       case ChiselExecutionFailure(message) =>
         throw new Exception(message)
     }
+  }
+
+  def appendSoTarget(prefix: String, dir: File): Unit = {
+    Files.write(
+      Paths.get(s"${dir.getCanonicalPath()}/V$prefix.mk"),
+      (
+        s"V${prefix}.dylib: " + 
+        "$(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a\n" +
+        "\t$(CC) $(LDFLAGS) -dynamiclib $^ $(LOADLIBES) $(LDLIBS) -o $@ $(LIBS) $(SC_LIBS)"
+      ).getBytes(),
+      java.nio.file.StandardOpenOption.APPEND
+    )
+  }
+  def cppToSo(prefix: String, dir: File): ProcessBuilder = {
+    appendSoTarget(prefix, dir)
+    Seq("make", "-C", dir.toString, "-j", "-f", s"V$prefix.mk", s"V$prefix.dylib")
   }
 }
 

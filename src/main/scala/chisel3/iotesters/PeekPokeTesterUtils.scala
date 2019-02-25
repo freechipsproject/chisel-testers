@@ -325,11 +325,17 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
                moreVerilatorFlags: Seq[String] = Seq.empty[String],
                moreVerilatorCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
 
+    val javaHome = "/usr/libexec/java_home".!!.dropRight(1)
+
     val ccFlags = Seq(
       "-Wno-undefined-bool-conversion",
       "-O1",
       s"-DTOP_TYPE=V$topModule",
       "-DVL_USER_FINISH",
+      "-fPIC",
+      "-shared",
+      s"-I$javaHome/include",
+      s"-I$javaHome/include/darwin",
       s"-include V$topModule.h"
     ) ++ moreVerilatorCFlags
 
@@ -385,6 +391,33 @@ private[iotesters] case class BackendException(b: String)
 private[iotesters] case class TestApplicationException(exitVal: Int, lastMessage: String)
   extends RuntimeException(lastMessage)
 
+
+class TesterSharedLib(libPath: String) {
+  System.load(new File(libPath).getCanonicalPath())
+
+  @native private def sim_init(): Unit
+  @native def reset(): Unit
+  @native def step(): Unit
+  @native def update(): Unit
+  @native def poke(id: Int, value: Int): Unit
+  @native def peek(id: Int): Int
+  @native def force(): Unit
+  @native def getid(path: String): Int
+  @native def getchk(id: Int): Int
+  @native def finish(): Unit
+  @native def start(): Unit
+
+  sim_init()
+}
+
+private[iotesters] object TesterSharedLib {
+  def apply(cmd: Seq[String], logs: ArrayBuffer[String]): TesterSharedLib = {
+
+    require(new java.io.File(cmd.head + ".dylib").exists, s"${cmd.head}.dylib doesn't exist")
+    new TesterSharedLib(cmd.head + ".dylib")
+  }
+}
+
 private[iotesters] object TesterProcess {
   def apply(cmd: Seq[String], logs: ArrayBuffer[String]): Process = {
     require(new java.io.File(cmd.head).exists, s"${cmd.head} doesn't exist")
@@ -393,8 +426,8 @@ private[iotesters] object TesterProcess {
     processBuilder run processLogger
   }
   def kill(sim: SimApiInterface) {
-    while(!sim.exitValue.isCompleted) sim.process.destroy
-    println("Exit Code: %d".format(sim.process.exitValue))
+    // while(!sim.exitValue.isCompleted) sim.process.destroy
+    // println("Exit Code: %d".format(sim.process.exitValue))
   }
   def kill(p: IVLBackend) {
     kill(p.simApiInterface)

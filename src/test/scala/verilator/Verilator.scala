@@ -10,7 +10,7 @@ class VerilatorTest extends FlatSpec with Matchers {
   //  See issue #132 - https://github.com/ucb-bar/chisel-testers/issues/132
   //  and issue #504 - https://github.com/ucb-bar/firrtl/issues/504
   val targetDir = createTestDirectory("ChiselMainVerilatorTest")
-  "The Verilator backend" should "be able to compile the cpp code" in {
+  "The Verilator backend" should "be able to compile the cpp code" ignore {
       val args = Array[String]("--v",
           "--backend",
           "verilator",
@@ -21,9 +21,14 @@ class VerilatorTest extends FlatSpec with Matchers {
       )
       chiselMain(args, () => new doohickey())
     }
-  it should "be able to deal with zero-width wires" in {
+  it should "be able to deal with zero-width wires" ignore {
       chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new ZeroWidthIOModule) {
           c => new ZeroWidthIOTester(c)
     }
+  }
+  it should "gcd" in {
+    chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator"/*, "-tiv"*/), () => new GCD) {
+      c => new GCDTester(c)
+    } should be (true)
   }
 }
