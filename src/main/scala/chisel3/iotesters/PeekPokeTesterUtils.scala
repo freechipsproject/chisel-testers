@@ -325,7 +325,15 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
                moreVerilatorFlags: Seq[String] = Seq.empty[String],
                moreVerilatorCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
 
-    val javaHome = "/usr/libexec/java_home".!!.dropRight(1)
+    val javaHome = System.getProperty("java.home") match {
+      case s: String if s.endsWith("/jre") => s.dropRight(4)
+      case s: String => s
+    }
+    val osIncludeName = System.getProperty("os.name") match {
+      case "Mac OS X" => "darwin"
+      case "Linux" => "linux"
+      case s: String => s
+    }
 
     val ccFlags = Seq(
       "-Wno-undefined-bool-conversion",
@@ -335,7 +343,7 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
       "-fPIC",
       "-shared",
       s"-I$javaHome/include",
-      s"-I$javaHome/include/darwin",
+      s"-I$javaHome/include/$osIncludeName",
       s"-include V$topModule.h"
     ) ++ moreVerilatorCFlags
 
@@ -393,7 +401,15 @@ private[iotesters] case class TestApplicationException(exitVal: Int, lastMessage
 
 
 class TesterSharedLib(libPath: String) {
-  System.load(new File(libPath).getCanonicalPath())
+  Predef.printf(s"TesterSharedLib: loading $libPath ")
+  try {
+    System.load(new File(libPath).getCanonicalPath())
+    println(" ok")
+  } catch {
+    case e: Throwable =>
+      println(" failed: " + e.toString)
+      throw e
+  }
 
   @native private def sim_init(): Unit
   @native def reset(): Unit
