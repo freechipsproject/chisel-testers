@@ -47,16 +47,16 @@ object VerilatorCppHarnessGenerator {
       if (width == 0) {
         // Do nothing- 0 width wires are removed
       } else if (width <= 8) {
-        codeBuffer.append(s"        sim_data.$vector.push_back(new VerilatorCData(&($pathName)));\n")
+        codeBuffer.append(s"        s->sim_data.$vector.push_back(new VerilatorCData(&($pathName)));\n")
       } else if (width <= 16) {
-        codeBuffer.append(s"        sim_data.$vector.push_back(new VerilatorSData(&($pathName)));\n")
+        codeBuffer.append(s"        s->sim_data.$vector.push_back(new VerilatorSData(&($pathName)));\n")
       } else if (width <= 32) {
-        codeBuffer.append(s"        sim_data.$vector.push_back(new VerilatorIData(&($pathName)));\n")
+        codeBuffer.append(s"        s->sim_data.$vector.push_back(new VerilatorIData(&($pathName)));\n")
       } else if (width <= 64) {
-        codeBuffer.append(s"        sim_data.$vector.push_back(new VerilatorQData(&($pathName)));\n")
+        codeBuffer.append(s"        s->sim_data.$vector.push_back(new VerilatorQData(&($pathName)));\n")
       } else {
         val numWords = (width-1)/32 + 1
-        codeBuffer.append(s"        sim_data.$vector.push_back(new VerilatorWData($pathName, $numWords));\n")
+        codeBuffer.append(s"        s->sim_data.$vector.push_back(new VerilatorWData($pathName, $numWords));\n")
       }
     }
 
@@ -72,93 +72,6 @@ object VerilatorCppHarnessGenerator {
 #include "verilated_vcd_c.h"
 #endif
 #include <iostream>
-class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {
-    public:
-    $dutApiClassName($dutVerilatorClassName* _dut) {
-        dut = _dut;
-        main_time = 0L;
-        is_exit = false;
-#if VM_TRACE
-        tfp = NULL;
-#endif
-    }
-    void init_sim_data() {
-        sim_data.inputs.clear();
-        sim_data.outputs.clear();
-        sim_data.signals.clear();
-
-""")
-    inputs.toList foreach { case (node, name) =>
-      // replaceFirst used here in case port name contains the dutName
-      pushBack("inputs", name replaceFirst (dutName, "dut"), node.getWidth)
-    }
-    outputs.toList foreach { case (node, name) =>
-      // replaceFirst used here in case port name contains the dutName
-      pushBack("outputs", name replaceFirst (dutName, "dut"), node.getWidth)
-    }
-    pushBack("signals", "dut->reset", 1)
-    codeBuffer.append(s"""        sim_data.signal_map["${dut.reset.pathName}"] = 0;
-    }
-#if VM_TRACE
-     void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }
-#endif
-    inline bool exit() { return is_exit; }
-
-    // required for sc_time_stamp()
-    virtual inline double get_time_stamp() {
-        return main_time;
-    }
-
-    private:
-    ${dutVerilatorClassName}* dut;
-    bool is_exit;
-    vluint64_t main_time;
-#if VM_TRACE
-    VerilatedVcdC* tfp;
-#endif
-    virtual inline size_t put_value(VerilatorDataWrapper* &sig, uint64_t* data, bool force=false) {
-        return sig->put_value(data);
-    }
-    virtual inline size_t get_value(VerilatorDataWrapper* &sig, uint64_t* data) {
-        return sig->get_value(data);
-    }
-    virtual inline size_t get_chunk(VerilatorDataWrapper* &sig) {
-        return sig->get_num_words();
-    }
-    virtual inline void reset() {
-        dut->reset = 1;
-        step();
-    }
-    virtual inline void start() {
-        dut->reset = 0;
-    }
-    virtual inline void finish() {
-        dut->eval();
-        is_exit = true;
-    }
-    virtual inline void step() {
-        dut->clock = 0;
-        dut->eval();
-#if VM_TRACE
-        if (tfp) tfp->dump(main_time);
-#endif
-        main_time++;
-        dut->clock = 1;
-        dut->eval();
-#if VM_TRACE
-        if (tfp) tfp->dump(main_time);
-#endif
-        main_time++;
-    }
-    virtual inline void update() {
-        dut->_eval_settle(dut->__VlSymsp);
-    }
-};
-
-// The following isn't strictly required unless we emit (possibly indirectly) something
-// requiring a time-stamp (such as an assert).
-static ${dutApiClassName} * _Top_api;
-double sc_time_stamp () { return _Top_api->get_time_stamp(); }
 
 // Override Verilator definition so first $$finish ends simulation
 // Note: VL_USER_FINISH needs to be defined when compiling Verilator code
@@ -168,52 +81,47 @@ void vl_finish(const char* filename, int linenum, const char* hier) {
 }
 
 #ifdef INCLUDE_MAIN
-int main(int argc, char **argv, char **env) {
-    Verilated::commandArgs(argc, argv);
-    $dutVerilatorClassName* top = new $dutVerilatorClassName;
-    std::string vcdfile = "${vcdFilePath}";
-    std::vector<std::string> args(argv+1, argv+argc);
-    std::vector<std::string>::const_iterator it;
-    for (it = args.begin() ; it != args.end() ; it++) {
-        if (it->find("+waveform=") == 0) vcdfile = it->c_str()+10;
-    }
-#if VM_TRACE
-    Verilated::traceEverOn(true);
-    VL_PRINTF(\"Enabling waves..\");
-    VerilatedVcdC* tfp = new VerilatedVcdC;
-    top->trace(tfp, 99);
-    tfp->open(vcdfile.c_str());
-#endif
-    ${dutApiClassName} api(top);
-    _Top_api = &api; /* required for sc_time_stamp() */
-    api.init_sim_data();
-    api.init_channels();
-#if VM_TRACE
-    api.init_dump(tfp);
-#endif
-    while(!api.exit()) api.tick();
-#if VM_TRACE
-    if (tfp) tfp->close();
-    delete tfp;
-#endif
-    delete top;
-    exit(0);
-}
-int main(int argc, char **argv, char **env) {
-  entry(argc, char**argv, char **env);
-}
 #else /* INCLUDE_MAIN */
 #include <jni.h>
 
-static $dutVerilatorClassName* dut = NULL;
-static VerilatedVcdC* tfp = NULL;
-static vluint64_t main_time = 0;
-static sim_data_t<VerilatorDataWrapper*> sim_data;
+struct sim_state {
+  $dutVerilatorClassName* dut;
+  VerilatedVcdC* tfp;
+  vluint64_t main_time;
+  sim_data_t<VerilatorDataWrapper*> sim_data;
+
+  sim_state() :
+    dut(new $dutVerilatorClassName),
+    tfp(new VerilatedVcdC),
+    main_time(0)
+  {
+    std::cout << "Allocating! " << ((long long) dut) << std::endl;
+  }
+
+};
+
 
 extern "C" {
+
+jfieldID getPtrId(JNIEnv *env, jobject obj) {
+  jclass c = env->GetObjectClass(obj);
+  jfieldID id = env->GetFieldID(c, "state", "J");
+  env->DeleteLocalRef(c);
+
+  return id;
+}
+
+sim_state* get_state(JNIEnv *env, jobject obj) {
+  return (sim_state*) env->GetLongField(obj, getPtrId(env, obj));
+}
+
 JNIEXPORT void JNICALL Java_chisel3_iotesters_TesterSharedLib_sim_1init(JNIEnv *env, jobject obj) {
+  sim_state *s = new sim_state();
+
+  env->SetLongField(obj, getPtrId(env, obj), (jlong)s);
+
     // Verilated::commandArgs(argc, argv);
-    dut = new $dutVerilatorClassName;
+    // s->dut = new $dutVerilatorClassName;
     std::string vcdfile = "${vcdFilePath}";
     // std::vector<std::string> args(argv+1, argv+argc);
     // std::vector<std::string>::const_iterator it;
@@ -223,14 +131,14 @@ JNIEXPORT void JNICALL Java_chisel3_iotesters_TesterSharedLib_sim_1init(JNIEnv *
 #if VM_TRACE
     Verilated::traceEverOn(true);
     VL_PRINTF(\"Enabling waves..\");
-    tfp = new VerilatedVcdC;
-    main_time = 0;
-    dut->trace(tfp, 99);
-    tfp->open(vcdfile.c_str());
+    // s->tfp = new VerilatedVcdC;
+    // s->main_time = 0;
+    s->dut->trace(s->tfp, 99);
+    s->tfp->open(vcdfile.c_str());
 #endif
-  sim_data.inputs.clear();
-  sim_data.outputs.clear();
-  sim_data.signals.clear();
+  s->sim_data.inputs.clear();
+  s->sim_data.outputs.clear();
+  s->sim_data.signals.clear();
 
 """)
     var signalMapCnt = 0
@@ -238,55 +146,67 @@ JNIEXPORT void JNICALL Java_chisel3_iotesters_TesterSharedLib_sim_1init(JNIEnv *
     // TODO this won't work if circuit name has underscore in it
     val mapName = node.pathName.replace(".", "_").replaceFirst("_", ".")
     // replaceFirst used here in case port name contains the dutName
-    pushBack("signals", name replaceFirst (dutName, "dut"), node.getWidth)
-    codeBuffer.append(s"""        sim_data.signal_map["$mapName"] = $signalMapCnt;""")
+    pushBack("signals", name replaceFirst (dutName, "s->dut"), node.getWidth)
+    codeBuffer.append(s"""        s->sim_data.signal_map["$mapName"] = $signalMapCnt;""")
     signalMapCnt += 1
   }
   outputs.toList foreach { case (node, name) =>
     val mapName = node.pathName.replace(".", "_").replaceFirst("_", ".")
     // replaceFirst used here in case port name contains the dutName
-    pushBack("signals", name replaceFirst (dutName, "dut"), node.getWidth)
-    codeBuffer.append(s"""        sim_data.signal_map["$mapName"] = $signalMapCnt;""")
+    pushBack("signals", name replaceFirst (dutName, "s->dut"), node.getWidth)
+    codeBuffer.append(s"""        s->sim_data.signal_map["$mapName"] = $signalMapCnt;""")
     signalMapCnt += 1
   }
-  pushBack("signals", "dut->reset", 1)
-  codeBuffer.append(s"""        sim_data.signal_map["${dut.reset.pathName}"] = $signalMapCnt;
+  pushBack("signals", "s->dut->reset", 1)
+  codeBuffer.append(s"""        s->sim_data.signal_map["${dut.reset.pathName}"] = $signalMapCnt;
 }
 
 JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_step(JNIEnv *env, jobject obj) {
+  sim_state *s = get_state(env, obj);
+
   // std::cout << "Stepping" << std::endl;
-  dut->clock = 0;
-  dut->eval();
+  s->dut->clock = 0;
+  s->dut->eval();
 #if VM_TRACE
-  if (tfp) tfp->dump(main_time);
+  if (s->tfp) s->tfp->dump(s->main_time);
 #endif /* VM_TRACE */
-  dut->clock = 1;
-  dut->eval();
+  s->dut->clock = 1;
+  s->dut->eval();
 #if VM_TRACE
-  if (tfp) tfp->dump(main_time);
+  if (s->tfp) s->tfp->dump(s->main_time);
 #endif /* VM_TRACE */
-  main_time++;
+  s->main_time++;
 }
 
 JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_reset(JNIEnv *env, jobject obj) {
-  dut->reset = 1;
+  sim_state *s = get_state(env, obj);
+
+  s->dut->reset = 1;
   Java_chisel3_iotesters_TesterSharedLib_step(env, obj);
 }
 
 JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_update(JNIEnv *env, jobject obj) {
-  dut->_eval_settle(dut->__VlSymsp);
+  sim_state *s = get_state(env, obj);
+
+  s->dut->_eval_settle(s->dut->__VlSymsp);
 }
 
 JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_start(JNIEnv *env, jobject obj) {
-  dut->reset = 0;
+  sim_state *s = get_state(env, obj);
+
+  s->dut->reset = 0;
 }
 
 JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_finish(JNIEnv *env, jobject obj) {
-  dut->eval();
+  sim_state *s = get_state(env, obj);
+
+  s->dut->eval();
 }
 
 JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_poke(JNIEnv *env, jobject obj, jint id, jint value) {
-  VerilatorDataWrapper *sig = sim_data.signals[id];
+  sim_state *s = get_state(env, obj);
+
+  VerilatorDataWrapper *sig = s->sim_data.signals[id];
   if (!sig) {
     std::cerr << "Cannot find the object of id = " << id << std::endl;
     Java_chisel3_iotesters_TesterSharedLib_finish(env, obj);
@@ -299,7 +219,9 @@ JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_poke(JNIEnv *env, jobject 
 }
 
 JNIEXPORT jint Java_chisel3_iotesters_TesterSharedLib_peek(JNIEnv *env, jobject obj, jint id) {
-  VerilatorDataWrapper *sig = sim_data.signals[id];
+  sim_state *s = get_state(env, obj);
+
+  VerilatorDataWrapper *sig = s->sim_data.signals[id];
   if (!sig) {
     std::cerr << "Cannot find the object of id = " << id << std::endl;
     Java_chisel3_iotesters_TesterSharedLib_finish(env, obj);
@@ -316,14 +238,16 @@ JNIEXPORT void Java_chisel3_iotesters_TesterSharedLib_force(JNIEnv *env, jobject
 }
 
 JNIEXPORT jint Java_chisel3_iotesters_TesterSharedLib_getid(JNIEnv *env, jobject obj, jstring jniPath) {
+  sim_state *s = get_state(env, obj);
+
   const char *path = env->GetStringUTFChars(jniPath, NULL);
 
   std::map<std::string, size_t>::iterator it;
 
-  it = sim_data.signal_map.find(path);
+  it = s->sim_data.signal_map.find(path);
   jint id = -1;
 
-  if (it != sim_data.signal_map.end()) {
+  if (it != s->sim_data.signal_map.end()) {
     id = it->second;
     // std::cout << "Found " << path << " with id " << id << std::endl;
   } else {
@@ -339,7 +263,9 @@ JNIEXPORT jint Java_chisel3_iotesters_TesterSharedLib_getid(JNIEnv *env, jobject
 }
 
 JNIEXPORT jint Java_chisel3_iotesters_TesterSharedLib_getchk(JNIEnv *env, jobject obj, jint id) {
-  VerilatorDataWrapper *sig = sim_data.signals[id];
+  sim_state *s = get_state(env, obj);
+
+  VerilatorDataWrapper *sig = s->sim_data.signals[id];
   if (!sig) {
     std::cerr << "Cannot find the object of id = " << id << std::endl;
     Java_chisel3_iotesters_TesterSharedLib_finish(env, obj);

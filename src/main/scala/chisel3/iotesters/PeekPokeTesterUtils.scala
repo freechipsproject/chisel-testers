@@ -411,6 +411,8 @@ class TesterSharedLib(libPath: String) {
       throw e
   }
 
+  private val state: Long = 0
+
   @native private def sim_init(): Unit
   @native def reset(): Unit
   @native def step(): Unit
@@ -423,7 +425,9 @@ class TesterSharedLib(libPath: String) {
   @native def finish(): Unit
   @native def start(): Unit
 
+  println(s"State before: $state")
   sim_init()
+  println(s"State after: $state")
 }
 
 private[iotesters] object TesterSharedLib {
