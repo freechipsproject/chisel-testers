@@ -112,7 +112,11 @@ jfieldID getPtrId(JNIEnv *env, jobject obj) {
 }
 
 sim_state* get_state(JNIEnv *env, jobject obj) {
-  return (sim_state*) env->GetLongField(obj, getPtrId(env, obj));
+  static sim_state* cached = NULL;
+  if (cached == NULL) {
+    cached = (sim_state*) env->GetLongField(obj, getPtrId(env, obj));
+  }
+  return cached;
 }
 
 JNIEXPORT void JNICALL Java_chisel3_iotesters_TesterSharedLib_sim_1init(JNIEnv *env, jobject obj) {
