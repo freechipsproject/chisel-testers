@@ -13,7 +13,7 @@ trait CrossUnRootedSbtModule extends CrossSbtModule {
 }
 
 trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
-  def publishVersion = "1.2-SNAPSHOT"
+  def publishVersion = "1.3-032519-SNAPSHOT"
 
   def pomSettings = PomSettings(
     description = artifactName(),
@@ -71,10 +71,10 @@ object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.2-SNAPSHOT",
-  "firrtl" -> "1.2-SNAPSHOT",
-  "firrtl-interpreter" -> "1.2-SNAPSHOT",
-  "treadle" -> "1.1-SNAPSHOT"
+  "chisel3" -> "3.2-032519-SNAPSHOT",
+  "firrtl" -> "1.2-032519-SNAPSHOT",
+  "firrtl-interpreter" -> "1.2-032519-SNAPSHOT",
+  "treadle" -> "1.1-032519-SNAPSHOT"
   )
 
 def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
