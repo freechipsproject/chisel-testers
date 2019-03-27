@@ -43,8 +43,9 @@ object copyVpiFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object genVCSVerilogHarness {
-  def apply(dut: MultiIOModule, writer: Writer, vpdFilePath: String, isGateLevel: Boolean = false) {
+  def apply(dut: MultiIOModule, writer: Writer, waveFilePath: String, isGateLevel: Boolean = false, generateFsdb: Boolean) {
     val dutName = dut.name
+
     // getPorts() is going to return names prefixed with the dut name.
     // These don't correspond to code currently generated for verilog modules,
     //  so we have to strip the dut name prefix (and the delimiter) from the name.
@@ -52,10 +53,11 @@ object genVCSVerilogHarness {
     def fixnames(portSeq: (Seq[(Element, String)], Seq[(Element, String)])): (Seq[(Element, String)], Seq[(Element, String)]) = {
       val replaceRegexp = ("^" + dutName + "_").r
       (
-        portSeq._1 map { case (e: Element, s: String) => (e, replaceRegexp.replaceFirstIn(s, ""))},
-        portSeq._2 map { case (e: Element, s: String) => (e, replaceRegexp.replaceFirstIn(s, ""))}
+        portSeq._1 map { case (e: Element, s: String) => (e, replaceRegexp.replaceFirstIn(s, "")) },
+        portSeq._2 map { case (e: Element, s: String) => (e, replaceRegexp.replaceFirstIn(s, "")) }
       )
     }
+
     val (inputs, outputs) = fixnames(getPorts(dut, "_"))
 
     writer write "module test;\n"
@@ -63,13 +65,13 @@ object genVCSVerilogHarness {
     writer write "  reg reset = 1;\n"
     val delay = if (isGateLevel) "#0.1" else ""
     inputs foreach { case (node, name) =>
-      writer write s"  reg[${node.getWidth-1}:0] $name = 0;\n"
-      writer write s"  wire[${node.getWidth-1}:0] ${name}_delay;\n"
+      writer write s"  reg[${node.getWidth - 1}:0] $name = 0;\n"
+      writer write s"  wire[${node.getWidth - 1}:0] ${name}_delay;\n"
       writer write s"  assign $delay ${name}_delay = $name;\n"
     }
     outputs foreach { case (node, name) =>
-      writer write s"  wire[${node.getWidth-1}:0] ${name}_delay;\n"
-      writer write s"  wire[${node.getWidth-1}:0] $name;\n"
+      writer write s"  wire[${node.getWidth - 1}:0] ${name}_delay;\n"
+      writer write s"  wire[${node.getWidth - 1}:0] $name;\n"
       writer write s"  assign $delay $name = ${name}_delay;\n"
     }
 
@@ -100,7 +102,13 @@ object genVCSVerilogHarness {
     writer write "    if ($value$plusargs(\"waveform=%s\", vpdfile)) begin\n"
     writer write "      $vcdplusfile(vpdfile);\n"
     writer write "    end else begin\n"
-    writer write "      $vcdplusfile(\"%s\");\n".format(vpdFilePath)
+    if (generateFsdb) {
+      writer write "      $fsdbDumpfile(\"%s\");\n".format(waveFilePath)
+      writer write "      $fsdbDumpvars(0, %s);\n".format(dutName)
+    }
+    else {
+      writer write "      $vcdplusfile(\"%s\");\n".format(waveFilePath)
+    }
     writer write "    end\n"
     writer write "    if ($test$plusargs(\"vpdmem\")) begin\n"
     writer write "      $vcdplusmemon;\n"
@@ -164,9 +172,14 @@ private[iotesters] object setupVCSBackend {
         // Generate Harness
         val vcsHarnessFileName = s"${circuit.name}-harness.v"
         val vcsHarnessFile = new File(dir, vcsHarnessFileName)
-        val vpdFile = new File(dir, s"${circuit.name}.vpd")
+        val vpdFile = new File(dir, s"${circuit.name}.${
+          if (optionsManager.testerOptions.generateFsdbOutput == "on")
+            "fsdb"
+          else
+            "vpd"
+        }")
         copyVpiFiles(dir.toString)
-        genVCSVerilogHarness(dut, new FileWriter(vcsHarnessFile), vpdFile.toString)
+        genVCSVerilogHarness(dut, new FileWriter(vcsHarnessFile), vpdFile.toString, generateFsdb = optionsManager.testerOptions.generateFsdbOutput == "on")
         assert(
           verilogToVCS(circuit.name, dir, new File(vcsHarnessFileName),
             moreVcsFlags = optionsManager.testerOptions.moreVcsFlags,
@@ -174,7 +187,7 @@ private[iotesters] object setupVCSBackend {
             editCommands = optionsManager.testerOptions.vcsCommandEdits
           ).! == 0)
 
-        val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
+        val command = if (optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
         }
         else {
@@ -191,4 +204,4 @@ private[iotesters] object setupVCSBackend {
 private[iotesters] class VCSBackend(dut: MultiIOModule,
                                     cmd: Seq[String],
                                     _seed: Long = System.currentTimeMillis)
-           extends VerilatorBackend(dut, cmd, _seed)
+  extends VerilatorBackend(dut, cmd, _seed)

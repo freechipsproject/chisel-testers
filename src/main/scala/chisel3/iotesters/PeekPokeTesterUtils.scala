@@ -263,7 +263,7 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
     val vcsFlags = Seq("-full64",
       "-quiet",
       "-timescale=1ns/1ps",
-      "-debug_pp",
+      "-debug_access+all",
       s"-Mdir=$topModule.csrc",
       "+v2k", "+vpi",
       "+vcs+lic+wait",
