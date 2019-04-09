@@ -14,12 +14,17 @@ import java.io.{File, PrintStream}
 import java.nio.channels.FileChannel
 
 private[iotesters] class SimApiInterface(dut: MultiIOModule, cmd: Seq[String]) {
+  //
+  // Construct maps for the input and output
+  // Remove zero length fields during the process
+  //
   val (inputsNameToChunkSizeMap, outputsNameToChunkSizeMap) = {
     val (inputs, outputs) = getPorts(dut)
     def genChunk(args: (Data, String)) = args match {
-      case (pin, name) => name -> ((pin.getWidth-1)/64 + 1)
+      case (pin, name) if pin.getWidth > 0 => Some(name -> ((pin.getWidth-1)/64 + 1))
+      case _ => None
     }
-    (ListMap((inputs map genChunk): _*), ListMap((outputs map genChunk): _*))
+    (ListMap((inputs flatMap genChunk): _*), ListMap((outputs flatMap genChunk): _*))
   }
   private object SIM_CMD extends Enumeration {
     val RESET, STEP, UPDATE, POKE, PEEK, FORCE, GETID, GETCHK, FIN = Value }
