@@ -131,7 +131,10 @@ private[iotesters] object setupFirrtlTerpBackend {
       optionsManager.interpreterOptions = optionsManager.interpreterOptions.copy(writeVCD = true)
     }
 
-    val annos = firrtl.Driver.getAnnotations(optionsManager)
+    val annos = firrtl.Driver.getAnnotations(optionsManager).filterNot {
+      case _: firrtl.options.TargetDirAnnotation => true
+      case _ => false
+    }
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
     chisel3.Driver.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
