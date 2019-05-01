@@ -284,6 +284,7 @@ object Driver {
       case _: firrtl.options.TargetDirAnnotation => true
       case _: logger.LogLevelAnnotation => true
       case _: firrtl.stage.FirrtlCircuitAnnotation => true
+      case _: firrtl.stage.InfoModeAnnotation => true
       case _ => false
     }
   }
