@@ -178,7 +178,7 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
                       cFlags: Seq[String]
                     ): String = {
     Seq("cd", dir.toString, "&&") ++
-      Seq("g++") ++ cFlags ++ Seq("vpi.cpp", "vpi_register.cpp", "&&") ++
+      Seq(ImportEnvironmentBuildFlags.CXX) ++ cFlags ++ Seq("vpi.cpp", "vpi_register.cpp", "&&") ++
       Seq("iverilog") ++ flags mkString " "
   }
 
@@ -195,6 +195,7 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
     ) ++ moreIvlFlags
 
     val ivlCFlags = Seq(
+      ImportEnvironmentBuildFlags.CXXFLAGS,
       s"-o $topModule.vpi",
       "-D__ICARUS__",
       "-I$IVL_HOME",
@@ -258,8 +259,8 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
                       moreVcsFlags: Seq[String] = Seq.empty[String],
                       moreVcsCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
 
-    val ccFlags = Seq("-I$VCS_HOME/include", "-I$dir", "-fPIC", "-std=c++11") ++ moreVcsCFlags
-
+    val ccFlags = Seq(ImportEnvironmentBuildFlags.CXXFLAGS, "-I$VCS_HOME/include", "-I$dir", "-fPIC", "-std=c++11") ++ moreVcsCFlags
+    val ldFlags = Seq(ImportEnvironmentBuildFlags.LDFLAGS, "-lstdc++")
     val vcsFlags = Seq("-full64",
       "-quiet",
       "-timescale=1ns/1ps",
@@ -270,7 +271,8 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
       "+vcs+initreg+random",
       "+define+CLOCK_PERIOD=1",
       "-P", "vpi.tab",
-      "-cpp", "g++", "-O2", "-LDFLAGS", "-lstdc++",
+      "-cpp", ImportEnvironmentBuildFlags.CXX, "-O2",
+      "-LDFLAGS", "\"%s\"".format(ldFlags mkString " "),
       "-CFLAGS", "\"%s\"".format(ccFlags mkString " ")) ++
       moreVcsFlags
 
@@ -326,6 +328,7 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
                moreVerilatorCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
 
     val ccFlags = Seq(
+      ImportEnvironmentBuildFlags.CXXFLAGS,
       "-Wno-undefined-bool-conversion",
       "-O1",
       s"-DTOP_TYPE=V$topModule",
@@ -407,4 +410,15 @@ private[iotesters] object TesterProcess {
   }
   def kill(p: FirrtlTerpBackend) {
   }
+}
+
+// Import various compiler build flags from the environment.
+object ImportEnvironmentBuildFlags {
+  import scala.util.Properties.envOrElse
+  val CC = envOrElse("CC", "g++" )
+  val CXX = envOrElse("CXX", "g++" )
+  val CCFLAGS = envOrElse("CCFLAGS", "")
+  val CXXFLAGS = envOrElse("CXXFLAGS", "")
+  val CPPFLAGS = envOrElse("CPPFLAGS", "")
+  val LDFLAGS = envOrElse("LDFLAGS", "")
 }
