@@ -2,8 +2,7 @@
 
 package chisel3.iotesters
 
-import java.io.{File, FileWriter, IOException}
-import java.nio.file.{FileAlreadyExistsException, Files, Paths}
+import java.io.File
 import scala.collection.mutable.ArrayBuffer
 import scala.util.DynamicVariable
 
@@ -17,15 +16,14 @@ private[iotesters] class TesterContext {
   var testerSeed: Long = System.currentTimeMillis
   val testCmd: ArrayBuffer[String] = ArrayBuffer[String]()
   var backendType = "verilator"
-  var backend: Option[Backend] = None
-  var targetDir = new File("test_run_dir")
-  var logFile: Option[File] = None
-  var waveform: Option[File] = None
+  var targetDir = "test_run_dir"
+  var logFileName: Option[String] = None
+  var waveformName: Option[String] = None
 }
 
 object chiselMain {
   private val contextVar = new DynamicVariable[Option[TesterContext]](None)
-  private[iotesters] def context = contextVar.value.getOrElse(new TesterContext)
+  private def context = contextVar.value.getOrElse(new TesterContext)
 
   private def parseArgs(args: List[String]): Unit = args match {
     case "--firrtl" :: tail => context.backendType = "firrtl" ; parseArgs(tail)
@@ -39,161 +37,88 @@ object chiselMain {
     case "--test" :: tail => context.isRunTest = true ; parseArgs(tail)
     case "--testCommand" :: value :: tail => context.testCmd ++= value split ' ' ; parseArgs(tail)
     case "--testerSeed" :: value :: tail => context.testerSeed = value.toLong ; parseArgs(tail)
-    case "--targetDir" :: value :: tail => context.targetDir = new File(value) ; parseArgs(tail)
-    case "--logFile" :: value :: tail => context.logFile = Some(new File(value)) ; parseArgs(tail)
-    case "--waveform" :: value :: tail => context.waveform = Some(new File(value)) ; parseArgs(tail)
+    case "--targetDir" :: value :: tail => context.targetDir = value ; parseArgs(tail)
+    case "--logFile" :: value :: tail => context.logFileName = Some(value) ; parseArgs(tail)
+    case "--waveform" :: value :: tail => context.waveformName = Some(value) ; parseArgs(tail)
     case _ :: tail => parseArgs(tail) // skip unknown flag
     case Nil => // finish
   }
 
-  private def genHarness[T <: Module](dut: Module, nodes: Seq[internal.InstanceId], chirrtl: firrtl.ir.Circuit) {
-    import firrtl.{ChirrtlForm, CircuitState}
-    val dir = context.targetDir
-    context.backendType match {
-      case "firrtl" => // skip
-      case "verilator" =>
-        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.cpp"))
-        val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
-        harness.write(VerilatorCppHarnessGenerator.codeGen(dut, CircuitState(chirrtl, ChirrtlForm), waveform))
-        harness.close()
-      case "ivl" =>
-        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
-        val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
-        genIVLVerilogHarness(dut, harness, waveform.toString)
-      case "vcs" | "glsim" =>
-        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
-        val waveform = new File(dir, s"${chirrtl.main}.vpd").toString
-        genVCSVerilogHarness(dut, harness, waveform.toString, context.backendType == "glsim")
-      case b => throw BackendException(b)
-    }
-  }
-
-  private def compile(dutName: String) {
-    val dir = context.targetDir
-    context.backendType match {
-      case "firrtl" => // skip
-      case "verilator" =>
-        // Copy API files
-        copyVerilatorHeaderFiles(context.targetDir.toString)
-        // Generate Verilator
-        assert(chisel3.Driver.verilogToCpp(
-          dutName,
-          dir,
-          Seq(),
-          new File(dir, s"$dutName-harness.cpp")).! == 0)
-        // Compile Verilator
-        assert(chisel3.Driver.cppToExe(dutName, dir).! == 0)
-      case "vcs" | "glsim" =>
-        // Copy API files
-        copyVpiFiles(context.targetDir.toString)
-        // Compile VCS
-        assert(verilogToVCS(dutName, dir, new File(s"$dutName-harness.v")).! == 0)
-      case b => throw BackendException(b)
-    }
-  }
-
-  private def elaborate[T <: Module](args: Array[String], dutGen: () => T): T = {
+  private def convertOldArgsToOptions(args: Array[String]): TesterOptionsManager = {
     parseArgs(args.toList)
-    try {
-      Files.createDirectory(Paths.get(context.targetDir.toString))
-    } catch {
-      case _: FileAlreadyExistsException =>
-      case x: IOException =>
-        System.err.format("createFile error: %s%n", x)
-    }
-    val circuit = chisel3.Driver.elaborate(dutGen)
-    val dut = getTopModule(circuit).asInstanceOf[T]
-    val nodes = getChiselNodes(circuit)
-    val dir = context.targetDir
-    val name = circuit.name
+    val optionsManager = new TesterOptionsManager
+    if (context.isGenVerilog)
+      optionsManager.testerOptions = optionsManager.testerOptions.copy(isGenVerilog = true)
+    if (context.isGenHarness)
+      optionsManager.testerOptions = optionsManager.testerOptions.copy(isGenHarness = true)
+    if (context.isCompiling)
+      optionsManager.testerOptions = optionsManager.testerOptions.copy(isCompiling = true)
+    if (!context.isRunTest)
+      optionsManager.testerOptions = optionsManager.testerOptions.copy(isRunTest = false)
 
-    val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
-    val chirrtlFile = new File(dir, s"$name.ir")
-    val verilogFile = new File(dir, s"$name.v")
+    optionsManager.testerOptions = optionsManager.testerOptions.copy(testerSeed = context.testerSeed)
+    optionsManager.testerOptions = optionsManager.testerOptions.copy(testCmd = context.testCmd)
     context.backendType match {
-      case "firrtl" =>
-        val writer = new FileWriter(chirrtlFile)
-        (new firrtl.LowFirrtlEmitter).emit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), writer)
-        writer.close()
-      case _ if context.isGenVerilog =>
-        val annotations = Seq(firrtl.passes.memlib.InferReadWriteAnnotation)
-        val writer = new FileWriter(verilogFile)
-        val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
-          firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm, annotations),
-          List(new firrtl.passes.memlib.InferReadWrite)
-        )
-        writer.write(compileResult.getEmittedCircuit.value)
-        writer.close()
-      case _ =>
-    } 
+      case "firrtl"|"ivl"|"treadle"|"vcs"|"verilator" =>
+        optionsManager.testerOptions = optionsManager.testerOptions.copy(backendName = context.backendType)
+      case "glsim" =>
+        optionsManager.testerOptions = optionsManager.testerOptions.copy(backendName = "vcs")
+      case b => throw BackendException(b)
+    }
 
-    if (context.isGenHarness) genHarness(dut, nodes, chirrtl)
-
-    if (context.isCompiling) compile(name)
-
-    dut
+    optionsManager.commonOptions = optionsManager.commonOptions.copy(targetDirName = context.targetDir)
+    if (context.logFileName.isDefined)
+      optionsManager.testerOptions = optionsManager.testerOptions.copy(logFileName = context.logFileName.get)
+    if (context.waveformName.isDefined)
+      optionsManager.testerOptions = optionsManager.testerOptions.copy(waveform = Some(new File(context.waveformName.get)))
+    optionsManager
   }
 
-  private def setupBackend[T <: Module](dut: T) {
-    val name = dut.name
-
-    if (context.testCmd.isEmpty) {
-      context.backendType match {
-        case "firrtl" => // skip
-        case "verilator" =>
-          context.testCmd += new File(context.targetDir, s"V$name").toString
-        case "vcs" | "glsim" =>
-          context.testCmd += new File(context.targetDir, name).toString
-        case b => throw BackendException(b)
-      }
+  private def elaborate[T <: Module](om: TesterOptionsManager, dutGen: () => T): Option[T] = {
+    if (om.makeTargetDir()) {
+      val (dut, backend) = setupBackend(om, dutGen)
+      Some(dut)
+    } else {
+      System.err.format("Couldn't create output directory: %s%n", om.targetDirName)
+      None
     }
+  }
 
-    context.waveform match {
-      case None =>
-      case Some(f) => context.testCmd += s"+waveform=$f"
-    }
-
-    context.backend = Some(context.backendType match {
+  private def setupBackend[T <: Module](om: TesterOptionsManager, dutGenerator: () => T): (T, Backend) = {
+    om.testerOptions.backendName match {
       case "firrtl" =>
-        val file = new java.io.File(context.targetDir, s"${dut.name}.ir")
-        val ir = io.Source.fromFile(file).getLines mkString "\n"
-        new FirrtlTerpBackend(dut, ir)
+        setupFirrtlTerpBackend(dutGenerator, om)
+      case "treadle" =>
+        setupTreadleBackend(dutGenerator, om)
       case "verilator" =>
-        new VerilatorBackend(dut, context.testCmd.toList, context.testerSeed)
-      case "vcs" | "glsim" =>
-        new VCSBackend(dut, context.testCmd.toList, context.testerSeed)
-      case b => throw BackendException(b)
-    })
+        setupVerilatorBackend(dutGenerator, om)
+      case "ivl" =>
+        setupIVLBackend(dutGenerator, om)
+      case "vcs" =>
+        setupVCSBackend(dutGenerator, om)
+      case _ =>
+        throw new Exception(s"Unrecognized backend name ${om.testerOptions.backendName}")
+    }
   }
 
   def apply[T <: Module](args: Array[String], dutGen: () => T): T = {
     val ctx = Some(new TesterContext)
     val dut = contextVar.withValue(ctx) {
-      elaborate(args, dutGen)
+      val optionsManager = convertOldArgsToOptions(args)
+      elaborate(optionsManager, dutGen).get
     }
     dut
   }
 
   def apply[T <: Module](args: Array[String], dutGen: () => T, testerGen: T => PeekPokeTester[T]): Unit = {
     contextVar.withValue(Some(new TesterContext)) {
-      val dut = elaborate(args, dutGen)
-      if (context.isRunTest) {
-        setupBackend(dut)
-        assert(try {
-          testerGen(dut).finish
-        } catch { case e: Throwable =>
-          e.printStackTrace()
-          context.backend match {
-            case Some(b: VCSBackend) =>
-              TesterProcess kill b
-            case Some(b: VerilatorBackend) =>
-              TesterProcess kill b
-            case _ =>
-          }
-          false
-        }, "Test failed")
+      val optionsManager = convertOldArgsToOptions(args)
+      // Are we just elaborating or compiling?
+      if (!optionsManager.testerOptions.isRunTest) {
+        elaborate(optionsManager, dutGen)
+      } else {
+        Driver.execute(dutGen, optionsManager)(testerGen)
       }
-      dut
     }
   }
 }

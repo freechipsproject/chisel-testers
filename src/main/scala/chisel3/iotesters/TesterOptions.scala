@@ -15,7 +15,7 @@ case class TesterOptions(
   isGenVerilog:         Boolean = false,
   isGenHarness:         Boolean = false,
   isCompiling:          Boolean = false,
-  isRunTest:            Boolean = false,
+  isRunTest:            Boolean = true,
   isVerbose:            Boolean = false,
   displayBase:          Int     = 10,
   testerSeed:           Long    = System.currentTimeMillis,

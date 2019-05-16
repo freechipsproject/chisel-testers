@@ -4,21 +4,41 @@ package chisel3.iotesters
 import chisel3._
 import chisel3.experimental.MultiIOModule
 import chisel3.internal.InstanceId
+import chisel3.internal.firrtl.Circuit
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
 
-private[iotesters] class FirrtlTerpBackend(
-    dut: MultiIOModule,
-    firrtlIR: String,
-    optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager)
-  extends Backend(_seed = System.currentTimeMillis()) {
-  val interpretiveTester = new InterpretiveTester(firrtlIR, optionsManager)
-  reset(5) // reset firrtl interpreter on construction
-
-  private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
-    val pathName = id.pathName
-    getDataNames(pathName.drop(pathName.indexOf('.') + 1), id)
-  }.toMap
+private[iotesters] class FirrtlTerpBackend(_seed: Long = System.currentTimeMillis())
+  extends Backend(_seed) {
+  private var _dut: Option[MultiIOModule] = None
+  private var _firrtlIR: Option[String] = None
+  private var _optionsManager: Option[TesterOptionsManager] = None
+  private var _interpretiveTester: Option[InterpretiveTester] = None
+  private var _portNames: Option[Map[Element, String]] = None
+  def prep[T <: MultiIOModule](
+    dut: T,
+    firrtlIR: Option[String],
+    circuit: Option[Circuit] = None,
+    optionsManager: TesterOptionsManager): Unit = {
+    _dut = Some(dut)
+    if (!firrtlIR.isDefined)
+      throw new IllegalArgumentException("FirrtlTerpBackend.prep(dut, firrtlIR, optionsManager) - firrtlIR must be defined")
+    _firrtlIR = firrtlIR
+    _optionsManager = Some(optionsManager)
+    _portNames = Some(dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
+      val pathName = id.pathName
+      getDataNames(pathName.drop(pathName.indexOf('.') + 1), id)
+    }.toMap)
+  }
+  def dut = _dut.get
+  def interpretiveTester = _interpretiveTester.get
+  def firrtlIR = _firrtlIR.get
+  def optionsManager = _optionsManager.get
+  def portNames = _portNames.get
+  def run(cmd: Option[Seq[String]] = None): Unit = {
+    _interpretiveTester = Some(new InterpretiveTester(firrtlIR, optionsManager))
+    reset(5) // reset firrtl interpreter on construction
+  }
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit = {
@@ -119,8 +139,8 @@ private[iotesters] class FirrtlTerpBackend(
 private[iotesters] object setupFirrtlTerpBackend {
   def apply[T <: MultiIOModule](
       dutGen: () => T,
-      optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
-
+      optionsManager: TesterOptionsManager with HasInterpreterOptions = new TesterOptionsManager): (T, Backend) = {
+    val backend = new FirrtlTerpBackend()
     // the backend must be firrtl if we are here, therefore we want the firrtl compiler
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
     // Workaround to propagate Annotations generated from command-line options to second Firrtl
@@ -138,7 +158,10 @@ private[iotesters] object setupFirrtlTerpBackend {
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {
           case FirrtlExecutionSuccess(_, compiledFirrtl) =>
-            (dut, new FirrtlTerpBackend(dut, compiledFirrtl, optionsManager = optionsManager))
+            backend.prep(dut, Some(compiledFirrtl), None, optionsManager)
+            if (optionsManager.testerOptions.isRunTest)
+              backend.run()
+            (dut, backend)
           case FirrtlExecutionFailure(message) =>
             throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
         }

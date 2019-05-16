@@ -2,7 +2,8 @@
 package chisel3.iotesters
 
 import chisel3.internal.InstanceId
-import java.io.PrintStream
+import chisel3.experimental.MultiIOModule
+import chisel3.internal.firrtl.Circuit
 
 /**
   * define interface for ClassicTester backend implementations such as verilator and firrtl interpreter
@@ -10,6 +11,20 @@ import java.io.PrintStream
 
 private[iotesters] abstract class Backend(private[iotesters] val _seed: Long = System.currentTimeMillis) {
   val rnd = new scala.util.Random(_seed)
+
+  // Prepare the backend to (potentially generate and) run the simulation
+  def prep[T <: MultiIOModule](
+              dut: T,
+              firrtlIR: Option[String] = None,
+              circuitOption: Option[Circuit] = None,
+              optionsManager: TesterOptionsManager = new TesterOptionsManager): Unit
+  def dut: MultiIOModule
+  // Generate the simulation harness (if required)
+  def genHarness(): Unit = {}
+  // Build the simulation
+  def build(): Unit = {}
+  // Run the simulation
+  def run(cmd: Option[Seq[String]] = None): Unit
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit

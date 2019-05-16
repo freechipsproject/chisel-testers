@@ -5,35 +5,54 @@ package chisel3.iotesters
 import chisel3.{Element, ChiselExecutionSuccess, Mem, assert}
 import chisel3.experimental.MultiIOModule
 import chisel3.internal.InstanceId
+import chisel3.internal.firrtl.Circuit
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import treadle.TreadleTester
 
-private[iotesters] class TreadleBackend(
-  dut: MultiIOModule,
-  firrtlIR: String,
-  optionsManager: TesterOptionsManager = new TesterOptionsManager
-)
-extends Backend(_seed = System.currentTimeMillis()) {
+private[iotesters] class TreadleBackend(_seed: Long = System.currentTimeMillis()) extends Backend(_seed) {
+  private var _dut: Option[MultiIOModule] = None
+  private var _firrtlIR: Option[String] = None
+  private var _optionsManager: Option[TesterOptionsManager] = None
+  private var _interpretiveTester: Option[TreadleTester] = None
+  private var _portNames: Option[Map[Element, String]] = None
+  def dut = _dut.get
+  def interpretiveTester = _interpretiveTester.get
+  def firrtlIR = _firrtlIR.get
+  def optionsManager = _optionsManager.get
+  def portNames = _portNames.get
+  def prep[T <: MultiIOModule](
+                                  dut: T,
+                                  firrtlIR: Option[String] = None,
+                                  circuit: Option[Circuit] = None,
+                                  optionsManager: TesterOptionsManager = new TesterOptionsManager
+          ): Unit = {
+    _dut = Some(dut)
+    if (!firrtlIR.isDefined)
+      throw new IllegalArgumentException("TreadleBackend.prep(dut, firrtlIR, optionsManager) - firrtlIR must be defined")
+    _firrtlIR = firrtlIR
+    _optionsManager = Some(optionsManager)
+    _portNames = Some(dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
+      val pathName = id.pathName
+      getDataNames(pathName.drop(pathName.indexOf('.') + 1), id)
+    }.toMap)
+  }
+  def run(cmd: Option[Seq[String]] = None): Unit = {
+    _interpretiveTester = Some(new TreadleTester(firrtlIR, optionsManager))
+    reset(5) // reset firrtl treadle on construction
+  }
 
-  val treadleTester = new TreadleTester(firrtlIR, optionsManager)
-  reset(5) // reset firrtl treadle on construction
-
-  private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
-    val pathName = id.pathName
-    getDataNames(pathName.drop(pathName.indexOf('.') + 1), id)
-  }.toMap
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
     (implicit logger: TestErrorLog, verbose: Boolean, base: Int): Unit = {
     signal match {
       case port: Element =>
         val name = portNames(port)
-        treadleTester.poke(name, value)
+        interpretiveTester.poke(name, value)
         if (verbose) logger info s"  POKE $name <- ${bigIntToStr(value, base)}"
 
       case mem: Mem[_] =>
         val memoryName = mem.pathName.split("""\.""").tail.mkString(".")
-        treadleTester.pokeMemory(memoryName, off.getOrElse(0), value)
+        interpretiveTester.pokeMemory(memoryName, off.getOrElse(0), value)
         if (verbose) logger info s"  POKE MEMORY $memoryName <- ${bigIntToStr(value, base)}"
 
       case _ =>
@@ -50,14 +69,14 @@ extends Backend(_seed = System.currentTimeMillis()) {
     signal match {
       case port: Element =>
         val name = portNames(port)
-        val result = treadleTester.peek(name)
+        val result = interpretiveTester.peek(name)
         if (verbose) logger info s"  PEEK $name -> ${bigIntToStr(result, base)}"
         result
 
       case mem: Mem[_] =>
         val memoryName = mem.pathName.split("""\.""").tail.mkString(".")
 
-        treadleTester.peekMemory(memoryName, off.getOrElse(0))
+        interpretiveTester.peekMemory(memoryName, off.getOrElse(0))
 
       case _ => BigInt(rnd.nextInt)
     }
@@ -68,12 +87,12 @@ extends Backend(_seed = System.currentTimeMillis()) {
     signal match {
       case port: Element =>
         val name = portNames(port)
-        val got = treadleTester.peek(name)
+        val got = interpretiveTester.peek(name)
         val good = got == expected
         if (verbose || !good) logger info
           s"""EXPECT AT $stepNumber $msg  $name got ${bigIntToStr(got, base)} expected ${bigIntToStr(expected, base)}""" +
             s""" ${if (good) "PASS" else "FAIL"}"""
-        if(good) treadleTester.expectationsMet += 1
+        if(good) interpretiveTester.expectationsMet += 1
         good
       case _ => false
     }
@@ -105,17 +124,17 @@ extends Backend(_seed = System.currentTimeMillis()) {
 
   def step(n: Int)(implicit logger: TestErrorLog): Unit = {
     stepNumber += n
-    treadleTester.step(n)
+    interpretiveTester.step(n)
   }
 
   def reset(n: Int = 1): Unit = {
-    treadleTester.poke("reset", 1)
-    treadleTester.step(n)
-    treadleTester.poke("reset", 0)
+    interpretiveTester.poke("reset", 1)
+    interpretiveTester.step(n)
+    interpretiveTester.poke("reset", 0)
   }
 
   def finish(implicit logger: TestErrorLog): Unit = {
-    treadleTester.report()
+    interpretiveTester.report()
   }
 }
 
@@ -123,7 +142,7 @@ private[iotesters] object setupTreadleBackend {
   def apply[T <: MultiIOModule](
     dutGen: () => T,
     optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
-
+  val backend = new TreadleBackend()
     // the backend must be treadle if we are here, therefore we want the firrtl compiler
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
     // Workaround to propagate Annotations generated from command-line options to second Firrtl
@@ -145,7 +164,10 @@ private[iotesters] object setupTreadleBackend {
             optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(
               annotations = success.circuitState.annotations.toList
             )
-            (dut, new TreadleBackend(dut, compiledFirrtl, optionsManager = optionsManager))
+            backend.prep(dut, Some(compiledFirrtl), None, optionsManager)
+            if (optionsManager.testerOptions.isRunTest)
+              backend.run()
+            (dut, backend)
           case FirrtlExecutionFailure(message) =>
             throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
         }

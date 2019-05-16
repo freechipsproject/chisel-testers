@@ -104,4 +104,51 @@ class DriverSpec extends FreeSpec with Matchers {
       deleteDirectoryHierarchy(new File("foo2"))
     }
   }
+  "chiselMain should work with a variety of command line arguments" - {
+    "--v --logfile chiselMain.log --compile --genHarness --test --backend verilator" in {
+      val args = Array("--v", "--logFile", "chiselMain.log", "--compile", "--genHarness", "--test",
+        "--backend",
+        "verilator")
+      chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
+    }
+    "--v --logfile chiselMain.log --compile --genHarness --test --backend treadle" in {
+      val args = Array("--v", "--logFile", "chiselMain.log", "--compile", "--genHarness", "--test",
+        "--backend",
+        "treadle")
+      chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
+    }
+    "--v --logfile chiselMain.log --backend treadle" in {
+      val args = Array("--v", "--logFile", "chiselMain.log", "--backend", "treadle")
+      chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
+    }
+    "--v --logfile chiselMain.log --backend verilator" in {
+      val args = Array("--v", "--logFile", "chiselMain.log", "--backend", "verilator")
+      chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
+    }
+    "--v --logfile chiselMain.log --backend vcs" in {
+      assume(firrtl.FileUtils.isVCSAvailable)
+      val args = Array("--v", "--logFile", "chiselMain.log", "--backend", "vcs")
+      chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
+    }
+    "--v --logfile chiselMain.log --test --backend ivl" in {
+      assume(firrtl.FileUtils.isCommandAvailable(Seq("iverilog", "-V")))
+      val args = Array("--v", "--logFile", "chiselMain.log", "--test", "--backend", "ivl")
+      chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
+    }
+    "--v --logfile chiselMain.log --backend foo" in {
+      val caught = intercept[BackendException] {
+        val args = Array("--v", "--logFile", "chiselMain.log", "--backend", "foo")
+        chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
+      }
+      assert(caught.getMessage.contains("Unknown backend: foo"))
+    }
+  }
+  "chiselMainTest should work with a variety of command line arguments" - {
+    "--v --logfile chiselMain.log" in {
+      val args = Array("--v", "--logFile", "chiselMain.log", "--compile", "--genHarness", "--test",
+        "--backend",
+        "verilator")
+      chiselMainTest(args, () => new DriverTest)((c: DriverTest) => new DriverTestTester(c))
+    }
+  }
 }

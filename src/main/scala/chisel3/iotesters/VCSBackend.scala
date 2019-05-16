@@ -132,47 +132,16 @@ private[iotesters] object setupVCSBackend {
       runFirrtlCompiler = false
     )
     val dir = new File(optionsManager.targetDirName)
+    val backend = new VCSBackend
 
     // Generate CHIRRTL
     chisel3.Driver.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
-
-        val chirrtl = firrtl.Parser.parse(emitted)
         val dut = getTopModule(circuit).asInstanceOf[T]
-
-        /*
-        The following block adds an annotation that tells the black box helper where the
-        current build directory is, so that it can copy verilog resource files into the right place
-         */
-        val annotations = optionsManager.firrtlOptions.annotations ++
-          List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
-
-        val transforms = optionsManager.firrtlOptions.customTransforms
-
-        // Generate Verilog
-        val verilogFile = new File(dir, s"${circuit.name}.v")
-        val verilogWriter = new FileWriter(verilogFile)
-
-        val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
-          CircuitState(chirrtl, ChirrtlForm, annotations),
-          customTransforms = transforms
-        )
-        val compiledStuff = compileResult.getEmittedCircuit
-        verilogWriter.write(compiledStuff.value)
-        verilogWriter.close()
-
-        // Generate Harness
-        val vcsHarnessFileName = s"${circuit.name}-harness.v"
-        val vcsHarnessFile = new File(dir, vcsHarnessFileName)
-        val vpdFile = new File(dir, s"${circuit.name}.vpd")
-        copyVpiFiles(dir.toString)
-        genVCSVerilogHarness(dut, new FileWriter(vcsHarnessFile), vpdFile.toString)
-        assert(
-          verilogToVCS(circuit.name, dir, new File(vcsHarnessFileName),
-            moreVcsFlags = optionsManager.testerOptions.moreVcsFlags,
-            moreVcsCFlags = optionsManager.testerOptions.moreVcsCFlags,
-            editCommands = optionsManager.testerOptions.vcsCommandEdits
-          ).! == 0)
+        backend.prep(dut, None, Some(circuit), optionsManager)
+        backend.firrtlToVerilog((emitted))
+        backend.genHarness()
+        backend.build()
 
         val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
@@ -180,15 +149,32 @@ private[iotesters] object setupVCSBackend {
         else {
           Seq(new File(dir, circuit.name).toString)
         }
-
-        (dut, new VCSBackend(dut, command))
+        if (optionsManager.testerOptions.isRunTest)
+          backend.run(Some(command))
+        (dut, backend)
       case ChiselExecutionFailure(message) =>
         throw new Exception(message)
     }
   }
 }
 
-private[iotesters] class VCSBackend(dut: MultiIOModule,
-                                    cmd: Seq[String],
-                                    _seed: Long = System.currentTimeMillis)
-           extends VerilatorBackend(dut, cmd, _seed)
+private[iotesters] class VCSBackend(_seed: Long = System.currentTimeMillis) extends VerilatorBackend(_seed) {
+  // Generate Harness
+  override def genHarness(): Unit = {
+    val vcsHarnessFileName = s"${chiselCircuit.name}-harness.v"
+    _cppHarnessFile = Some(new File(dir, vcsHarnessFileName))
+    val vpdFile = new File(dir, s"${chiselCircuit.name}.vpd")
+    copyVpiFiles(dir.toString)
+    genVCSVerilogHarness(dut, new FileWriter(cppHarnessFile), vpdFile.toString)
+  }
+
+  // Build simulation
+  override def build(): Unit = {
+    assert(
+      verilogToVCS(chiselCircuit.name, dir, cppHarnessFile,
+        moreVcsFlags = optionsManager.testerOptions.moreVcsFlags,
+        moreVcsCFlags = optionsManager.testerOptions.moreVcsCFlags,
+        editCommands = optionsManager.testerOptions.vcsCommandEdits
+      ).! == 0)
+  }
+}

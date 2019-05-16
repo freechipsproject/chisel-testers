@@ -8,6 +8,8 @@ import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import chisel3._
 import chisel3.experimental.{FixedPoint, MultiIOModule}
 import chisel3.internal.InstanceId
+import chisel3.internal.firrtl.{Circuit => ChiselCircuit}
+import firrtl.ir.{Circuit => FirrtlCircuit}
 import firrtl._
 import firrtl.annotations.CircuitName
 import firrtl.transforms._
@@ -205,6 +207,7 @@ private[iotesters] object setupVerilatorBackend {
   def apply[T <: MultiIOModule](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
     import firrtl.{ChirrtlForm, CircuitState}
 
+    val backend = new VerilatorBackend
     optionsManager.makeTargetDir()
 
     optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
@@ -216,80 +219,117 @@ private[iotesters] object setupVerilatorBackend {
     // Generate CHIRRTL
     chisel3.Driver.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
-
-        val chirrtl = firrtl.Parser.parse(emitted)
         val dut = getTopModule(circuit).asInstanceOf[T]
-
-        val suppressVerilatorVCD = optionsManager.testerOptions.generateVcdOutput == "off"
-
-        // This makes sure annotations for command line options get created
-        val externalAnnotations = firrtl.Driver.getAnnotations(optionsManager)
-
-        /*
-        The following block adds an annotation that tells the black box helper where the
-        current build directory is, so that it can copy verilog resource files into the right place
-         */
-        val annotations = externalAnnotations ++ List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
-
-        val transforms = optionsManager.firrtlOptions.customTransforms
-
-        copyVerilatorHeaderFiles(optionsManager.targetDirName)
-
-        // Generate Verilog
-        val verilogFile = new File(dir, s"${circuit.name}.v")
-        val verilogWriter = new FileWriter(verilogFile)
-
-        val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
-          CircuitState(chirrtl, ChirrtlForm, annotations),
-          customTransforms = transforms
-        )
-        val compiledStuff = compileResult.getEmittedCircuit
-        verilogWriter.write(compiledStuff.value)
-        verilogWriter.close()
-
-        // Generate Harness
-        val cppHarnessFileName = s"${circuit.name}-harness.cpp"
-        val cppHarnessFile = new File(dir, cppHarnessFileName)
-        val cppHarnessWriter = new FileWriter(cppHarnessFile)
-        val vcdFile = new File(dir, s"${circuit.name}.vcd")
-        val emittedStuff = VerilatorCppHarnessGenerator.codeGen(
-          dut, CircuitState(chirrtl, ChirrtlForm, annotations), vcdFile.toString
-        )
-        cppHarnessWriter.append(emittedStuff)
-        cppHarnessWriter.close()
-
-        val verilatorFlags = optionsManager.testerOptions.moreVcsFlags ++ { if (suppressVerilatorVCD) Seq() else Seq("--trace") }
-        assert(
-          verilogToVerilator(
-            circuit.name,
-            dir,
-            cppHarnessFile,
-            moreVerilatorFlags = verilatorFlags,
-            moreVerilatorCFlags = optionsManager.testerOptions.moreVcsCFlags,
-            editCommands = optionsManager.testerOptions.vcsCommandEdits
-          ).! == 0
-        )
-        assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
-
+        backend.prep(dut, None, Some(circuit), optionsManager)
+        backend.firrtlToVerilog((emitted))
+        backend.genHarness()
+        backend.build()
         val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
         }
         else {
           Seq(new File(dir, s"V${circuit.name}").toString)
         }
-
-        (dut, new VerilatorBackend(dut, command))
+        if (optionsManager.testerOptions.isRunTest)
+          backend.run(Some(command))
+        (dut.asInstanceOf[T], backend)
       case ChiselExecutionFailure(message) =>
         throw new Exception(message)
     }
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: MultiIOModule,
-                                          cmd: Seq[String],
-                                          _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
+private[iotesters] class VerilatorBackend(_seed: Long = System.currentTimeMillis) extends Backend(_seed) {
+  protected var _dut: Option[MultiIOModule] = None
+  protected var _optionsManager: Option[TesterOptionsManager] = None
+  protected var _simApiInterface: Option[SimApiInterface] = None
+  protected var _chiselCircuit: Option[ChiselCircuit] = None
+  protected var _firrtlCircuit: Option[FirrtlCircuit] = None
+  protected var _annotations: Option[AnnotationSeq] = None
+  protected var _dir: Option[File] = None
+  protected var _cppHarnessFile: Option[File] = None
 
-  private[iotesters] val simApiInterface = new SimApiInterface(dut, cmd)
+  def prep[T <: MultiIOModule](
+              dut: T,
+              firrtlIR: Option[String],
+              circuit: Option[ChiselCircuit],
+              optionsManager: TesterOptionsManager = new TesterOptionsManager): Unit = {
+    _dut = Some(dut)
+    _optionsManager = Some(optionsManager)
+    _chiselCircuit = circuit
+    _dir = Some(new File(optionsManager.targetDirName))
+  }
+  def dut = _dut.get
+  def optionsManager = _optionsManager.get
+  def simApiInterface = _simApiInterface.get
+  def chiselCircuit = _chiselCircuit.get
+  def firrtlCircuit = _firrtlCircuit.get
+  def annotations = _annotations.get
+  def dir = _dir.get
+  def cppHarnessFile = _cppHarnessFile.get
+
+  def firrtlToVerilog(firrtlText: String): Unit = {
+    _firrtlCircuit = Some(firrtl.Parser.parse(firrtlText))
+
+    // This makes sure annotations for command line options get created
+    val externalAnnotations = firrtl.Driver.getAnnotations(optionsManager)
+
+    /*
+    The following block adds an annotation that tells the black box helper where the
+    current build directory is, so that it can copy verilog resource files into the right place
+     */
+    _annotations = Some(externalAnnotations ++ List(BlackBoxTargetDirAnno(optionsManager.targetDirName)))
+
+    val transforms = optionsManager.firrtlOptions.customTransforms
+
+    // Generate Verilog
+    val verilogFile = new File(dir, s"${chiselCircuit.name}.v")
+    val verilogWriter = new FileWriter(verilogFile)
+
+    val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
+      CircuitState(firrtlCircuit, ChirrtlForm, annotations),
+      customTransforms = transforms
+    )
+    val compiledStuff = compileResult.getEmittedCircuit
+    verilogWriter.write(compiledStuff.value)
+    verilogWriter.close()
+  }
+
+  // Generate Harness
+  override def genHarness(): Unit = {
+    val cppHarnessFileName = s"${chiselCircuit.name}-harness.cpp"
+    _cppHarnessFile = Some(new File(dir, cppHarnessFileName))
+    val cppHarnessWriter = new FileWriter(cppHarnessFile)
+    val vcdFile = new File(dir, s"${chiselCircuit.name}.vcd")
+    val emittedStuff = VerilatorCppHarnessGenerator.codeGen(
+      dut, CircuitState(firrtlCircuit, ChirrtlForm, annotations), vcdFile.toString
+    )
+    cppHarnessWriter.append(emittedStuff)
+    cppHarnessWriter.close()
+    copyVerilatorHeaderFiles(optionsManager.targetDirName)
+
+  }
+
+  override def build(): Unit = {
+    val suppressVerilatorVCD = optionsManager.testerOptions.generateVcdOutput == "off"
+    val verilatorFlags = optionsManager.testerOptions.moreVcsFlags ++ { if (suppressVerilatorVCD) Seq() else Seq("--trace") }
+    val curcuitName = chiselCircuit.name
+    assert(
+      verilogToVerilator(
+        curcuitName,
+        dir,
+        cppHarnessFile,
+        moreVerilatorFlags = verilatorFlags,
+        moreVerilatorCFlags = optionsManager.testerOptions.moreVcsCFlags,
+        editCommands = optionsManager.testerOptions.vcsCommandEdits
+      ).! == 0
+    )
+    assert(chisel3.Driver.cppToExe(curcuitName, dir).! == 0)
+  }
+
+  def run(cmd: Option[Seq[String]]): Unit = {
+    _simApiInterface = Some(new SimApiInterface(dut, cmd.get))
+  }
 
   def poke(signal: InstanceId, value: BigInt, off: Option[Int])
           (implicit logger: TestErrorLog, verbose: Boolean, base: Int) {

@@ -243,7 +243,10 @@ object Driver {
                       (testerGen: T => PeekPokeTester[T]): Boolean = {
     val circuit = chisel3.Driver.elaborate(dutGen)
     val dut = getTopModule(circuit).asInstanceOf[T]
-    backendVar.withValue(Some(new VerilatorBackend(dut, cmd))) {
+    backendVar.withValue(Some(new VerilatorBackend())) {
+      val b = backend.get
+      b.prep(dut, None, None)
+      b.run(Some(cmd))
       try {
         testerGen(dut).finish
       } catch { case e: Throwable =>

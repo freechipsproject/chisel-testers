@@ -117,7 +117,7 @@ trait EditableBuildCSimulatorCommand {
                       topModule: String,
                       dir: java.io.File,
                       moreIvlFlags: Seq[String] = Seq.empty[String],
-                      moreIvlCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String])
+                      moreIvlCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String], Seq[String])
 
   /** Given two sets of flags (non-CFlags and CFlags), return the composed command (prior to editting).
     * @param topModule - the name of the module to be simulated
@@ -130,7 +130,8 @@ trait EditableBuildCSimulatorCommand {
                         topModule: String,
                         dir: java.io.File,
                         flags: Seq[String],
-                        cFlags: Seq[String]
+                        cFlags: Seq[String],
+                        lFlags: Seq[String]
                     ): String
 
   /** Edit a C simulator build string.
@@ -175,10 +176,11 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
                       topModule: String,
                       dir: java.io.File,
                       flags: Seq[String],
-                      cFlags: Seq[String]
+                      cFlags: Seq[String],
+                      lFlags: Seq[String]
                     ): String = {
-    Seq("cd", dir.toString, "&&") ++
-      Seq("g++") ++ cFlags ++ Seq("vpi.cpp", "vpi_register.cpp", "&&") ++
+    Seq("(", "cd", dir.toString, "&&") ++
+      Seq("g++") ++ cFlags ++ Seq("vpi.cpp", "vpi_register.cpp") ++ lFlags ++ Seq(")", "&&") ++
       Seq("iverilog") ++ flags mkString " "
   }
 
@@ -186,8 +188,13 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
                topModule: String,
                dir: java.io.File,
                moreIvlFlags: Seq[String] = Seq.empty[String],
-               moreIvlCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
+               moreIvlCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String], Seq[String]) = {
 
+    // We need to list the expected undefined symbols explicitly on Mac OSX.
+    // It shouldn't hurt to do it for everyone.
+    val ivlUndefinedSymbols = Seq(
+      "_vpi_scan","_vpi_register_systf","_vpi_register_cb","_vpi_put_value","_vpi_iterate","_vpi_handle_by_name","_vpi_handle","_vpi_get_value","_vpi_get_str","_vpi_get","_vpi_free_object","_vpi_control"
+    )
     val ivlFlags = Seq(
       "-m ./%s/%s.vpi".format(dir.toString, topModule),
       "-g2005-sv",
@@ -201,12 +208,15 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
       s"-I$dir",
       "-fPIC",
       "-std=c++11",
-      "-lvpi",
-      "-lveriuser",
       "-shared"
     ) ++ moreIvlCFlags
 
-    (ivlFlags, ivlCFlags)
+    val ivlLFlags = Seq("-Wl," + ivlUndefinedSymbols.mkString("-U,", ",-U,", ""),
+      "-L$IVL_LIB",
+      "-lvpi",
+      "-lveriuser"
+    )
+    (ivlFlags, ivlCFlags, ivlLFlags)
   }
 
   def constructCSimulatorCommand(
@@ -217,12 +227,12 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
                                     iCFlags: Seq[String] = Seq.empty[String]
                                 ): String = {
 
-    val (cFlags, cCFlags) = composeFlags(topModule, dir,
-      iFlags ++ blackBoxVerilogList(dir) ++ Seq("-o", topModule, s"$topModule.v", harness.toString),
+    val (cFlags, cCFlags, cLFlags) = composeFlags(topModule, dir,
+      iFlags ++ blackBoxVerilogList(dir) ++ Seq("-o", s"${dir.toString}/$topModule", s"${dir.toString}/$topModule.v", harness.toString),
       iCFlags
     )
 
-    composeCommand(topModule, dir, cFlags, cCFlags)
+    composeCommand(topModule, dir, cFlags, cCFlags, cLFlags)
   }
 
   def apply(
@@ -246,7 +256,8 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
                                  topModule: String,
                                  dir: java.io.File,
                                  flags: Seq[String],
-                                 cFlags: Seq[String]): String = {
+                                 cFlags: Seq[String],
+                                 lFlags: Seq[String] = Seq()): String = {
     Seq("cd", dir.toString, "&&", "vcs") ++ flags mkString " "
 
   }
@@ -256,7 +267,7 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
                       topModule: String,
                       dir: java.io.File,
                       moreVcsFlags: Seq[String] = Seq.empty[String],
-                      moreVcsCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
+                      moreVcsCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String], Seq[String]) = {
 
     val ccFlags = Seq("-I$VCS_HOME/include", "-I$dir", "-fPIC", "-std=c++11") ++ moreVcsCFlags
 
@@ -274,7 +285,7 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
       "-CFLAGS", "\"%s\"".format(ccFlags mkString " ")) ++
       moreVcsFlags
 
-    (vcsFlags, ccFlags)
+    (vcsFlags, ccFlags, Seq())
   }
 
   def constructCSimulatorCommand(
@@ -285,7 +296,7 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
                                     iCFlags: Seq[String] = Seq.empty[String]
                                 ): String = {
 
-    val (cFlags, cCFlags) = composeFlags(topModule, dir,
+    val (cFlags, cCFlags, _) = composeFlags(topModule, dir,
       iFlags ++ blackBoxVerilogList(dir) ++ Seq("-o", topModule, s"$topModule.v", harness.toString, "vpi.cpp"),
       iCFlags
     )
@@ -314,7 +325,8 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
                                  topModule: String,
                                  dir: java.io.File,
                                  flags: Seq[String],
-                                 cFlags: Seq[String]): String = {
+                                 cFlags: Seq[String],
+                                 lFlags: Seq[String] = Seq()): String = {
     Seq("cd", dir.getAbsolutePath, "&&", "verilator", "--cc", s"$topModule.v") ++ flags mkString " "
 
   }
@@ -323,7 +335,7 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
                topModule: String,
                dir: File,
                moreVerilatorFlags: Seq[String] = Seq.empty[String],
-               moreVerilatorCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
+               moreVerilatorCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String], Seq[String]) = {
 
     val ccFlags = Seq(
       "-Wno-undefined-bool-conversion",
@@ -345,7 +357,7 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
       "-CFLAGS", "\"%s\"".format(ccFlags mkString " "),
       "-Mdir", dir.getAbsolutePath
     ) ++ moreVerilatorFlags
-    (verilatorFlags, ccFlags)
+    (verilatorFlags, ccFlags, Seq())
   }
 
   def constructCSimulatorCommand(
@@ -356,7 +368,7 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
                                     iCFlags: Seq[String] = Seq.empty[String]
                                 ): String = {
 
-    val (cFlags, cCFlags) = composeFlags(topModule, dir,
+    val (cFlags, cCFlags, _) = composeFlags(topModule, dir,
       blackBoxVerilogList(dir) ++ Seq("--exe", harness.getAbsolutePath) ++ iFlags,
       iCFlags
     )

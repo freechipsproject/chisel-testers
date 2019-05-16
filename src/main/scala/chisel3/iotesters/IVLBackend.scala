@@ -126,47 +126,15 @@ private[iotesters] object setupIVLBackend {
       runFirrtlCompiler = false
     )
     val dir = new File(optionsManager.targetDirName)
-
+    val backend = new IVLBackend()
     // Generate CHIRRTL
     chisel3.Driver.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
-
-        val chirrtl = firrtl.Parser.parse(emitted)
         val dut = getTopModule(circuit).asInstanceOf[T]
-
-        /*
-        The following block adds an annotation that tells the black box helper where the
-        current build directory is, so that it can copy verilog resource files into the right place
-         */
-        val annotations = optionsManager.firrtlOptions.annotations ++
-          List(BlackBoxTargetDirAnno(optionsManager.targetDirName))
-
-        val transforms = optionsManager.firrtlOptions.customTransforms
-
-        // Generate Verilog
-        val verilogFile = new File(dir, s"${circuit.name}.v")
-        val verilogWriter = new FileWriter(verilogFile)
-
-        val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
-          CircuitState(chirrtl, ChirrtlForm, annotations),
-          customTransforms = transforms
-        )
-        val compiledStuff = compileResult.getEmittedCircuit
-        verilogWriter.write(compiledStuff.value)
-        verilogWriter.close()
-
-        // Generate Harness
-        val ivlHarnessFileName = s"${circuit.name}-harness.v"
-        val ivlHarnessFile = new File(dir, ivlHarnessFileName)
-        val vcdFile = new File(dir, s"${circuit.name}.vcd")
-        copyIvlFiles(dir.toString)
-        genIVLVerilogHarness(dut, new FileWriter(ivlHarnessFile), vcdFile.toString)
-        assert(
-          verilogToIVL(circuit.name, dir, new File(ivlHarnessFileName),
-            moreIvlFlags = optionsManager.testerOptions.moreIvlFlags,
-            moreIvlCFlags = optionsManager.testerOptions.moreIvlCFlags,
-            editCommands = optionsManager.testerOptions.ivlCommandEdits
-          ).! == 0)
+        backend.prep(dut, None, Some(circuit), optionsManager)
+        backend.firrtlToVerilog((emitted))
+        backend.genHarness()
+        backend.build()
 
         val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
@@ -174,15 +142,34 @@ private[iotesters] object setupIVLBackend {
         else {
           Seq(new File(dir, circuit.name).toString)
         }
-
-        (dut, new IVLBackend(dut, command))
+        if (optionsManager.testerOptions.isRunTest)
+          backend.run(Some(command))
+        (dut, backend)
       case ChiselExecutionFailure(message) =>
         throw new Exception(message)
     }
   }
 }
 
-private[iotesters] class IVLBackend(dut: MultiIOModule,
-                                    cmd: Seq[String],
-                                    _seed: Long = System.currentTimeMillis)
-           extends VerilatorBackend(dut, cmd, _seed)
+private[iotesters] class IVLBackend( _seed: Long = System.currentTimeMillis)
+           extends VerilatorBackend(_seed) {
+
+  // Generate Harness
+  override def genHarness(): Unit = {
+    val ivlHarnessFileName = s"${chiselCircuit.name}-harness.v"
+    _cppHarnessFile = Some(new File(dir, ivlHarnessFileName))
+    val vcdFile = new File(dir, s"${chiselCircuit.name}.vcd")
+    copyIvlFiles(dir.toString)
+    genIVLVerilogHarness(dut, new FileWriter(cppHarnessFile), vcdFile.toString)
+  }
+
+  // Build simulation
+  override def build(): Unit = {
+    assert(
+      verilogToIVL(chiselCircuit.name, dir, cppHarnessFile,
+        moreIvlFlags = optionsManager.testerOptions.moreIvlFlags,
+        moreIvlCFlags = optionsManager.testerOptions.moreIvlCFlags,
+        editCommands = optionsManager.testerOptions.ivlCommandEdits
+      ).! == 0)
+  }
+}

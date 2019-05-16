@@ -52,7 +52,7 @@ class ToolChainSpec extends FreeSpec with Matchers {
 
         gFlags.length should be (2)
 
-        val (vcsFlags, vcsCFlags) = builder.composeFlags(dummyTop, dummyDir, gFlags, cFlags)
+        val (vcsFlags, vcsCFlags, _) = builder.composeFlags(dummyTop, dummyDir, gFlags, cFlags)
 
         vcsFlags.contains(flag1) should be (true)
         vcsFlags.contains(flag2) should be (true)
@@ -76,7 +76,7 @@ class ToolChainSpec extends FreeSpec with Matchers {
         }
         cFlags.length should be (2)
 
-        val (vcsFlags, vcsCFlags) = builder.composeFlags(
+        val (vcsFlags, vcsCFlags, _) = builder.composeFlags(
           dummyTop, dummyDir, gFlags, cFlags)
 
         vcsCFlags.contains(cFlag1) should be (true)
