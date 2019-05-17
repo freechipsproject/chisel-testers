@@ -205,7 +205,6 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
       s"-o $topModule.vpi",
       "-D__ICARUS__",
       "-I$IVL_HOME",
-      s"-I$dir",
       "-fPIC",
       "-std=c++11",
       "-shared"
