@@ -228,7 +228,7 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
                                 ): String = {
 
     val (cFlags, cCFlags, cLFlags) = composeFlags(topModule, dir,
-      iFlags ++ blackBoxVerilogList(dir) ++ Seq("-o", s"${dir.toString}/$topModule", s"${dir.toString}/$topModule.v", harness.toString),
+      iFlags ++ blackBoxVerilogList(dir) ++ Seq("-o", s"${dir.toString}/$topModule", s"${dir.toString}/$topModule.v", harness.getAbsolutePath),
       iCFlags
     )
 
@@ -297,7 +297,7 @@ private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
                                 ): String = {
 
     val (cFlags, cCFlags, _) = composeFlags(topModule, dir,
-      iFlags ++ blackBoxVerilogList(dir) ++ Seq("-o", topModule, s"$topModule.v", harness.toString, "vpi.cpp"),
+      iFlags ++ blackBoxVerilogList(dir) ++ Seq("-o", topModule, s"$topModule.v", harness.getAbsolutePath, "vpi.cpp"),
       iCFlags
     )
 
