@@ -34,6 +34,7 @@ object copyVerilatorHeaderFiles {
     Files.copy(getClass.getResourceAsStream("/veri_api.h"), verilatorApiHFilePath, REPLACE_EXISTING)
   }
 }
+
 /**
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
@@ -53,7 +54,7 @@ object VerilatorCppHarnessGenerator {
       } else if (width <= 64) {
         codeBuffer.append(s"        sim_data.$vector.push_back(new VerilatorQData(&($pathName)));\n")
       } else {
-        val numWords = (width-1)/32 + 1
+        val numWords = (width - 1) / 32 + 1
         codeBuffer.append(s"        sim_data.$vector.push_back(new VerilatorWData($pathName, $numWords));\n")
       }
     }
@@ -62,12 +63,16 @@ object VerilatorCppHarnessGenerator {
     val dutName = dut.name
     val dutApiClassName = dutName + "_api_t"
     val dutVerilatorClassName = "V" + dutName
-    codeBuffer.append(s"""
+    codeBuffer.append(
+      s"""
 #include "${dutVerilatorClassName}.h"
 #include "verilated.h"
 #include "veri_api.h"
 #if VM_TRACE
 #include "verilated_vcd_c.h"
+#if VM_TRACE_FST
+#include "verilated_fst_c.h"
+#endif
 #endif
 #include <iostream>
 class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {
@@ -88,17 +93,22 @@ class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {
 """)
     inputs.toList foreach { case (node, name) =>
       // replaceFirst used here in case port name contains the dutName
-      pushBack("inputs", name replaceFirst (dutName, "dut"), node.getWidth)
+      pushBack("inputs", name replaceFirst(dutName, "dut"), node.getWidth)
     }
     outputs.toList foreach { case (node, name) =>
       // replaceFirst used here in case port name contains the dutName
-      pushBack("outputs", name replaceFirst (dutName, "dut"), node.getWidth)
+      pushBack("outputs", name replaceFirst(dutName, "dut"), node.getWidth)
     }
     pushBack("signals", "dut->reset", 1)
-    codeBuffer.append(s"""        sim_data.signal_map["${dut.reset.pathName}"] = 0;
+    codeBuffer.append(
+      s"""        sim_data.signal_map["${dut.reset.pathName}"] = 0;
     }
 #if VM_TRACE
-     void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }
+#if VM_TRACE_FST
+    void init_dump(VerilatedFstC* _tfp) { tfp = _tfp; }
+#else
+    void init_dump(VerilatedVcdC* _tfp) { tfp = _tfp; }
+#endif
 #endif
     inline bool exit() { return is_exit; }
 
@@ -112,7 +122,11 @@ class $dutApiClassName: public sim_api_t<VerilatorDataWrapper*> {
     bool is_exit;
     vluint64_t main_time;
 #if VM_TRACE
+#if VM_TRACE_FST
+    VerilatedFstC* tfp;
+#else
     VerilatedVcdC* tfp;
+#endif
 #endif
     virtual inline size_t put_value(VerilatorDataWrapper* &sig, uint64_t* data, bool force=false) {
         return sig->put_value(data);
@@ -177,7 +191,11 @@ int main(int argc, char **argv, char **env) {
 #if VM_TRACE
     Verilated::traceEverOn(true);
     VL_PRINTF(\"Enabling waves..\");
+#if VM_TRACE_FST
+    VerilatedFstC* tfp = new VerilatedFstC;
+#else
     VerilatedVcdC* tfp = new VerilatedVcdC;
+#endif
     top->trace(tfp, 99);
     tfp->open(vcdfile.c_str());
 #endif
@@ -221,6 +239,7 @@ private[iotesters] object setupVerilatorBackend {
         val dut = getTopModule(circuit).asInstanceOf[T]
 
         val suppressVerilatorVCD = optionsManager.testerOptions.generateVcdOutput == "off"
+        val fstTraceOutput = optionsManager.testerOptions.verilatorFstTrace
 
         // This makes sure annotations for command line options get created
         val externalAnnotations = firrtl.Driver.getAnnotations(optionsManager)
@@ -251,27 +270,34 @@ private[iotesters] object setupVerilatorBackend {
         val cppHarnessFileName = s"${circuit.name}-harness.cpp"
         val cppHarnessFile = new File(dir, cppHarnessFileName)
         val cppHarnessWriter = new FileWriter(cppHarnessFile)
-        val vcdFile = new File(dir, s"${circuit.name}.vcd")
+        val vcdFile = new File(dir, circuit.name + (if (fstTraceOutput) ".fst" else ".vcd"))
         val emittedStuff = VerilatorCppHarnessGenerator.codeGen(
           dut, CircuitState(chirrtl, ChirrtlForm, annotations), vcdFile.toString
         )
         cppHarnessWriter.append(emittedStuff)
         cppHarnessWriter.close()
 
-        val verilatorFlags = optionsManager.testerOptions.moreVcsFlags ++ { if (suppressVerilatorVCD) Seq() else Seq("--trace") }
+        val verilatorFlags = optionsManager.testerOptions.moreVcsFlags ++ {
+          if (suppressVerilatorVCD) Seq()
+          else if (fstTraceOutput)
+            Seq("--trace-fst", "--trace-fst-thread")
+          else
+            Seq("--trace")
+        }
         assert(
           verilogToVerilator(
             circuit.name,
             dir,
             cppHarnessFile,
             moreVerilatorFlags = verilatorFlags,
-            moreVerilatorCFlags = optionsManager.testerOptions.moreVcsCFlags,
+            moreVerilatorCFlags = optionsManager.testerOptions.moreVcsCFlags ++
+              (if (fstTraceOutput) Seq("-DVM_TRACE_FST") else Seq()),
             editCommands = optionsManager.testerOptions.vcsCommandEdits
           ).! == 0
         )
         assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
 
-        val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
+        val command = if (optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
         }
         else {
@@ -308,14 +334,14 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
     val idx = off map (x => s"[$x]") getOrElse ""
     val path = s"${signal.parentPathName}.${validName(signal.instanceName)}$idx"
     val bigIntU = simApiInterface.peek(path) getOrElse BigInt(rnd.nextInt)
-  
+    chisel3/iotesters/VerilatorBackend.scala
     def signConvert(bigInt: BigInt, width: Int): BigInt = {
       // Necessary b/c Verilator returns bigInts with whatever # of bits it feels like (?)
       // Inconsistent with getWidth -- note also that since the bigInt is always unsigned,
       // bitLength always gets the max # of bits required to represent bigInt
       val w = bigInt.bitLength.max(width)
       // Negative if MSB is set or in this case, ex: 3 bit wide: negative if >= 4
-      if(bigInt >= (BigInt(1) << (w - 1))) bigInt - (BigInt(1) << w) else bigInt
+      if (bigInt >= (BigInt(1) << (w - 1))) bigInt - (BigInt(1) << w) else bigInt
     }
 
     val result = signal match {
