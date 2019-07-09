@@ -82,7 +82,7 @@ object chiselMain {
           Seq(),
           new File(dir, s"$dutName-harness.cpp")).! == 0)
         // Compile Verilator
-        assert(chisel3.Driver.cppToExe(dutName, dir).! == 0)
+        assert(setupVerilatorBackend.cppToSo(dutName, dir).! == 0)
       case "vcs" | "glsim" =>
         // Copy API files
         copyVpiFiles(context.targetDir.toString)
