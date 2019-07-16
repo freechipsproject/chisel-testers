@@ -87,7 +87,9 @@ class ToolChainSpec extends FreeSpec with Matchers {
     s"Ability to edit vcs command line - $builderName" - {
       // Build the expected command (default arguments)
       val expectedCommand = builder.constructCSimulatorCommand(dummyTop, dummyDir, dummyHarness)
-      val expectedMultipleEditVCSCommand = """cd dir && vcs -full64 -loud -timescale=1ns/1ps -debug_pp -Mdir=top.csrc +vcs+lic+wait +vcs+initreg+random +define+CLOCK_PERIOD=1 -P vpi.tab -cpp g++ -O2 -LDFLAGS -lstdc++ -CFLAGS "-I$VCS_HOME/include -I$dir -fPIC -std=c++11" -o top top.v harness.v vpi.cpp"""
+      val cxxFlags = ImportEnvironmentBuildFlags.CXXFLAGS + " -I$VCS_HOME/include -I$dir -fPIC -std=c++11"
+      val ldFlags = ImportEnvironmentBuildFlags.LDFLAGS + " -lstdc++"
+      val expectedMultipleEditVCSCommand = s"""cd dir && vcs -full64 -loud -timescale=1ns/1ps -debug_pp -Mdir=top.csrc +vcs+lic+wait +vcs+initreg+random +define+CLOCK_PERIOD=1 -P vpi.tab -cpp g++ -O2 -LDFLAGS "$ldFlags" -CFLAGS "$cxxFlags" -o top top.v harness.v vpi.cpp"""
 
       "can be done from a single edit on command line" in {
         val dummyArg = "-A-dummy-arg"
