@@ -9,6 +9,8 @@ import scala.util.DynamicVariable
 
 import chisel3._
 
+import firrtl.FileUtils
+
 private[iotesters] class TesterContext {
   var isGenVerilog = false
   var isGenHarness = false
@@ -125,7 +127,7 @@ object chiselMain {
         writer.write(compileResult.getEmittedCircuit.value)
         writer.close()
       case _ =>
-    } 
+    }
 
     if (context.isGenHarness) genHarness(dut, nodes, chirrtl)
 
@@ -156,7 +158,7 @@ object chiselMain {
     context.backend = Some(context.backendType match {
       case "firrtl" =>
         val file = new java.io.File(context.targetDir, s"${dut.name}.ir")
-        val ir = io.Source.fromFile(file).getLines mkString "\n"
+        val ir = FileUtils.getText(file)
         new FirrtlTerpBackend(dut, ir)
       case "verilator" =>
         new VerilatorBackend(dut, context.testCmd.toList, context.testerSeed)
