@@ -8,6 +8,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
+import treadle.chronometry.Timer
 
 object RealGCD2 {
   val num_width = 16
@@ -54,28 +55,38 @@ class RealGCD2 extends Module {
   }
 }
 
-class GCDPeekPokeTester(c: RealGCD2) extends PeekPokeTester(c)  {
-  for {
-    i <- 1 to 10
-    j <- 1 to 10
-  } {
-    val (gcd_value, _) = GCDCalculator.computeGcdResultsAndCycles(i, j)
+class GCDPeekPokeTester(c: RealGCD2, maxX: Int = 10, maxY: Int = 10, showTiming: Boolean = false)
+  extends PeekPokeTester(c)  {
+  val timer = new Timer
 
-    poke(c.io.RealGCD2in.bits.a, i)
-    poke(c.io.RealGCD2in.bits.b, j)
-    poke(c.io.RealGCD2in.valid, 1)
+  timer("overall") {
+    for {
+      i <- 1 to maxX
+      j <- 1 to maxY
+    } {
+      val (gcd_value, _) = GCDCalculator.computeGcdResultsAndCycles(i, j)
 
-    var count = 0
-    while(peek(c.io.RealGCD2out.valid) == BigInt(0) && count < 20) {
-      step(1)
-      count += 1
+      timer("operation") {
+        poke(c.io.RealGCD2in.bits.a, i)
+        poke(c.io.RealGCD2in.bits.b, j)
+        poke(c.io.RealGCD2in.valid, 1)
+
+        var count = 0
+        while (peek(c.io.RealGCD2out.valid) == BigInt(0) && count < 20000) {
+          step(1)
+          count += 1
+        }
+        if (count > 30000) {
+          // println(s"Waited $count cycles on gcd inputs $i, $j, giving up")
+          System.exit(0)
+        }
+        expect(c.io.RealGCD2out.bits, gcd_value)
+        step(1)
+      }
     }
-    if(count > 30) {
-      // println(s"Waited $count cycles on gcd inputs $i, $j, giving up")
-      System.exit(0)
-    }
-    expect(c.io.RealGCD2out.bits, gcd_value)
-    step(1)
+  }
+  if(showTiming) {
+    println(s"\n${timer.report()}")
   }
 }
 
@@ -95,7 +106,8 @@ class GCDSpec extends FlatSpec with Matchers {
       new GCDPeekPokeTester(c)
     } should be (true)
   }
-  it should "run firrtl via command line arguments" in {
+
+  it should "run firrtl-interpreter via command line arguments" in {
     // val args = Array.empty[String]
     val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
     iotesters.Driver.execute(args, () => new RealGCD2) { c =>
@@ -138,5 +150,18 @@ class GCDSpec extends FlatSpec with Matchers {
 
     new File("test_run_dir/gcd_make_vcd/RealGCD2.vcd").exists() should be (true)
   }
+
+  it should "run verilator with larger input vector to run regressions" in {
+    //
+    // Use this test combined with changing the comments on VerilatorBackend.scala lines 153 and 155 to
+    // measure the consequence of that change, at the time of last using this the cost appeared to be < 3%
+    //
+    val args = Array("--backend-name", "verilator")
+    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
+      new GCDPeekPokeTester(c, 100, 1000, showTiming = true)
+    } should be (true)
+  }
+
+
 }
 
