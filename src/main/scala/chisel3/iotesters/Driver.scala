@@ -6,7 +6,7 @@ import chisel3._
 import chisel3.experimental.MultiIOModule
 import java.io.File
 
-import firrtl.{ExecutionOptionsManager, HasFirrtlOptions}
+import firrtl.annotations.Annotation
 import firrtl_interpreter._
 import logger.Logger
 
@@ -273,6 +273,20 @@ object Driver {
       case Some(f) => Seq(s"+waveform=$f")
     }
     run(dutGen, binary.toString +: args.toSeq)(testerGen)
+  }
+
+  /** Filter a sequence of annotations, ensuring problematic potential duplicates are removed.
+    * @param annotations Seq[Annotation] to be filtered
+    * @return filtered Seq[Annotation]
+    */
+  def filterAnnotations(annotations: Seq[Annotation]): Seq[Annotation] = {
+    annotations.filterNot {
+      case _: firrtl.options.TargetDirAnnotation => true
+      case _: logger.LogLevelAnnotation => true
+      case _: firrtl.stage.FirrtlCircuitAnnotation => true
+      case _: firrtl.stage.InfoModeAnnotation => true
+      case _ => false
+    }
   }
 }
 

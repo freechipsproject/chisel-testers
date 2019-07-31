@@ -2,10 +2,10 @@
 
 package chisel3.iotesters
 
-import chisel3.{Element, ChiselExecutionSuccess, Mem, assert}
+import chisel3.{ChiselExecutionSuccess, Element, Mem, assert}
 import chisel3.experimental.MultiIOModule
 import chisel3.internal.InstanceId
-import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
+import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess, LowForm}
 import treadle.TreadleTester
 
 private[iotesters] class TreadleBackend(
@@ -15,7 +15,7 @@ private[iotesters] class TreadleBackend(
 )
 extends Backend(_seed = System.currentTimeMillis()) {
 
-  val treadleTester = new TreadleTester(firrtlIR, optionsManager)
+  val treadleTester = new TreadleTester(firrtlIR, optionsManager, LowForm)
   reset(5) // reset firrtl treadle on construction
 
   private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
@@ -128,7 +128,7 @@ private[iotesters] object setupTreadleBackend {
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
     // Workaround to propagate Annotations generated from command-line options to second Firrtl
     // invocation, run after updating compilerName so we only get one emitCircuit annotation
-    val annos = firrtl.Driver.getAnnotations(optionsManager)
+    val annos = Driver.filterAnnotations(firrtl.Driver.getAnnotations(optionsManager))
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
 
     // generate VcdOutput overrides setting of writeVcd
