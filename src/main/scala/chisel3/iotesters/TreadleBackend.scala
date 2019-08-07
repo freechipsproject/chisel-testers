@@ -147,7 +147,7 @@ private[iotesters] object setupTreadleBackend {
             )
             (dut, new TreadleBackend(dut, compiledFirrtl, optionsManager = optionsManager))
           case FirrtlExecutionFailure(message) =>
-            throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
+            throw new Exception(s"FirrtlBackend: failed firrtl compile message: $message")
         }
       case _ =>
         throw new Exception("Problem with compilation")
