@@ -5,7 +5,7 @@ package chisel3.iotesters
 import chisel3._
 import org.scalatest._
 
-class MyZeroWidthDut extends chisel3.experimental.MultiIOModule {
+class MyZeroWidthDut extends chisel3.MultiIOModule {
   val out0 = IO(Output(UInt(1.W)))
   val in0 = IO(Input(UInt(0.W)))
   val out1 = IO(Output(UInt(1.W)))

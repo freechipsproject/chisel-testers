@@ -3,7 +3,6 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.experimental.MultiIOModule
 import java.io.File
 
 import firrtl.annotations.Annotation

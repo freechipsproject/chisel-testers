@@ -2,7 +2,6 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.experimental.MultiIOModule
 import chisel3.internal.InstanceId
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._

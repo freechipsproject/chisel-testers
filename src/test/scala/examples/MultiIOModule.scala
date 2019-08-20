@@ -3,8 +3,6 @@
 package examples
 
 import chisel3._
-import chisel3.experimental.MultiIOModule
-import chisel3.util._
 import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
 
