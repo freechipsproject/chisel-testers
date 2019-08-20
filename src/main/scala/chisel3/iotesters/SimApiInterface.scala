@@ -3,7 +3,6 @@ package chisel3.iotesters
 
 
 import chisel3._
-import chisel3.experimental.MultiIOModule
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.collection.immutable.ListMap

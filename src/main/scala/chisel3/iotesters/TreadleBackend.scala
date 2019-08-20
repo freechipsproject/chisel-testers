@@ -2,8 +2,7 @@
 
 package chisel3.iotesters
 
-import chisel3.{ChiselExecutionSuccess, Element, Mem, assert}
-import chisel3.experimental.MultiIOModule
+import chisel3.{ChiselExecutionSuccess, Element, Mem, MultiIOModule, assert}
 import chisel3.internal.InstanceId
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess, LowForm}
 import treadle.TreadleTester
