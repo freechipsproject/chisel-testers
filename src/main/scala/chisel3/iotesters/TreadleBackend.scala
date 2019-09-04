@@ -2,11 +2,11 @@
 
 package chisel3.iotesters
 
-import chisel3.{Element, ChiselExecutionSuccess, Mem, assert}
+import chisel3.{ChiselExecutionSuccess, Element, Mem, assert}
 import chisel3.experimental.MultiIOModule
 import chisel3.internal.InstanceId
 import chisel3.internal.firrtl.Circuit
-import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
+import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess, LowForm}
 import treadle.TreadleTester
 
 private[iotesters] class TreadleBackend(_seed: Long = System.currentTimeMillis()) extends Backend(_seed) {
@@ -37,7 +37,7 @@ private[iotesters] class TreadleBackend(_seed: Long = System.currentTimeMillis()
     }.toMap)
   }
   def run(cmd: Option[Seq[String]] = None): Unit = {
-    _interpretiveTester = Some(new TreadleTester(firrtlIR, optionsManager))
+    _interpretiveTester = Some(new TreadleTester(firrtlIR, optionsManager, LowForm))
     reset(5) // reset firrtl treadle on construction
   }
 

@@ -32,7 +32,7 @@ This is in contrast to the following hardware oriented testers, in which a testi
 circuit, or device under test (DUT) from value vectors for each input.  Testing the outputs each cycle against a separate
 set of value vectors for each output.
 
-For a longer descripton see the [Using the PeekPokeTester](https://github.com/ucb-bar/chisel-testers/wiki/Using%20the%20PeekPokeTester) see the 
+For a longer description, see the [Using the PeekPokeTester](https://github.com/freechipsproject/chisel-testers/wiki/Using%20the%20PeekPokeTester).
 
 #### SteppedHWIOTester
 
