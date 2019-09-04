@@ -118,21 +118,21 @@ class DriverSpec extends FreeSpec with Matchers {
       chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
     }
     "--v --logfile chiselMain.log --backend treadle" in {
-      val args = Array("--v", "--logFile", "chiselMain.log", "--backend", "treadle")
+      val args = Array("--v", "--logFile", "chiselMain-treadle.log", "--backend", "treadle")
       chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
     }
     "--v --logfile chiselMain.log --backend verilator" in {
-      val args = Array("--v", "--logFile", "chiselMain.log", "--backend", "verilator")
+      val args = Array("--v", "--logFile", "chiselMain-verilator.log", "--backend", "verilator")
       chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
     }
     "--v --logfile chiselMain.log --backend vcs" in {
       assume(firrtl.FileUtils.isVCSAvailable)
-      val args = Array("--v", "--logFile", "chiselMain.log", "--backend", "vcs")
+      val args = Array("--v", "--logFile", "chiselMain-vcs.log", "--backend", "vcs")
       chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
     }
     "--v --logfile chiselMain.log --test --backend ivl" in {
       assume(firrtl.FileUtils.isCommandAvailable(Seq("iverilog", "-V")))
-      val args = Array("--v", "--logFile", "chiselMain.log", "--test", "--backend", "ivl")
+      val args = Array("--v", "--logFile", "chiselMain-iverilog.log", "--test", "--backend", "ivl")
       chiselMain(args, () => new DriverTest, (c: DriverTest) => new DriverTestTester(c))
     }
     "--v --logfile chiselMain.log --backend foo" in {

@@ -12,6 +12,7 @@ import chisel3.internal.firrtl.Circuit
 
 import scala.sys.process._
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.JavaConversions._
 
 // TODO: FIRRTL will eventually return valid names
 private[iotesters] object validName {
@@ -241,6 +242,10 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
     moreIvlFlags: Seq[String] = Seq.empty[String],
     moreIvlCFlags: Seq[String] = Seq.empty[String],
     editCommands: String = ""): ProcessBuilder = {
+    val environmentVariables = System.getenv()
+    for ( key <- List("IVL_HOME", "IVL_LIB")) {
+      require(environmentVariables.containsKey(key), s" $key isn't defined in the environment")
+    }
 
     val finalCommand = editCSimulatorCommand(constructCSimulatorCommand(topModule, dir, ivlHarness, moreIvlFlags, moreIvlCFlags), editCommands)
     println(s"$finalCommand")
