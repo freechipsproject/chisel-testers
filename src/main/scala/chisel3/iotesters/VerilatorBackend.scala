@@ -6,7 +6,7 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 
 import chisel3._
-import chisel3.experimental.{FixedPoint, MultiIOModule}
+import chisel3.experimental.FixedPoint
 import chisel3.internal.InstanceId
 import firrtl._
 import firrtl.annotations.CircuitName

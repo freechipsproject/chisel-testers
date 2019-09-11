@@ -1,7 +1,6 @@
 package examples
 
 import chisel3._
-import chisel3.experimental.MultiIOModule
 import chisel3.iotesters.PeekPokeTester
 import chisel3.util.Counter
 import org.scalatest.{FreeSpec, Matchers}

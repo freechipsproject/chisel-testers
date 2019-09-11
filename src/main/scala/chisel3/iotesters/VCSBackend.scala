@@ -5,8 +5,7 @@ import java.io.{File, FileWriter, IOException, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, Element}
-import chisel3.experimental.MultiIOModule
+import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, Element, MultiIOModule}
 import firrtl.{ChirrtlForm, CircuitState}
 import firrtl.transforms.BlackBoxTargetDirAnno
 
