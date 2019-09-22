@@ -42,7 +42,7 @@ trait PeekPokeTests {
    */
   def poke(path: String, x: BigInt): Unit
 
-  /** Get actual value of signal
+  /** Get actual value of a signal.
    *  @param path: String - path to read
    *  @return BigInt - actual value read
    */
