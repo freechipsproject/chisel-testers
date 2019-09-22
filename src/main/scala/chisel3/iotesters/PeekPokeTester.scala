@@ -59,7 +59,7 @@ trait PeekPokeTests {
    */
   def expect(good: Boolean, msg: => String): Boolean
 
-  /** Check signal value. return false if value not equal and display msg
+  /** Check the given signal value. Returns false and displays the given message if the value is not equal to the expected value.
    *  @param signal:T - signal to check
    *  @param expected: BigInd - expected value
    *  @param msg:String - message to display if condition wrong
