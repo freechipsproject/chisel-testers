@@ -31,7 +31,7 @@ trait PeekPokeTests {
   def println(msg: String = ""): Unit
   def reset(n: Int): Unit
 
-  /** Advance the simulation of n step
+  /** Advance the simulation by n steps.
    *  @param n: Int - number of steps
    */
   def step(n: Int): Unit
