@@ -52,7 +52,7 @@ trait PeekPokeTests {
   def peek[T <: Element: Pokeable](signal: T): BigInt
   def peekAt[T <: Element: Pokeable](signal: Mem[T], off: Int): BigInt
 
-  /** Check condition. If false, display message msg
+  /** Check the given condition, and if false, display the given message.
    *  @param good: Boolean - condition
    *  @param msg:String - message to display if condition wrong
    *  @return Boolean - true if condition is true
