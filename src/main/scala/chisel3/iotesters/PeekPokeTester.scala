@@ -29,6 +29,9 @@ trait PeekPokeTests {
    *  @param msg: String
    */
   def println(msg: String = ""): Unit
+  /** Set reset during n cycles
+   *  @param n: Int - cycles number
+   */
   def reset(n: Int): Unit
 
   /** Advance the simulation by n steps.
