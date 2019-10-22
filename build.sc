@@ -83,7 +83,7 @@ def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
 }
 
 class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
-  override def artifactName = "Chisel.iotesters"
+  override def artifactName = "chisel-iotesters"
 
   def chiselDeps = Agg("firrtl", "firrtl-interpreter", "treadle", "chisel3").map { d => getVersion(d) }
 
