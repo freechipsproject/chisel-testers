@@ -16,22 +16,58 @@ import scala.collection.mutable.ArrayBuffer
 
 // Provides a template to define tester transactions
 trait PeekPokeTests {
+  /** Get the actual step value (simTime)
+    * @return simTime - number of steps since begining of simulation
+    */
   def t: Long
   def rnd: scala.util.Random
   implicit def int(x: Boolean): BigInt
   implicit def int(x: Int):     BigInt
   implicit def int(x: Long):    BigInt
   implicit def int[T <: Element: Pokeable](x: T): BigInt
+  /** Display message
+   *  @param msg: String
+   */
   def println(msg: String = ""): Unit
+  /** Set reset during n cycles
+   *  @param n: Int - cycles number
+   */
   def reset(n: Int): Unit
+
+  /** Advance the simulation by n steps.
+   *  @param n: Int - number of steps
+   */
   def step(n: Int): Unit
+
+  /** Set a signal value
+   *  @param path: String - the signal to set
+   *  @param x: BigInt - value
+   */
   def poke(path: String, x: BigInt): Unit
+
+  /** Get actual value of a signal.
+   *  @param path: String - path to read
+   *  @return BigInt - actual value read
+   */
   def peek(path: String): BigInt
   def poke[T <: Element: Pokeable](signal: T, x: BigInt): Unit
   def pokeAt[T <: Element: Pokeable](signal: Mem[T], x: BigInt, off: Int): Unit
   def peek[T <: Element: Pokeable](signal: T): BigInt
   def peekAt[T <: Element: Pokeable](signal: Mem[T], off: Int): BigInt
+
+  /** Check the given condition, and if false, display the given message.
+   *  @param good: Boolean - condition
+   *  @param msg:String - message to display if condition wrong
+   *  @return Boolean - true if condition is true
+   */
   def expect(good: Boolean, msg: => String): Boolean
+
+  /** Check the given signal value. Returns false and displays the given message if the value is not equal to the expected value.
+   *  @param signal:T - signal to check
+   *  @param expected: BigInd - expected value
+   *  @param msg:String - message to display if condition wrong
+   *  @return Boolean - true if signal is equal
+   */
   def expect[T <: Element: Pokeable](signal: T, expected: BigInt, msg: => String = ""): Boolean
   def finish: Boolean
 }
