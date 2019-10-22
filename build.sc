@@ -43,7 +43,7 @@ val crossVersions = Seq("2.12.6", "2.11.12")
 
 // Make this available to external tools.
 object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
-  def defaultVersion(ev: Evaluator[Any]) = T.command{
+  def defaultVersion(ev: Evaluator) = T.command{
     println(crossVersions.head)
   }
 
@@ -88,14 +88,12 @@ class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
   def chiselDeps = Agg("firrtl", "firrtl-interpreter", "treadle", "chisel3").map { d => getVersion(d) }
 
   override def ivyDeps = Agg(
-    ivy"com.github.scopt::scopt:3.7.0"
-  ) ++ chiselDeps
+    ivy"org.scalatest::scalatest:3.0.8",
+    ivy"org.scalacheck::scalacheck:1.14.0",
+    ivy"com.github.scopt::scopt:3.7.1" 
+ ) ++ chiselDeps
 
   object test extends Tests {
-    override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.8",
-      ivy"org.scalacheck::scalacheck:1.14.0"
-    )
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
 
