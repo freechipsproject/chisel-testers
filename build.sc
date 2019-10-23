@@ -13,7 +13,7 @@ trait CrossUnRootedSbtModule extends CrossSbtModule {
 }
 
 trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
-  def publishVersion = "1.3.0"
+  def publishVersion = "1.3-20191023-SNAPSHOT"
 
   def pomSettings = PomSettings(
     description = artifactName(),
@@ -43,7 +43,7 @@ val crossVersions = Seq("2.12.6", "2.11.12")
 
 // Make this available to external tools.
 object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
-  def defaultVersion(ev: Evaluator[Any]) = T.command{
+  def defaultVersion(ev: Evaluator) = T.command{
     println(crossVersions.head)
   }
 
@@ -71,10 +71,10 @@ object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.2.0",
-  "firrtl" -> "1.2.0",
-  "firrtl-interpreter" -> "1.2.0",
-  "treadle" -> "1.1.0"
+  "chisel3" -> "3.2-20191023-SNAPSHOT",
+  "firrtl" -> "1.2-20191023-SNAPSHOT",
+  "firrtl-interpreter" -> "1.2-20191023-SNAPSHOT",
+  "treadle" -> "1.1-20191023-SNAPSHOT"
   )
 
 def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
@@ -83,19 +83,17 @@ def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
 }
 
 class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
-  override def artifactName = "chisel-testers"
+  override def artifactName = "chisel-iotesters"
 
   def chiselDeps = Agg("firrtl", "firrtl-interpreter", "treadle", "chisel3").map { d => getVersion(d) }
 
   override def ivyDeps = Agg(
-    ivy"com.github.scopt::scopt:3.7.0"
-  ) ++ chiselDeps
+    ivy"org.scalatest::scalatest:3.0.8",
+    ivy"org.scalacheck::scalacheck:1.14.0",
+    ivy"com.github.scopt::scopt:3.7.1" 
+ ) ++ chiselDeps
 
   object test extends Tests {
-    override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.8",
-      ivy"org.scalacheck::scalacheck:1.14.0"
-    )
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
 
