@@ -230,7 +230,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     }
   }
 
-  def pokeAt[TT <: Element: Pokeable](data: Mem[TT], value: BigInt, off: Int): Unit = {
+  def pokeAt[TT <: Element: Pokeable](data: MemBase[TT], value: BigInt, off: Int): Unit = {
     backend.poke(data, value, Some(off))
   }
 
@@ -293,7 +293,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     bigIntMap
   }
 
-  def peekAt[TT <: Element: Pokeable](data: Mem[TT], off: Int): BigInt = {
+  def peekAt[TT <: Element: Pokeable](data: MemBase[TT], off: Int): BigInt = {
     backend.peek(data, Some(off))
   }
 
