@@ -31,7 +31,7 @@ class SyncReadMemTest extends FreeSpec with Matchers {
         "--target-dir",
         "test_run_dir/sync_read_mem_test_treadle",
         "--top-name",
-        "SyncReadMem",
+        "SyncReadMem"
       ),
       () => new HasSyncReadMem
     ) { c =>
