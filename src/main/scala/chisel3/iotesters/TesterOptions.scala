@@ -29,7 +29,8 @@ case class TesterOptions(
   moreIvlFlags:         Seq[String] = Seq.empty,
   moreIvlCFlags:        Seq[String] = Seq.empty,
   ivlCommandEdits:      String = "",
-  generateVcdOutput:    String = ""
+  generateVcdOutput:    String = "",
+  generateFsdbOutput:    String = ""
 ) extends ComposableOptions
 
 object TesterOptions {
@@ -140,7 +141,19 @@ trait HasTesterOptions {
       }
     }
     .foreach { x => testerOptions = testerOptions.copy(generateVcdOutput = x) }
-    .text(s"""set this flag to "on" or "off", otherwise it defaults to on for verilator, off for scala backends""")
+    .text(s"""set this flag to "on" or "off", otherwise it defaults to on for vcs, off for scala backends""")
+
+  parser.opt[String]("generate-fsdb-output")
+    .abbr("tgfo")
+    .validate { x =>
+      if(Seq("on", "off").contains(x.toLowerCase)) {
+        parser.success
+      } else {
+        parser.failure("generateFsdbOutput must be set to on or off")
+      }
+    }
+    .foreach { x => testerOptions = testerOptions.copy(generateFsdbOutput = x) }
+    .text(s"""set this flag to "on" or "off", otherwise it defaults to off""")
 }
 
 class TesterOptionsManager
