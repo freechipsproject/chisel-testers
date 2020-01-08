@@ -65,7 +65,7 @@ object chiselMain {
       case "vcs" | "glsim" =>
         val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
         val waveform = new File(dir, s"${chirrtl.main}.vpd").toString
-        genVCSVerilogHarness(dut, harness, waveform.toString, context.backendType == "glsim")
+        genVCSVerilogHarness(dut, harness, waveform.toString, context.backendType == "glsim", false)
       case b => throw BackendException(b)
     }
   }
