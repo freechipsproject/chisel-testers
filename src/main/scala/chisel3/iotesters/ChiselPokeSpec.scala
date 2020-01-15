@@ -30,6 +30,11 @@ case object VcsBackend extends TesterBackend {
     setupVCSBackend(dutGen, options)
   }
 }
+case object VsimBackend extends TesterBackend {
+  override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
+    setupVSIMBackend(dutGen, options)
+  }
+}
 
 trait ChiselPokeTesterUtils extends Assertions {
   class InnerTester(val backend: Backend, val options: TesterOptionsManager) {

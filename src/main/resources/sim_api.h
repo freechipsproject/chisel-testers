@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <time.h>
+#include <limits.h>
+#include <string>
 
 enum SIM_CMD { RESET, STEP, UPDATE, POKE, PEEK, FORCE, GETID, GETCHK, FIN };
 const int SIM_CMD_MAX_BYTES = 1024;
@@ -125,10 +127,17 @@ public:
   }
   void init_channels() {
     pid_t pid = getpid();
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+       printf("Current working dir: %s\n", cwd);
+    } else {
+       perror("getcwd() error");
+       return;
+    }
     std::ostringstream in_ch_name, out_ch_name, cmd_ch_name;
-    in_ch_name  << std::dec << std::setw(8) << std::setfill('0') << pid << ".in";
-    out_ch_name << std::dec << std::setw(8) << std::setfill('0') << pid << ".out";
-    cmd_ch_name << std::dec << std::setw(8) << std::setfill('0') << pid << ".cmd";
+    in_ch_name  << cwd << "/" << std::dec << std::setw(8) << std::setfill('0') << pid << ".in";
+    out_ch_name << cwd << "/" << std::dec << std::setw(8) << std::setfill('0') << pid << ".out";
+    cmd_ch_name << cwd << "/" << std::dec << std::setw(8) << std::setfill('0') << pid << ".cmd";
     size_t input_size = this->sim_data.storage_size(this->sim_data.inputs);
     in_channel  = new channel_t(in_ch_name.str(), input_size);
     size_t output_size = this->sim_data.storage_size(this->sim_data.outputs);

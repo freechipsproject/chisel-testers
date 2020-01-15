@@ -33,6 +33,7 @@ object chiselMain {
     case "--firrtl" :: tail => context.backendType = "firrtl" ; parseArgs(tail)
     case "--verilator" :: tail => context.backendType = "verilator" ; parseArgs(tail)
     case "--vcs" :: tail => context.backendType = "vcs" ; parseArgs(tail)
+    case "--vsim" :: tail => context.backendType = "vsim" ; parseArgs(tail)
     case "--glsim" :: tail => context.backendType = "glsim" ; parseArgs(tail)
     case "--v" :: tail  => context.isGenVerilog = true ; parseArgs(tail)
     case "--backend" :: value :: tail => context.backendType = value ; parseArgs(tail)
@@ -62,6 +63,9 @@ object chiselMain {
         val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
         val waveform = new File(dir, s"${chirrtl.main}.vcd").toString
         genIVLVerilogHarness(dut, harness, waveform.toString)
+      case "vsim" =>
+        val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
+        genVSIMVerilogHarness(dut, harness)
       case "vcs" | "glsim" =>
         val harness = new FileWriter(new File(dir, s"${chirrtl.main}-harness.v"))
         val waveform = new File(dir, s"${chirrtl.main}.vpd").toString
@@ -144,7 +148,7 @@ object chiselMain {
         case "firrtl" => // skip
         case "verilator" =>
           context.testCmd += new File(context.targetDir, s"V$name").toString
-        case "vcs" | "glsim" =>
+        case "vcs" | "glsim" | "vsim" =>
           context.testCmd += new File(context.targetDir, name).toString
         case b => throw BackendException(b)
       }
@@ -164,6 +168,8 @@ object chiselMain {
         new VerilatorBackend(dut, context.testCmd.toList, context.testerSeed)
       case "vcs" | "glsim" =>
         new VCSBackend(dut, context.testCmd.toList, context.testerSeed)
+      case "vsim" =>
+        new VSIMBackend(dut, context.testCmd.toList, context.testerSeed)
       case b => throw BackendException(b)
     })
   }

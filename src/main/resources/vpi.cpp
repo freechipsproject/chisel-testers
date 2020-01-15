@@ -57,7 +57,13 @@ PLI_INT32 sim_start_cb(p_cb_data cb_data) {
 
 PLI_INT32 sim_end_cb(p_cb_data cb_data) {
   delete vpi_api;
-  vpi_control(vpiFinish, 0);
+#ifndef __VSIM__
+  // I guess this line should be removed for all backends since cbEndOfSimulation is triggered on vpi_control(vpiFinish, 0); (hence looping forever)
+  vpi_control(vpiFinish, 0); 
+# else 
+  // double vpiFinish makes vsim segfault => it doesn't handle this infinite callback loop properly
+  // vpi_control(vpiStop, 0); // this is harmless but useless ...
+#endif
   return 0;
 }
 

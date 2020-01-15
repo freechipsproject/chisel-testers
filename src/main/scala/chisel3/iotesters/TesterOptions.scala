@@ -29,6 +29,11 @@ case class TesterOptions(
   moreIvlFlags:         Seq[String] = Seq.empty,
   moreIvlCFlags:        Seq[String] = Seq.empty,
   ivlCommandEdits:      String = "",
+  moreVlogFlags:        Seq[String] = Seq.empty,
+  moreVsimCFlags:       Seq[String] = Seq.empty,
+  moreVsimFlags:        Seq[String] = Seq.empty,
+  moreVsimDoCmds:       Seq[String] = Seq.empty,
+  vsimCommandEdits:     String = "",
   generateVcdOutput:    String = "",
   generateFsdbOutput:    String = ""
 ) extends ComposableOptions
@@ -48,7 +53,7 @@ trait HasTesterOptions {
   parser.opt[String]("backend-name").valueName("<firrtl|treadle|verilator|ivl|vcs>")
     .abbr("tbn")
     .validate { x =>
-      if (Array("firrtl", "treadle", "verilator", "ivl", "vcs").contains(x.toLowerCase)) parser.success
+      if (Array("firrtl", "treadle", "verilator", "ivl", "vcs", "vsim").contains(x.toLowerCase)) parser.success
       else parser.failure(s"$x not a legal backend name")
     }
     .foreach { x => testerOptions = testerOptions.copy(backendName = x) }
@@ -87,12 +92,12 @@ trait HasTesterOptions {
   parser.opt[String]("more-vcs-flags")
     .abbr("tmvf")
     .foreach { x => testerOptions = testerOptions.copy(moreVcsFlags = x.split("""\s""")) }
-    .text("Add specified commands to the VCS command line")
+    .text("Add specified commands to the VCS/Verilator command line")
 
   parser.opt[String]("more-vcs-c-flags")
     .abbr("tmvf")
     .foreach { x => testerOptions = testerOptions.copy(moreVcsCFlags = x.split("""\s""")) }
-    .text("Add specified commands to the CFLAGS on the VCS command line")
+    .text("Add specified commands to the CFLAGS on the VCS/Verilator command line")
 
   parser.opt[String]("vcs-command-edits")
     .abbr("tvce")
@@ -114,6 +119,32 @@ trait HasTesterOptions {
     .abbr("tice")
     .foreach { x =>
       testerOptions = testerOptions.copy(ivlCommandEdits = x) }
+    .text("a file containing regex substitutions, one per line s/pattern/replacement/")
+
+  parser.opt[String]("more-vlog-flags")
+    .abbr("tmvlf")
+    .foreach { x => testerOptions = testerOptions.copy(moreVlogFlags = x.split("""\s""")) }
+    .text("Add specified commands to the vlog command line")
+    
+  parser.opt[String]("more-vsim-flags")
+    .abbr("tmvsf")
+    .foreach { x => testerOptions = testerOptions.copy(moreVsimFlags = x.split("""\s""")) }
+    .text("Add specified commands to the vsim command line startup")
+    
+  parser.opt[String]("more-vsim-do-cmds")
+    .abbr("tmvsd")
+    .foreach { x => testerOptions = testerOptions.copy(moreVsimDoCmds = testerOptions.moreVsimDoCmds ++ Seq(x)) }
+    .text("Execute specified commands within vsim interpreter before simulation run")
+
+  parser.opt[String]("more-vsim-c-flags")
+    .abbr("tmvscf")
+    .foreach { x => testerOptions = testerOptions.copy(moreVsimCFlags = x.split("""\s""")) }
+    .text("Add specified commands to the g++ vpi compilation command line for use with vsim backend")
+
+  parser.opt[String]("vsim-command-edits")
+    .abbr("tvsce")
+    .foreach { x =>
+      testerOptions = testerOptions.copy(vsimCommandEdits = x) }
     .text("a file containing regex substitutions, one per line s/pattern/replacement/")
 
   parser.opt[String]("log-file-name")
