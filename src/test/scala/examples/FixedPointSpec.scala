@@ -27,7 +27,13 @@ class FixedPointReduceTester(c: FixedPointReduce) extends PeekPokeTester(c) {
 
   step(1)
 
-  println(s"peek got ${peekFixedPoint(c.io.sum)}")
+
+  val result = peekFixedPointBig(c.io.sum)
+  println(s"peek got $result")
+
+  expectFixedPointBig(c.io.sum, BigDecimal("1.000000000000000052041704279304213"), "")
+
+
 }
 
 class FixedPointDivide(val fixedType: FixedPoint, val shiftAmount: Int) extends Module {
@@ -53,7 +59,7 @@ class FixedPointDivideTester(c: FixedPointDivide) extends PeekPokeTester(c) {
 
 class FixedPointSpec extends FreeSpec with Matchers {
   "fixed point reduce work" in {
-    iotesters.Driver.execute(Array.empty[String], () => new FixedPointReduce(FixedPoint(64.W, 60.BP), 10)) { c =>
+    iotesters.Driver.execute(Array.empty[String], () => new FixedPointReduce(FixedPoint(70.W, 60.BP), 10)) { c =>
       new FixedPointReduceTester(c)
     } should be (true)
   }

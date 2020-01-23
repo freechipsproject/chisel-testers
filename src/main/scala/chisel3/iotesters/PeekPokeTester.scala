@@ -189,6 +189,11 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     poke(signal, bigInt)
   }
 
+  def pokeFixedPointBig(signal: FixedPoint, value: BigDecimal): Unit = {
+    val bigInt = value.F(signal.width, signal.binaryPoint).litValue()
+    poke(signal, bigInt)
+  }
+
   /** Locate a specific bundle element, given a name path.
     * TODO: Handle Vecs
     *
@@ -238,10 +243,30 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     if (!signal.isLit) backend.peek(signal, None) else signal.litValue()
   }
 
+  /** Returns the value signal as a Double. Double may not be big enough to contain the
+    * value without precision loss. This situation will Throw ChiselException
+    * Consider using the more reliable [[peekFixedPointBig]]
+    *
+    * @param signal
+    * @return
+    */
   def peekFixedPoint(signal: FixedPoint): Double = {
     val bigInt = peek(signal)
     signal.binaryPoint match {
       case KnownBinaryPoint(bp) => FixedPoint.toDouble(bigInt, bp)
+      case _ => throw new Exception("Cannot peekFixedPoint with unknown binary point location")
+    }
+  }
+
+  /** returns the value of signal as BigDecimal
+    *
+    * @param signal
+    * @return
+    */
+  def peekFixedPointBig(signal: FixedPoint): BigDecimal = {
+    val bigInt = peek(signal)
+    signal.binaryPoint match {
+      case KnownBinaryPoint(bp) => FixedPoint.toBigDecimal(bigInt, bp)
       case _ => throw new Exception("Cannot peekFixedPoint with unknown binary point location")
     }
   }
@@ -315,10 +340,34 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     expect(signal, BigInt(expected), msg)
   }
 
+  /** Uses a Double as the expected value
+    *
+    * Consider using the more reliable [[expectFixedPointBig]]
+    *
+    * @param signal    signal
+    * @param expected  value expected
+    * @param msg       message on failure
+    * @param epsilon   error bounds on expected value are +/- epsilon
+    * @return
+    */
   def expectFixedPoint(signal: FixedPoint, expected: Double, msg: => String, epsilon: Double = 0.01): Boolean = {
     val double = peekFixedPoint(signal)
 
     expect((double - expected).abs < epsilon, msg )
+  }
+
+  /** Uses a BigDecimal as the expected value
+    *
+    * @param signal    signal
+    * @param expected  value expected
+    * @param msg       message on failure
+    * @param epsilon   error bounds on expected value are +/- epsilon
+    * @return
+    */
+  def expectFixedPointBig(signal: FixedPoint, expected: BigDecimal, msg: => String, epsilon: BigDecimal = 0.01): Boolean = {
+    val bigDecimal = peekFixedPointBig(signal)
+
+    expect((bigDecimal - expected).abs < epsilon, msg )
   }
 
   def expect (signal: Aggregate, expected: IndexedSeq[BigInt]): Boolean = {
