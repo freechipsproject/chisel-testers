@@ -284,7 +284,7 @@ private[iotesters] object verilogToVSIM extends EditableBuildCSimulatorCommand {
                moreVsimCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
 
     val vlogFlags = Seq(
-      "+define+CLOCK_PERIOD=1",
+      "+define+CLOCK_PERIOD=1"
     ) ++ moreVlogFlags
     
     
