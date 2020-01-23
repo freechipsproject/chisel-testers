@@ -33,41 +33,46 @@ jobs:
         with:
           path: ~/.sbt
           key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}-${{ hashFiles('**/project/build.properties') }}-${{ hashFiles('**/project/*.sbt') }}
+      - name: Generate dependend SHA1s
+        id: gen-shas
+        run: |
+          echo ::set-env name=FIRRTL_SHA::$(git ls-remote https://github.com/freechipsproject/firrtl.git master | cut -c1-7)
+          echo ::set-env name=CHISEL3_SHA::$(git ls-remote https://github.com/freechipsproject/chisel3.git master | cut -c1-7)
       - name: Cache firrtl 2.11
         id: cache-firrtl-2_11
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.11
-          key: ${{ runner.os }}-sbt-${{ hashFiles('firrtl/build.sbt') }}-${{ hashFiles('firrtl/project/build.properties') }}-${{ hashFiles('firrtl/project/*.sbt') }}
+          key: ${{ runner.os }}-sbt-firrtl-${{ $FIRRTL_SHA }}
       - name: Cache firrtl 2.12
         id: cache-firrtl-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.12
-          key: ${{ runner.os }}-sbt-${{ hashFiles('firrtl/build.sbt') }}-${{ hashFiles('firrtl/project/build.properties') }}-${{ hashFiles('firrtl/project/*.sbt') }}
+          key: ${{ runner.os }}-sbt-firrtl-${{ $FIRRTL_SHA }}
       - name: Build FIRRTL
         id: build-firrtl
         if: steps.cache-firrtl-2_11.outputs.cache-hit != 'true' || steps.cache-firrtl-2_12.outputs.cache-hit != 'true'
         run: |
-          git clone --depth=1 https://github.com/freechipsproject/firrtl.git
+          git clone --depth=1 -b $FIRRTL_SHA https://github.com/freechipsproject/firrtl.git
           cd firrtl && sbt +publishLocal
       - name: Cache chisel3 2.11
         id: cache-chisel3-2_11
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.11
-          key: ${{ runner.os }}-sbt-${{ hashFiles('chisel3/build.sbt') }}-${{ hashFiles('chisel3/project/build.properties') }}-${{ hashFiles('chisel3/project/*.sbt') }}
+          key: ${{ runner.os }}-sbt-chisel3-${{ $CHISEL3_SHA }}
       - name: Cache chisel3 2.12
         id: cache-chisel3-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.12
-          key: ${{ runner.os }}-sbt-${{ hashFiles('chisel3/build.sbt') }}-${{ hashFiles('chisel3/project/build.properties') }}-${{ hashFiles('chisel3/project/*.sbt') }}
+          key: ${{ runner.os }}-sbt-chisel3-${{ $CHISEL3_SHA }}
       - name: Build chisel3
         id: build-chisel3
         if: steps.cache-chisel3-2_11.outputs.cache-hit != 'true' || steps.cache-chisel3-2_12.outputs.cache-hit != 'true'
         run: |
-          git clone --depth=1 https://github.com/freechipsproject/chisel3.git
+          git clone --depth=1 -b $CHISEL3_SHA https://github.com/freechipsproject/chisel3.git
           cd chisel3 && sbt +publishLocal
       - name: Build and test iotesters
         id: build-test-iotesters
