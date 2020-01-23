@@ -1,0 +1,61 @@
+proc str_count {char str} {
+    set count 0
+    set index 0
+    while {$index > -1} {
+        set index [string first $char $str $index]
+        if {$index > -1} {
+            incr count
+            incr index
+        }
+    }
+    return $count
+}
+
+proc add_wave {args} {
+    # same as add wave but excluding all signal prefixed with _
+    # restricted to arguments of [find] with addition of -depth N and -r
+    # search pattern must be last argument
+    set arglen [llength $args]
+    set findargs [list]
+    set depth 0
+    set index 0
+    while {$index < $arglen} {
+        set arg [lindex $args $index]
+        switch -exact -- $arg {
+            -depth {
+                set depth [lindex $args [incr index]]
+            }
+            -r {
+                # improve compliance with add wave arguments
+                lappend findargs "-recursive"
+            }
+            default {
+                lappend findargs $arg
+            }
+        }
+        incr index
+    }
+    set pattern [lindex $findargs [expr [llength $findargs]-1]]
+    puts "NOTE: add_wave search pattern: $pattern"
+    set pattern_start_depth [str_count "/" $pattern]
+    # note : string compare return 0 for match, -1 otherwise
+    if {[string compare "/" [string index $pattern 0]]} {
+      incr pattern_start_depth
+    }
+    set threshold [expr $pattern_start_depth+$depth]
+    puts "NOTE: max absolute depth: $threshold"
+    set excluded [find signal -recursive _*]
+    # build dict for faster lookups
+    set ex [dict create]
+    foreach elt $excluded {
+      dict set ex $elt ""
+    }
+    set matching [lsort [find signal {*}$findargs]]
+    foreach elt $matching {
+      if {![dict exists $ex $elt] && [str_count "/" $elt] <= $threshold} {
+        if {[string compare "#" [string index $elt 1]]} {
+          add wave $elt
+        }
+      }
+    }
+}
