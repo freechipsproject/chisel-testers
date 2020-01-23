@@ -3,16 +3,15 @@ name: Checkout, Build, and Test
 on: [push]
 
 jobs:
-  env:
-    CHISEL3_REF: master
-    FIRRTL_REF: master
-
   build:
     name: checkout, build, and test
     runs-on: ubuntu-latest
     container:
       image: ucbbar/chisel3-tools
       options: --user root --entrypoint /bin/bash
+    env:
+      CHISEL3_REF: master
+      FIRRTL_REF: master
 
     steps:
       - name: id
