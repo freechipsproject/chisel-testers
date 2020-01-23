@@ -16,7 +16,7 @@ class FixedPointReduce(val fixedType: FixedPoint, val size: Int) extends Module 
   io.sum := io.in.reduce(_ + _)
 }
 
-class FixedPointReduceTester(c: FixedPointReduce) extends PeekPokeTester(c) {
+class FixedPointReduceTester(c: FixedPointReduce, useBigDecimal: Boolean = true) extends PeekPokeTester(c) {
   private val nums = (0 until c.size).map { _ => 0.1 }
 
   println(s"nums ${nums.mkString(", ")}")
@@ -27,11 +27,15 @@ class FixedPointReduceTester(c: FixedPointReduce) extends PeekPokeTester(c) {
 
   step(1)
 
+  if (useBigDecimal) {
+    val result = peekFixedPointBig(c.io.sum)
+    println(s"peek got $result")
 
-  val result = peekFixedPointBig(c.io.sum)
-  println(s"peek got $result")
-
-  expectFixedPointBig(c.io.sum, BigDecimal("1.000000000000000052041704279304213"), "")
+    expectFixedPointBig(c.io.sum, BigDecimal("1.000000000000000052041704279304213"), "")
+  } else {
+    // The following should generate a ChiselException, losing precision trying to represent a value as a Double.
+    println(s"peek got ${peekFixedPoint(c.io.sum)}")
+  }
 
 
 }
@@ -58,10 +62,19 @@ class FixedPointDivideTester(c: FixedPointDivide) extends PeekPokeTester(c) {
 }
 
 class FixedPointSpec extends FreeSpec with Matchers {
-  "fixed point reduce work" in {
+  val useBigDecimal = true
+  "fixed point reduce should work with BigDecimal" in {
     iotesters.Driver.execute(Array.empty[String], () => new FixedPointReduce(FixedPoint(70.W, 60.BP), 10)) { c =>
-      new FixedPointReduceTester(c)
+      new FixedPointReduceTester(c, useBigDecimal)
     } should be (true)
+  }
+
+  "fixed point reduce should fail without BigDecimal" in {
+    (the[ChiselException] thrownBy {
+      iotesters.Driver.execute(Array.empty[String], () => new FixedPointReduce(FixedPoint(70.W, 60.BP), 10)) { c =>
+        new FixedPointReduceTester(c, !useBigDecimal)
+      }
+    }).getMessage should include ("is too big, precision lost with > 53 bits")
   }
 
   "with enough bits fixed point pseudo divide should work" in {
