@@ -19,11 +19,13 @@ object copyVsimFiles {
     val vpiHFilePath = Paths.get(destinationDirPath + "/vpi.h")
     val vpiCppFilePath = Paths.get(destinationDirPath + "/vpi.cpp")
     val vpiRegFilePath = Paths.get(destinationDirPath + "/vpi_register.cpp")
+    val utilsFdoFilePath = Paths.get(destinationDirPath + "/runme.fdo")
     try {
       Files.createFile(simApiHFilePath)
       Files.createFile(vpiHFilePath)
       Files.createFile(vpiCppFilePath)
       Files.createFile(vpiRegFilePath)
+      Files.createFile(utilsFdoFilePath)
     } catch {
       case _: FileAlreadyExistsException =>
         System.out.format("")
@@ -35,6 +37,7 @@ object copyVsimFiles {
     Files.copy(getClass.getResourceAsStream("/vpi.h"), vpiHFilePath, REPLACE_EXISTING)
     Files.copy(getClass.getResourceAsStream("/vpi.cpp"), vpiCppFilePath, REPLACE_EXISTING)
     Files.copy(getClass.getResourceAsStream("/vpi_register.cpp"), vpiRegFilePath, REPLACE_EXISTING)
+    Files.copy(getClass.getResourceAsStream("/utils.fdo"), utilsFdoFilePath, REPLACE_EXISTING)
   }
 }
 
@@ -57,8 +60,9 @@ object genVSIMVerilogHarness {
     }
     val (inputs, outputs) = fixnames(getPorts(dut, "_"))
 
+    writer write "`timescale 1ns / 1ps\n" // save many troubles with external libs and blackboxes
     writer write "module test;\n"
-    writer write "  reg clock = 1;\n"
+    writer write "  reg clock = 0;\n"
     writer write "  reg reset = 1;\n"
     inputs foreach { case (node, name) =>
       if ("clock" != name && "reset" != name) {
@@ -96,7 +100,7 @@ object genVSIMVerilogHarness {
     writer write "    end\n"
     writer write "  end\n\n"
 
-    writer write "  always @(posedge clock) begin\n"
+    writer write "  always @(negedge clock) begin\n"
     writer write "    if (vcdfile && reset) begin\n"
     writer write "      $dumpoff;\n"
     writer write "      vcdon = 0;\n"
@@ -166,17 +170,17 @@ private[iotesters] object setupVSIMBackend {
         } else {
           val vcdFile = if(optionsManager.testerOptions.generateVcdOutput != "off") Seq(s"+vcdfile=${circuit.name}.vcd") else Seq()
           val trace = if(optionsManager.testerOptions.isVerbose) Seq("-trace_foreign", "1") else Seq()
-          val flags = if (optionsManager.testerOptions.moreVsimFlags contains "-gui" ) {
+          // do not override any user-provided explicit mode of execution 
+          val flags = if (Seq("-gui", "-c", "-batch").exists(p => optionsManager.testerOptions.moreVsimFlags.contains(p)) ) {
             optionsManager.testerOptions.moreVsimFlags
           } else {
-            Seq("-c") ++ optionsManager.testerOptions.moreVsimFlags
+            Seq("-batch") ++ optionsManager.testerOptions.moreVsimFlags
           }
           
           Seq(new File(dir, circuit.name).toString) ++ 
           vcdFile ++ trace ++ flags ++
-          Seq("--") ++ optionsManager.testerOptions.moreVsimDoCmds
+          Seq("--") ++ optionsManager.testerOptions.moreVsimDoCmds.map(e => s"\\n$e") // automaticcaly add linebreaks between commands
         }
-        println(command)
 
         (dut, new VSIMBackend(dut, command))
       case ChiselExecutionFailure(message) =>

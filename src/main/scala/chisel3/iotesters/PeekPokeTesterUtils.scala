@@ -253,28 +253,26 @@ private[iotesters] object verilogToVSIM extends EditableBuildCSimulatorCommand {
       Seq("vlib", "work", "&&") ++
       Seq("vlog") ++ vlogFlags ++ Seq("&&") ++
       // VSIM is unfortunately unable to run properly anywhere else than the folder where vlib folder was created
+      // To work around this issue we use a crafted bash file as wrapper for local vsim launch
       Seq("cat << EOF", ">", s"$topModule", "&&\n") ++
+      // The following bash logic is intended to separate command line arguments between vsim command line arguments and vsim tcl command
+      // VSIM command line arguments will most notably contain execution mode and vopt flags
+      // VSIM tcl commands can be very useful to pass setup commands such as "add waves -r /*" for gui usage
       Seq("cd \"\\$( dirname \"\\${BASH_SOURCE[0]}\" )\"\n",
-          "echo \"Args: \\$@\"\n",
           "sw=0\n",
+          "echo \"Additional do commands:\"\n",
           "for arg in \"\\$@\"; do\n",
-          "        if [[ \"\\$arg\" == \"--\" && \\$sw == 0 ]]; then\n",
-          "                sw=1\n",
-          "        elif [[ \\$sw == 0 ]]; then\n",
-          "                vsimArgs+=(\"\\$arg\")\n",
-          "        else\n",
-          "                printf \"%b \" \"\\$arg\" >>", s"$topModule.do", "\n",
-          "        fi\n",
+          "    if [[ \"\\$arg\" == \"--\" && \\$sw == 0 ]]; then\n",
+          "        sw=1\n",
+          "    elif [[ \\$sw == 0 ]]; then\n",
+          "        vsimArgs+=(\"\\$arg\")\n",
+          "    else\n",
+          "        printf \"%b \" \"\\$arg\" | tee -a runme.fdo\n", // using %b to take \n into account
+          "    fi\n",
           "done\n",
-          "echo \"\n\nrun -all\" >>", s"$topModule.do", "\n",
-          "echo \"vsimArgs: \\${vsimArgs[@]}\"\n",
-          "echo \"doCmds:\"\n",
-          "cat", s"$topModule.do", "\n",
-          "vsim", "-64", 
-          "\"\\${vsimArgs[@]}\"",
-          s"-pli ${topModule}.so", 
-          s"test", 
-          "-do", s"$topModule.do", 
+          "echo \"\"\n", // clear printf buffering 
+          "echo \"\nrun -all\" >> runme.fdo\n",
+          "vsim", "-64", "\"\\${vsimArgs[@]}\"", s"-pli ${topModule}.so", s"test", "-do", "runme.fdo", 
           "\nEOF\n") ++
       Seq("chmod", "u+x", s"$topModule") mkString " "
   }
