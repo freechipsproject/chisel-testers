@@ -36,6 +36,7 @@ jobs:
       - name: Generate SBT SHA1s
         id: gen-sbt-shas
         run: |
+          ls -la . chisel-iotesters
           (cd chisel-iotesters && openssl sha1 build.sbt project/build.properties project/*.sbt) > sbt.hashes
       - name: Cache SBT ivy cache
         id: cache-sbt-ivy-cache
@@ -132,4 +133,5 @@ jobs:
         id: build-test-iotesters
         run: |
           cd chisel-iotesters && sbt +test
-          ls -la ~ $HOME
+          chmod -R a+r .
+          ls -la . ~ $HOME
