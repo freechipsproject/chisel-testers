@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ucbbar/chisel3-tools
-      options: --user root --entrypoint /bin/bash
+      options: --user 1001 --entrypoint /bin/bash
     env:
       CHISEL3_REF: master
       FIRRTL_REF: master
@@ -23,12 +23,10 @@ jobs:
           git --version
           pwd
           echo "tilde: " ~ ", HOME: " $HOME
-          ls -lad ~ $HOME
-          ls -la ~ $HOME /root
-          echo "Link /root caches to HOME"
-          mkdir -p $HOME/.ivy2 $HOME/.sbt
-          ln -s $HOME/.ivy2 $HOME/.sbt /root
+          ls -lad $HOME
           ls -la $HOME /root
+          if [ `id -u` == "0" ]; then echo "Link /root caches to HOME"; mkdir -p $HOME/.ivy2 $HOME/.sbt; ln -s $HOME/.ivy2 $HOME/.sbt /root; fi
+          ls -la  /root $HOME .
       - name: checkout
         uses: actions/checkout@v2
         with:
@@ -133,5 +131,5 @@ jobs:
         id: build-test-iotesters
         run: |
           cd chisel-iotesters && sbt +test
-          chmod -R a+r .
-          ls -la . ~ $HOME
+          chmod -R a+r . $HOME/.sbt $HOME/.ivy2
+          ls -la . $HOME
