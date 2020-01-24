@@ -22,7 +22,9 @@ jobs:
           whoami
           git --version
           pwd
-          ls -la ~
+          echo "tilde: " ~ ", HOME: " $HOME
+          ls -lad ~ $HOME
+          ls -la ~ $HOME
       - name: checkout
         uses: actions/checkout@v2
         with:
@@ -126,3 +128,4 @@ jobs:
         id: build-test-iotesters
         run: |
           cd chisel-iotesters && sbt +test
+          ls -la ~ $HOME
