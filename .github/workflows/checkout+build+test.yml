@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ucbbar/chisel3-tools
-      options: --user 1001 --entrypoint /bin/bash
+      options: --user root --entrypoint /bin/bash
     env:
       CHISEL3_REF: master
       FIRRTL_REF: master
