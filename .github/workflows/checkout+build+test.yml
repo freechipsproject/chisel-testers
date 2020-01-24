@@ -12,6 +12,8 @@ jobs:
     env:
       CHISEL3_REF: master
       FIRRTL_REF: master
+      FIRRTL_INTERPRETER_REF: master
+      TREADLE_REF: master
 
     steps:
       - name: id
@@ -41,6 +43,8 @@ jobs:
         run: |
           echo ::set-env name=FIRRTL_SHA::$(git ls-remote https://github.com/freechipsproject/firrtl.git | grep $FIRRTL_REF | cut -c1-7)
           echo ::set-env name=CHISEL3_SHA::$(git ls-remote https://github.com/freechipsproject/chisel3.git | grep $CHISEL3_REF | cut -c1-7)
+          echo ::set-env name=FIRRTL_INTERPRETER_SHA::$(git ls-remote https://github.com/freechipsproject/firrtl-interpreter.git | grep $FIRRTL_INTERPRETER_REF | cut -c1-7)
+          echo ::set-env name=TREADLE_SHA::$(git ls-remote https://github.com/freechipsproject/treadle.git | grep $TREADLE_REF | cut -c1-7)
       - name: Cache firrtl 2.11
         id: cache-firrtl-2_11
         uses: actions/cache@v1
@@ -59,6 +63,42 @@ jobs:
         run: |
           git clone --depth=1 -b $FIRRTL_REF https://github.com/freechipsproject/firrtl.git
           cd firrtl && sbt +publishLocal
+      - name: Cache firrtl-interpreter 2.11
+        id: cache-firrtl-interpreter-2_11
+        uses: actions/cache@v1
+        with:
+          path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.11
+          key: ${{ runner.os }}-sbt-firrtl-interpreter-${{ env.FIRRTL_INTERPRETER_SHA }}
+      - name: Cache firrtl-interpreter 2.12
+        id: cache-firrtl-interpreter-2_12
+        uses: actions/cache@v1
+        with:
+          path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.12
+          key: ${{ runner.os }}-sbt-firrtl-interpreter-${{ env.FIRRTL_INTERPRETER_SHA }}
+      - name: Build FIRRTL-interpreter
+        id: build-firrtl-interpreter
+        if: steps.cache-firrtl-interpreter-2_11.outputs.cache-hit != 'true' || steps.cache-firrtl-interpreter-2_12.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth=1 -b $FIRRTL_INTERPRETER_REF https://github.com/freechipsproject/firrtl-interpreter.git
+          cd firrtl-interpreter && sbt +publishLocal
+      - name: Cache treadle 2.11
+        id: cache-treadle-2_11
+        uses: actions/cache@v1
+        with:
+          path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.11
+          key: ${{ runner.os }}-sbt-treadle-${{ env.TREADLE_SHA }}
+      - name: Cache treadle 2.12
+        id: cache-treadle-2_12
+        uses: actions/cache@v1
+        with:
+          path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.12
+          key: ${{ runner.os }}-sbt-treadle-${{ env.TREADLE_SHA }}
+      - name: Build treadle
+        id: build-treadle
+        if: steps.cache-treadle-2_11.outputs.cache-hit != 'true' || steps.cache-treadle-2_12.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth=1 -b $TREADLE_REF https://github.com/freechipsproject/treadle.git
+          cd treadle && sbt +publishLocal
       - name: Cache chisel3 2.11
         id: cache-chisel3-2_11
         uses: actions/cache@v1
