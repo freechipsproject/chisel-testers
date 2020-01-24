@@ -22,24 +22,29 @@ jobs:
           whoami
           git --version
           pwd
+          ls -la ~
       - name: checkout
         uses: actions/checkout@v2
         with:
           path: chisel-iotesters
+      - name: Generate SBT SHA1s
+        id: gen-sbt-shas
+        run: |
+          (cd chisel-iotesters && openssl sha1 build.sbt project/build.properties project/*.sbt) > sbt.hashes
       - name: Cache SBT ivy cache
         id: cache-sbt-ivy-cache
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/cache
-          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}-${{ hashFiles('**/project/build.properties') }}-${{ hashFiles('**/project/*.sbt') }}
+          key: ${{ runner.os }}-sbt-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT
         id: cache-sbt
         uses: actions/cache@v1
         with:
           path: ~/.sbt
-          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}-${{ hashFiles('**/project/build.properties') }}-${{ hashFiles('**/project/*.sbt') }}
+          key: ${{ runner.os }}-sbt-${{ hashFiles('sbt.hashes') }}
       - name: Generate dependend SHA1s
-        id: gen-shas
+        id: gen-independent-shas
         run: |
           echo ::set-env name=FIRRTL_SHA::$(git ls-remote https://github.com/freechipsproject/firrtl.git | grep $FIRRTL_REF | cut -c1-7)
           echo ::set-env name=CHISEL3_SHA::$(git ls-remote https://github.com/freechipsproject/chisel3.git | grep $CHISEL3_REF | cut -c1-7)
