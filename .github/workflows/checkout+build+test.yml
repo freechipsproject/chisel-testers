@@ -24,7 +24,11 @@ jobs:
           pwd
           echo "tilde: " ~ ", HOME: " $HOME
           ls -lad ~ $HOME
-          ls -la ~ $HOME
+          ls -la ~ $HOME /root
+          echo "Link /root caches to HOME"
+          mkdir -p $HOME/.ivy2 $HOME/.sbt
+          ln -s $HOME/.ivy2 $HOME/.sbt /root
+          ls -la $HOME /root
       - name: checkout
         uses: actions/checkout@v2
         with:
