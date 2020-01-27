@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: id
         run: |
-          if [ `id -u` == "0" ]; then echo ::set-env name=CONTAINER_HOME::$(echo /root); else echo ::set-env name=CONTAINER_HOME::$(echo /home/github); fi
+          if [ "`id -u`" == "0" ]; then echo ::set-env name=CONTAINER_HOME::$(echo /root); else echo ::set-env name=CONTAINER_HOME::$(echo /home/github); fi
           printenv
           whoami
           git --version
@@ -27,8 +27,8 @@ jobs:
           ls -lad $HOME
           ls -la $HOME $CONTAINER_HOME
           echo "Link $CONTAINER_HOME caches to HOME"
-          mkdir -p $HOME/.ivy2 $HOME/.sbt
-          ln -s $HOME/.ivy2 $HOME/.sbt $CONTAINER_HOME
+          mkdir -p $HOME/.cache $HOME/.ivy2 $HOME/.sbt
+          ln -s $HOME/.cache $HOME/.ivy2 $HOME/.sbt $CONTAINER_HOME
           ls -la $HOME . $CONTAINER_HOME
       - name: checkout
         uses: actions/checkout@v2
@@ -39,6 +39,12 @@ jobs:
         run: |
           ls -la . chisel-iotesters
           (cd chisel-iotesters && openssl sha1 build.sbt project/build.properties project/*.sbt) > sbt.hashes
+      - name: Cache SBT coursier cache
+        id: cache-sbt-coursier-cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/coursier
+          key: ${{ runner.os }}-sbt-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT ivy cache
         id: cache-sbt-ivy-cache
         uses: actions/cache@v1
