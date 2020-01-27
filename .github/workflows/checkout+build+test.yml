@@ -7,8 +7,8 @@ jobs:
     name: checkout, build, and test
     runs-on: ubuntu-latest
     container:
-      image: ucbbar/chisel3-tools
-      options: --user root --entrypoint /bin/bash
+      image: ucbbar/chisel3-tools.test
+      options: --user github --entrypoint /bin/bash
     env:
       CHISEL3_REF: master
       FIRRTL_REF: master
@@ -18,15 +18,18 @@ jobs:
     steps:
       - name: id
         run: |
+          if [ `id -u` == "0" ]; then echo ::set-env name=CONTAINER_HOME::$(echo /root); else echo ::set-env name=CONTAINER_HOME::$(echo /home/github); fi
           printenv
           whoami
           git --version
           pwd
           echo "tilde: " ~ ", HOME: " $HOME
           ls -lad $HOME
-          ls -la $HOME /root
-          if [ `id -u` == "0" ]; then echo "Link /root caches to HOME"; mkdir -p $HOME/.ivy2 $HOME/.sbt; ln -s $HOME/.ivy2 $HOME/.sbt /root; fi
-          ls -la  /root $HOME .
+          ls -la $HOME $CONTAINER_HOME
+          echo "Link $CONTAINER_HOME caches to HOME"
+          mkdir -p $HOME/.ivy2 $HOME/.sbt
+          ln -s $HOME/.ivy2 $HOME/.sbt $CONTAINER_HOME
+          ls -la $HOME . $CONTAINER_HOME
       - name: checkout
         uses: actions/checkout@v2
         with:
