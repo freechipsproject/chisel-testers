@@ -14,6 +14,7 @@ jobs:
       FIRRTL_REF: master
       FIRRTL_INTERPRETER_REF: master
       TREADLE_REF: master
+      HOST_HOME: /home/runner/work/_temp/_github_home
 
     steps:
       - name: id
@@ -43,19 +44,19 @@ jobs:
         id: cache-sbt-coursier-cache
         uses: actions/cache@v1
         with:
-          path: ~/.cache/coursier
+          path: ${{ env.HOST_HOME }}/.cache/coursier
           key: ${{ runner.os }}-sbt-coursier-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT ivy cache
         id: cache-sbt-ivy-cache
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/cache
+          path: ${{ env.HOST_HOME }}/.ivy2/cache
           key: ${{ runner.os }}-sbt-ivy-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT
         id: cache-sbt
         uses: actions/cache@v1
         with:
-          path: ~/.sbt
+          path: ${{ env.HOST_HOME }}/.sbt
           key: ${{ runner.os }}-sbt-sbt-${{ hashFiles('sbt.hashes') }}
       - name: Generate dependend SHA1s
         id: gen-independent-shas
@@ -68,13 +69,13 @@ jobs:
         id: cache-firrtl-2_11
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.11
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/firrtl_2.11
           key: ${{ runner.os }}-sbt-firrtl_2.11-${{ env.FIRRTL_SHA }}
       - name: Cache firrtl 2.12
         id: cache-firrtl-2_12
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.12
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/firrtl_2.12
           key: ${{ runner.os }}-sbt-firrtl_2.12-${{ env.FIRRTL_SHA }}
       - name: Build FIRRTL
         id: build-firrtl
@@ -86,13 +87,13 @@ jobs:
         id: cache-firrtl-interpreter-2_11
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.11
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.11
           key: ${{ runner.os }}-sbt-firrtl-interpreter_2.11-${{ env.FIRRTL_INTERPRETER_SHA }}
       - name: Cache firrtl-interpreter 2.12
         id: cache-firrtl-interpreter-2_12
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.12
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.12
           key: ${{ runner.os }}-sbt-firrtl-interpreter_2.12-${{ env.FIRRTL_INTERPRETER_SHA }}
       - name: Build FIRRTL-interpreter
         id: build-firrtl-interpreter
@@ -104,13 +105,13 @@ jobs:
         id: cache-treadle-2_11
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.11
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/treadle_2.11
           key: ${{ runner.os }}-sbt-treadle_2.11-${{ env.TREADLE_SHA }}
       - name: Cache treadle 2.12
         id: cache-treadle-2_12
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.12
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/treadle_2.12
           key: ${{ runner.os }}-sbt-treadle_2.12-${{ env.TREADLE_SHA }}
       - name: Build treadle
         id: build-treadle
@@ -122,13 +123,13 @@ jobs:
         id: cache-chisel3-2_11
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.11
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/chisel3_2.11
           key: ${{ runner.os }}-sbt-chisel3_2.11-${{ env.CHISEL3_SHA }}
       - name: Cache chisel3 2.12
         id: cache-chisel3-2_12
         uses: actions/cache@v1
         with:
-          path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.12
+          path: ${{ env.HOST_HOME }}/.ivy2/local/edu.berkeley.cs/chisel3_2.12
           key: ${{ runner.os }}-sbt-chisel3_2.12-${{ env.CHISEL3_SHA }}
       - name: Build chisel3
         id: build-chisel3
