@@ -44,19 +44,19 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cache/coursier
-          key: ${{ runner.os }}-sbt-${{ hashFiles('sbt.hashes') }}
+          key: ${{ runner.os }}-sbt-coursier-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT ivy cache
         id: cache-sbt-ivy-cache
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/cache
-          key: ${{ runner.os }}-sbt-${{ hashFiles('sbt.hashes') }}
+          key: ${{ runner.os }}-sbt-ivy-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT
         id: cache-sbt
         uses: actions/cache@v1
         with:
           path: ~/.sbt
-          key: ${{ runner.os }}-sbt-${{ hashFiles('sbt.hashes') }}
+          key: ${{ runner.os }}-sbt-sbt-${{ hashFiles('sbt.hashes') }}
       - name: Generate dependend SHA1s
         id: gen-independent-shas
         run: |
@@ -69,13 +69,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.11
-          key: ${{ runner.os }}-sbt-firrtl-${{ env.FIRRTL_SHA }}
+          key: ${{ runner.os }}-sbt-firrtl_2.11-${{ env.FIRRTL_SHA }}
       - name: Cache firrtl 2.12
         id: cache-firrtl-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.12
-          key: ${{ runner.os }}-sbt-firrtl-${{ env.FIRRTL_SHA }}
+          key: ${{ runner.os }}-sbt-firrtl_2.12-${{ env.FIRRTL_SHA }}
       - name: Build FIRRTL
         id: build-firrtl
         if: steps.cache-firrtl-2_11.outputs.cache-hit != 'true' || steps.cache-firrtl-2_12.outputs.cache-hit != 'true'
@@ -87,13 +87,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.11
-          key: ${{ runner.os }}-sbt-firrtl-interpreter-${{ env.FIRRTL_INTERPRETER_SHA }}
+          key: ${{ runner.os }}-sbt-firrtl-interpreter_2.11-${{ env.FIRRTL_INTERPRETER_SHA }}
       - name: Cache firrtl-interpreter 2.12
         id: cache-firrtl-interpreter-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.12
-          key: ${{ runner.os }}-sbt-firrtl-interpreter-${{ env.FIRRTL_INTERPRETER_SHA }}
+          key: ${{ runner.os }}-sbt-firrtl-interpreter_2.12-${{ env.FIRRTL_INTERPRETER_SHA }}
       - name: Build FIRRTL-interpreter
         id: build-firrtl-interpreter
         if: steps.cache-firrtl-interpreter-2_11.outputs.cache-hit != 'true' || steps.cache-firrtl-interpreter-2_12.outputs.cache-hit != 'true'
@@ -105,13 +105,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.11
-          key: ${{ runner.os }}-sbt-treadle-${{ env.TREADLE_SHA }}
+          key: ${{ runner.os }}-sbt-treadle_2.11-${{ env.TREADLE_SHA }}
       - name: Cache treadle 2.12
         id: cache-treadle-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.12
-          key: ${{ runner.os }}-sbt-treadle-${{ env.TREADLE_SHA }}
+          key: ${{ runner.os }}-sbt-treadle_2.12-${{ env.TREADLE_SHA }}
       - name: Build treadle
         id: build-treadle
         if: steps.cache-treadle-2_11.outputs.cache-hit != 'true' || steps.cache-treadle-2_12.outputs.cache-hit != 'true'
@@ -123,13 +123,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.11
-          key: ${{ runner.os }}-sbt-chisel3-${{ env.CHISEL3_SHA }}
+          key: ${{ runner.os }}-sbt-chisel3_2.11-${{ env.CHISEL3_SHA }}
       - name: Cache chisel3 2.12
         id: cache-chisel3-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.12
-          key: ${{ runner.os }}-sbt-chisel3-${{ env.CHISEL3_SHA }}
+          key: ${{ runner.os }}-sbt-chisel3_2.12-${{ env.CHISEL3_SHA }}
       - name: Build chisel3
         id: build-chisel3
         if: steps.cache-chisel3-2_11.outputs.cache-hit != 'true' || steps.cache-chisel3-2_12.outputs.cache-hit != 'true'
