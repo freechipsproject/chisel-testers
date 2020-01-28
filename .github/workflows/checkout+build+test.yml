@@ -143,3 +143,4 @@ jobs:
           cd chisel-iotesters && sbt +test
           chmod -R a+r . $HOME/.sbt $HOME/.ivy2
           ls -la . $HOME
+          ls -laR $HOME/.ivy2
