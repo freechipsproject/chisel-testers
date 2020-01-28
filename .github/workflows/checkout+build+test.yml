@@ -19,7 +19,8 @@ jobs:
     steps:
       - name: id
         run: |
-          if [ "`id -u`" == "0" ]; then echo ::set-env name=CONTAINER_HOME::$(echo /root); else echo ::set-env name=CONTAINER_HOME::$(echo /home/github); fi
+          uid=$(id -u)
+          if [ "$uid" = "0" ]; then echo ::set-env name=CONTAINER_HOME::$(echo /root); else echo ::set-env name=CONTAINER_HOME::$(echo /home/github); fi
           printenv
           whoami
           git --version
