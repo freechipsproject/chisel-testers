@@ -25,11 +25,13 @@ jobs:
           git --version
           pwd
           echo "tilde: " ~ ", HOME: " $HOME
-          ls -lad $HOME
+          ls -lad $HOME $CONTAINER_HOME
           ls -la $HOME $CONTAINER_HOME
           echo "Link $CONTAINER_HOME caches to HOME"
           mkdir -p $HOME/.cache $HOME/.ivy2 $HOME/.sbt
+          echo ln -s $HOME/.cache $HOME/.ivy2 $HOME/.sbt $CONTAINER_HOME
           ln -s $HOME/.cache $HOME/.ivy2 $HOME/.sbt $CONTAINER_HOME
+          echo ls -la $HOME . $CONTAINER_HOME
           ls -la $HOME . $CONTAINER_HOME
       - name: checkout
         uses: actions/checkout@v2
