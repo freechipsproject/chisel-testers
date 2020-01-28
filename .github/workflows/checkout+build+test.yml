@@ -7,14 +7,13 @@ jobs:
     name: checkout, build, and test
     runs-on: ubuntu-latest
     container:
-      image: ucbbar/chisel3-tools.test
+      image: ucbbar/chisel3-tools
       options: --user github --entrypoint /bin/bash
     env:
       CHISEL3_REF: master
       FIRRTL_REF: master
       FIRRTL_INTERPRETER_REF: master
       TREADLE_REF: master
-      HOST_HOME: /home/runner/work/_temp/_github_home
       CONTAINER_HOME: /home/github
 
     steps:
