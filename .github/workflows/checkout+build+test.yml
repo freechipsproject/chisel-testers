@@ -15,12 +15,13 @@ jobs:
       FIRRTL_INTERPRETER_REF: master
       TREADLE_REF: master
       HOST_HOME: /home/runner/work/_temp/_github_home
+      CONTAINER_HOME: /home/github
 
     steps:
       - name: id
         run: |
-          uid=$(id -u)
-          if [ "$uid" = "0" ]; then echo ::set-env name=CONTAINER_HOME::$(echo /root); else echo ::set-env name=CONTAINER_HOME::$(echo /home/github); fi
+#          uid=$(id -u)
+#          if [ "$uid" = "0" ]; then echo ::set-env name=CONTAINER_HOME::$(echo /root); else echo ::set-env name=CONTAINER_HOME::$(echo /home/github); fi
           printenv
           whoami
           git --version
