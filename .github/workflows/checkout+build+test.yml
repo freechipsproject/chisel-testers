@@ -26,10 +26,8 @@ jobs:
           whoami
           git --version
           pwd
-          echo "tilde: " ~ ", HOME: " $HOME
-          ls -lad $HOME $CONTAINER_HOME
-          ls -la $HOME $CONTAINER_HOME
           echo "Link $CONTAINER_HOME caches to $HOME"
+          echo mkdir -p $HOME/.cache $HOME/.ivy2 $HOME/.sbt
           mkdir -p $HOME/.cache $HOME/.ivy2 $HOME/.sbt
           echo ln -s $HOME/.cache $HOME/.ivy2 $HOME/.sbt $CONTAINER_HOME
           ln -s $HOME/.cache $HOME/.ivy2 $HOME/.sbt $CONTAINER_HOME
@@ -49,13 +47,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cache/coursier
-          key: ${{ runner.os }}-hh-sbt-coursier-${{ hashFiles('sbt.hashes') }}
+          key: ${{ runner.os }}-v1-sbt-coursier-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT ivy cache
         id: cache-sbt-ivy-cache
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/cache
-          key: ${{ runner.os }}-hh-sbt-ivy-${{ hashFiles('sbt.hashes') }}
+          key: ${{ runner.os }}-v1-sbt-ivy-${{ hashFiles('sbt.hashes') }}
       - name: Cache SBT
         id: cache-sbt
         uses: actions/cache@v1
@@ -74,13 +72,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.11
-          key: ${{ runner.os }}-hh-sbt-firrtl_2.11-${{ env.FIRRTL_SHA }}
+          key: ${{ runner.os }}-v1-sbt-firrtl_2.11-${{ env.FIRRTL_SHA }}
       - name: Cache firrtl 2.12
         id: cache-firrtl-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl_2.12
-          key: ${{ runner.os }}-hh-sbt-firrtl_2.12-${{ env.FIRRTL_SHA }}
+          key: ${{ runner.os }}-v1-sbt-firrtl_2.12-${{ env.FIRRTL_SHA }}
       - name: Build FIRRTL
         id: build-firrtl
         if: steps.cache-firrtl-2_11.outputs.cache-hit != 'true' || steps.cache-firrtl-2_12.outputs.cache-hit != 'true'
@@ -92,13 +90,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.11
-          key: ${{ runner.os }}-hh-sbt-firrtl-interpreter_2.11-${{ env.FIRRTL_INTERPRETER_SHA }}
+          key: ${{ runner.os }}-v1-sbt-firrtl-interpreter_2.11-${{ env.FIRRTL_INTERPRETER_SHA }}-${{ env.FIRRTL_SHA }}
       - name: Cache firrtl-interpreter 2.12
         id: cache-firrtl-interpreter-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/firrtl-interpreter_2.12
-          key: ${{ runner.os }}-hh-sbt-firrtl-interpreter_2.12-${{ env.FIRRTL_INTERPRETER_SHA }}
+          key: ${{ runner.os }}-hh-v1-firrtl-interpreter_2.12-${{ env.FIRRTL_INTERPRETER_SHA }}-${{ env.FIRRTL_SHA }}
       - name: Build FIRRTL-interpreter
         id: build-firrtl-interpreter
         if: steps.cache-firrtl-interpreter-2_11.outputs.cache-hit != 'true' || steps.cache-firrtl-interpreter-2_12.outputs.cache-hit != 'true'
@@ -110,13 +108,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.11
-          key: ${{ runner.os }}-hh-sbt-treadle_2.11-${{ env.TREADLE_SHA }}
+          key: ${{ runner.os }}-v1-sbt-treadle_2.11-${{ env.TREADLE_SHA }}-${{ env.FIRRTL_SHA }}
       - name: Cache treadle 2.12
         id: cache-treadle-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/treadle_2.12
-          key: ${{ runner.os }}-hh-sbt-treadle_2.12-${{ env.TREADLE_SHA }}
+          key: ${{ runner.os }}-v1-sbt-treadle_2.12-${{ env.TREADLE_SHA }}-${{ env.FIRRTL_SHA }}
       - name: Build treadle
         id: build-treadle
         if: steps.cache-treadle-2_11.outputs.cache-hit != 'true' || steps.cache-treadle-2_12.outputs.cache-hit != 'true'
@@ -128,13 +126,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.11
-          key: ${{ runner.os }}-hh-sbt-chisel3_2.11-${{ env.CHISEL3_SHA }}
+          key: ${{ runner.os }}-v1-sbt-chisel3_2.11-${{ env.CHISEL3_SHA }}-${{ env.FIRRTL_SHA }}
       - name: Cache chisel3 2.12
         id: cache-chisel3-2_12
         uses: actions/cache@v1
         with:
           path: ~/.ivy2/local/edu.berkeley.cs/chisel3_2.12
-          key: ${{ runner.os }}-hh-sbt-chisel3_2.12-${{ env.CHISEL3_SHA }}
+          key: ${{ runner.os }}-v1-sbt-chisel3_2.12-${{ env.CHISEL3_SHA }}-${{ env.FIRRTL_SHA }}
       - name: Build chisel3
         id: build-chisel3
         if: steps.cache-chisel3-2_11.outputs.cache-hit != 'true' || steps.cache-chisel3-2_12.outputs.cache-hit != 'true'
@@ -145,6 +143,4 @@ jobs:
         id: build-test-iotesters
         run: |
           cd chisel-iotesters && sbt +test
-          chmod -R a+r . $HOME/.sbt $HOME/.ivy2
-          ls -la . $HOME
           ls -laR $HOME/.ivy2
