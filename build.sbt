@@ -59,9 +59,9 @@ libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").
 // when compiling tests under 2.11.12
 // An explicit dependency on junit seems to alleviate this.
 libraryDependencies ++= Seq(
-  "junit" % "junit" % "4.12",
+  "junit" % "junit" % "4.13",
   "org.scalatest" %% "scalatest" % "3.0.8",
-  "org.scalacheck" %% "scalacheck" % "1.14.0",
+  "org.scalacheck" %% "scalacheck" % "1.14.3",
   "com.github.scopt" %% "scopt" % "3.7.1"
 )
     
