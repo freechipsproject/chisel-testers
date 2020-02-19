@@ -2,7 +2,7 @@
 
 package chisel3.iotesters
 
-import chisel3.{ChiselExecutionSuccess, Element, Mem, MultiIOModule, assert}
+import chisel3.{ChiselExecutionSuccess, Element, Mem, MemBase, MultiIOModule, SyncReadMem, assert}
 import chisel3.internal.InstanceId
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess, LowForm}
 import treadle.TreadleTester
@@ -30,7 +30,7 @@ extends Backend(_seed = System.currentTimeMillis()) {
         treadleTester.poke(name, value)
         if (verbose) logger info s"  POKE $name <- ${bigIntToStr(value, base)}"
 
-      case mem: Mem[_] =>
+      case mem: MemBase[_] =>
         val memoryName = mem.pathName.split("""\.""").tail.mkString(".")
         treadleTester.pokeMemory(memoryName, off.getOrElse(0), value)
         if (verbose) logger info s"  POKE MEMORY $memoryName <- ${bigIntToStr(value, base)}"
@@ -53,7 +53,7 @@ extends Backend(_seed = System.currentTimeMillis()) {
         if (verbose) logger info s"  PEEK $name -> ${bigIntToStr(result, base)}"
         result
 
-      case mem: Mem[_] =>
+      case mem: MemBase[_] =>
         val memoryName = mem.pathName.split("""\.""").tail.mkString(".")
 
         treadleTester.peekMemory(memoryName, off.getOrElse(0))
