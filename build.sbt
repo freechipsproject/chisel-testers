@@ -35,7 +35,7 @@ def javacOptionsVersion(scalaVersion: String): Seq[String] = {
 }
 
 organization := "edu.berkeley.cs"
-version := "1.4-20200205-SNAPSHOT"
+version := "1.4-SNAPSHOT"
 name := "chisel-iotesters"
 
 scalaVersion := "2.12.6"
@@ -45,10 +45,10 @@ crossScalaVersions := Seq("2.12.6", "2.11.12")
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.3-20200205-SNAPSHOT",
-  "firrtl" -> "1.3-20200205-SNAPSHOT",
-  "firrtl-interpreter" -> "1.3-20200205-SNAPSHOT",
-  "treadle" -> "1.2-20200205-SNAPSHOT"
+  "chisel3" -> "3.3-SNAPSHOT",
+  "firrtl" -> "1.3-SNAPSHOT",
+  "firrtl-interpreter" -> "1.3-SNAPSHOT",
+  "treadle" -> "1.2-SNAPSHOT"
   )
 
 libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").map { dep: String =>
@@ -59,9 +59,9 @@ libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").
 // when compiling tests under 2.11.12
 // An explicit dependency on junit seems to alleviate this.
 libraryDependencies ++= Seq(
-  "junit" % "junit" % "4.12",
+  "junit" % "junit" % "4.13",
   "org.scalatest" %% "scalatest" % "3.0.8",
-  "org.scalacheck" %% "scalacheck" % "1.14.0",
+  "org.scalacheck" %% "scalacheck" % "1.14.3",
   "com.github.scopt" %% "scopt" % "3.7.1"
 )
     

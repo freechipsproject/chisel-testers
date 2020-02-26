@@ -240,6 +240,100 @@ private[iotesters] object verilogToIVL extends EditableBuildCSimulatorCommand {
   }
 }
 
+private[iotesters] object verilogToVSIM extends EditableBuildCSimulatorCommand {
+  val prefix = "vsim-command-edit"
+  def composeCommand(
+                      topModule: String,
+                      dir: java.io.File,
+                      vlogFlags: Seq[String],
+                      cFlags: Seq[String]
+                    ): String = {
+    Seq("cd", dir.toString, "&&") ++
+      Seq("g++") ++ cFlags ++ Seq("vpi.cpp", "vpi_register.cpp", "&&") ++
+      Seq("vlib", "work", "&&") ++
+      Seq("vlog") ++ vlogFlags ++ Seq("&&") ++
+      // VSIM is unfortunately unable to run properly anywhere else than the folder where vlib folder was created
+      // To work around this issue we use a crafted bash file as wrapper for local vsim launch
+      Seq("cat << EOF", ">", s"$topModule", "&&\n") ++
+      // The following bash logic is intended to separate command line arguments between vsim command line arguments and vsim tcl command
+      // VSIM command line arguments will most notably contain execution mode and vopt flags
+      // VSIM tcl commands can be very useful to pass setup commands such as "add waves -r /*" for gui usage
+      Seq("cd \"\\$( dirname \"\\${BASH_SOURCE[0]}\" )\"\n",
+          "sw=0\n",
+          "echo \"Additional do commands:\"\n",
+          "for arg in \"\\$@\"; do\n",
+          "    if [[ \"\\$arg\" == \"--\" && \\$sw == 0 ]]; then\n",
+          "        sw=1\n",
+          "    elif [[ \\$sw == 0 ]]; then\n",
+          "        vsimArgs+=(\"\\$arg\")\n",
+          "    else\n",
+          "        printf \"%b \" \"\\$arg\" | tee -a runme.fdo\n", // using %b to take \n into account
+          "    fi\n",
+          "done\n",
+          "echo \"\"\n", // clear printf buffering 
+          "echo \"\nrun -all\" >> runme.fdo\n",
+          "vsim", "-64", "\"\\${vsimArgs[@]}\"", s"-pli ${topModule}.so", s"test", "-do", "runme.fdo", 
+          "\nEOF\n") ++
+      Seq("chmod", "u+x", s"$topModule") mkString " "
+  }
+
+  def composeFlags(
+               topModule: String,
+               dir: java.io.File,
+               moreVlogFlags: Seq[String] = Seq.empty[String],
+               moreVsimCFlags: Seq[String] = Seq.empty[String]): (Seq[String], Seq[String]) = {
+
+    val vlogFlags = Seq(
+      "+define+CLOCK_PERIOD=1"
+    ) ++ moreVlogFlags
+    
+    
+    val cFlags = Seq(
+      s"-o $topModule.so",
+      "-I$QUESTA_INSTALL_DIR/include",
+      "-D__VSIM__",
+      s"-I$dir",
+      "-fPIC",
+      "-std=c++11",
+      "-lc",
+      "-m64",
+      "-lvpi",
+      "-lveriuser",
+      "-Bsymbolic",
+      "-shared"
+    ) ++ moreVsimCFlags
+
+    (vlogFlags, cFlags)
+  }
+
+  def constructCSimulatorCommand(
+    topModule: String,
+    dir: java.io.File,
+    harness:  java.io.File,
+    vlogFlags: Seq[String] = Seq.empty[String],
+    vsimCFlags: Seq[String] = Seq.empty[String]
+  ): String = {
+    val (cFlags, cCFlags) = composeFlags(topModule, dir,
+      vlogFlags ++ blackBoxVerilogList(dir) ++ Seq(s"$topModule.v", harness.toString),
+      vsimCFlags
+    )
+    composeCommand(topModule, dir, cFlags, cCFlags)
+  }
+
+  def apply(
+    topModule: String,
+    dir: java.io.File,
+    vsimHarness: java.io.File,
+    moreVlogFlags: Seq[String] = Seq.empty[String],
+    moreVsimCFlags: Seq[String] = Seq.empty[String],
+    editCommands: String = ""
+  ): ProcessBuilder = {
+    val finalCommand = editCSimulatorCommand(constructCSimulatorCommand(topModule, dir, vsimHarness, moreVlogFlags, moreVsimCFlags), editCommands)
+    println(s"$finalCommand")
+    Seq("bash", "-c", finalCommand)
+  }
+}
+
 private[iotesters] object verilogToVCS extends EditableBuildCSimulatorCommand {
   val prefix = "vcs-command-edit"
   override def composeCommand(
@@ -380,7 +474,7 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
 }
 
 private[iotesters] case class BackendException(b: String)
-  extends Exception(s"Unknown backend: $b. Backend should be firrtl, verilator, ivl, vcs, or glsim")
+  extends Exception(s"Unknown backend: $b. Backend should be firrtl, verilator, ivl, vsim, vcs, or glsim")
 
 private[iotesters] case class TestApplicationException(exitVal: Int, lastMessage: String)
   extends RuntimeException(lastMessage)
@@ -403,6 +497,9 @@ private[iotesters] object TesterProcess {
     kill(p.simApiInterface)
   }
   def kill(p: VerilatorBackend) {
+    kill(p.simApiInterface)
+  }
+  def kill(p: VSIMBackend) {
     kill(p.simApiInterface)
   }
   def kill(p: FirrtlTerpBackend) {

@@ -143,7 +143,12 @@ private:
   }
 
   virtual void finish() {
+#ifndef __VSIM__
     vpi_control(vpiFinish, 0);
+# else 
+  // vpiFinish makes vsim quit gui which is not convenient for waves 
+  vpi_control(vpiStop, 0);
+#endif
   }
 
   virtual void step() { }
