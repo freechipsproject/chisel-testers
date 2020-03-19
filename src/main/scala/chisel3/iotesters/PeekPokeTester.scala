@@ -7,7 +7,7 @@ import java.io.File
 import chisel3._
 import chisel3.{Aggregate, Element, MultiIOModule}
 import PeekPokeTester.extractElementBits
-import chisel3.experimental.FixedPoint
+import chisel3.experimental.{FixedPoint, Interval}
 import chisel3.internal.firrtl.KnownBinaryPoint
 
 import scala.collection.immutable.ListMap
@@ -194,6 +194,16 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     poke(signal, bigInt)
   }
 
+  def pokeInterval(signal: Interval, value: Double): Unit = {
+    val bigInt = value.I(signal.width, signal.binaryPoint).litValue()
+    poke(signal, bigInt)
+  }
+
+  def pokeIntervalBig(signal: Interval, value: BigDecimal): Unit = {
+    val bigInt = value.I(signal.width, signal.binaryPoint).litValue()
+    poke(signal, bigInt)
+  }
+
   /** Locate a specific bundle element, given a name path.
     * TODO: Handle Vecs
     *
@@ -268,6 +278,34 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     signal.binaryPoint match {
       case KnownBinaryPoint(bp) => FixedPoint.toBigDecimal(bigInt, bp)
       case _ => throw new Exception("Cannot peekFixedPoint with unknown binary point location")
+    }
+  }
+
+  /** Returns the value signal as a Double. Double may not be big enough to contain the
+    * value without precision loss. This situation will Throw ChiselException
+    * Consider using the more reliable [[peekIntervalBig]]
+    *
+    * @param signal
+    * @return
+    */
+  def peekInterval(signal: Interval): Double = {
+    val bigInt = peek(signal)
+    signal.binaryPoint match {
+      case KnownBinaryPoint(bp) => Interval.toDouble(bigInt, bp)
+      case _ => throw new Exception("Cannot peekInterval with unknown binary point location")
+    }
+  }
+
+  /** returns the value of signal as BigDecimal
+    *
+    * @param signal
+    * @return
+    */
+  def peekIntervalBig(signal: Interval): BigDecimal = {
+    val bigInt = peek(signal)
+    signal.binaryPoint match {
+      case KnownBinaryPoint(bp) => Interval.toBigDecimal(bigInt, bp)
+      case _ => throw new Exception("Cannot peekInterval with unknown binary point location")
     }
   }
 
@@ -366,6 +404,36 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     */
   def expectFixedPointBig(signal: FixedPoint, expected: BigDecimal, msg: => String, epsilon: BigDecimal = 0.01): Boolean = {
     val bigDecimal = peekFixedPointBig(signal)
+
+    expect((bigDecimal - expected).abs < epsilon, msg )
+  }
+
+  /** Uses a Double as the expected value
+    *
+    * Consider using the more reliable [[expectIntervalBig]]
+    *
+    * @param signal    signal
+    * @param expected  value expected
+    * @param msg       message on failure
+    * @param epsilon   error bounds on expected value are +/- epsilon
+    * @return
+    */
+  def expectInterval(signal: Interval, expected: Double, msg: => String, epsilon: Double = 0.01): Boolean = {
+    val double = peekInterval(signal)
+
+    expect((double - expected).abs < epsilon, msg )
+  }
+
+  /** Uses a BigDecimal as the expected value
+    *
+    * @param signal    signal
+    * @param expected  value expected
+    * @param msg       message on failure
+    * @param epsilon   error bounds on expected value are +/- epsilon
+    * @return
+    */
+  def expectIntervalBig(signal: Interval, expected: BigDecimal, msg: => String, epsilon: BigDecimal = 0.01): Boolean = {
+    val bigDecimal = peekIntervalBig(signal)
 
     expect((bigDecimal - expected).abs < epsilon, msg )
   }
