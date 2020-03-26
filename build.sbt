@@ -38,9 +38,9 @@ organization := "edu.berkeley.cs"
 version := "1.4-20200310-SNAPSHOT"
 name := "chisel-iotesters"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.10"
 
-crossScalaVersions := Seq("2.12.6", "2.11.12")
+crossScalaVersions := Seq("2.12.10", "2.11.12")
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
