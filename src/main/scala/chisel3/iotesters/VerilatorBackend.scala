@@ -6,7 +6,7 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 
 import chisel3._
-import chisel3.experimental.FixedPoint
+import chisel3.experimental.{FixedPoint, Interval}
 import chisel3.internal.InstanceId
 import firrtl._
 import firrtl.annotations.CircuitName
@@ -322,9 +322,9 @@ private[iotesters] class VerilatorBackend(dut: MultiIOModule,
     }
 
     val result = signal match {
-      case s: SInt =>
-        signConvert(bigIntU, s.getWidth)
+      case s: SInt       => signConvert(bigIntU, s.getWidth)
       case f: FixedPoint => signConvert(bigIntU, f.getWidth)
+      case i: Interval   => signConvert(bigIntU, i.getWidth)
       case _ => bigIntU
     }
     if (verbose) logger info s"  PEEK $path -> ${bigIntToStr(result, base)}"
