@@ -13,6 +13,7 @@ import chisel3.internal.firrtl.KnownBinaryPoint
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.language.implicitConversions
 
 // Provides a template to define tester transactions
 trait PeekPokeTests {
@@ -172,7 +173,7 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
   def peek(path: String) = backend.peek(path)
 
   def poke[T <: Element: Pokeable](signal: T, value: BigInt): Unit = {
-    if (!signal.isLit) backend.poke(signal, value, None)
+    if (!signal.isLit) backend.poke(signal, maskedBigInt(value, signal.widthOption.getOrElse(256)), None)
     // TODO: Warn if signal.isLit
   }
 
@@ -182,6 +183,15 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
 
   def poke[T <: Element: Pokeable](signal: T, value: Long) {
     poke(signal, BigInt(value))
+  }
+
+  /*
+  Some backends, verilator in particular will not check to see if too many
+  bits are part of input
+   */
+  private def maskedBigInt(bigInt: BigInt, width: Int): BigInt = {
+    val maskedBigInt = bigInt & ((BigInt(1) << width) - 1)
+    maskedBigInt
   }
 
   def pokeFixedPoint(signal: FixedPoint, value: Double): Unit = {
