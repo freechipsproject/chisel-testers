@@ -1,0 +1,68 @@
+/*
+Copyright 2020 The Regents of the University of California (Regents)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ */
+
+package examples
+
+import chisel3._
+import chisel3.experimental.FixedPoint
+import chisel3.iotesters.PeekPokeTester
+import org.scalatest.{FreeSpec, Matchers}
+
+///////////////////////////////////////////////////////////////////////////////
+// This test failed previously due to extra high bits being poked into inputs
+// during verilator simulation.
+////////////////////////////////////////////////////////////////////////////
+class FixedIsWhole(w: Int) extends Module {
+  val io = IO(new Bundle {
+    val in = Input(FixedPoint(w.W, 2.BP))
+    val out = Output(Bool())
+  })
+  val lsbsChopped = io.in.setBinaryPoint(0)
+  val lsbsZeroed = (lsbsChopped << 2).asFixedPoint(2.BP)
+  io.out := lsbsZeroed === io.in
+  printf(s"io_in %x (%d), io_out %d, lsbsChopped %x, lsbsZeroed %x\n",
+    io.in.asUInt, io.in.asUInt, io.out, lsbsChopped.asUInt, lsbsZeroed.asUInt)
+}
+
+class FixedIsWholeTestBench(dut: FixedIsWhole) extends PeekPokeTester(dut) {
+  for(i <- BigDecimal(-2.75) to BigDecimal(1.75) by 0.25) {
+    pokeFixedPoint(dut.io.in, i.toDouble)
+    step(1)
+    val result = peek(dut.io.out)
+    println(s"input $i expecting ${i.isWhole()} got $result")
+    expect(dut.io.out, i.isWhole())
+  }
+}
+
+class FixedIsWholeTester extends FreeSpec with Matchers {
+
+  "FixedPoint width 16 succeeds on verilator" in {
+    iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new FixedIsWhole(16)) { c =>
+      new FixedIsWholeTestBench(c)
+    } should be (true)
+  }
+
+  "FixedPoint width 15 succeeds on verilator" in {
+    iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new FixedIsWhole(15)) { c =>
+      new FixedIsWholeTestBench(c)
+    } should be (true)  }
+
+  "FixedPoint width 15 succeeds on treadle" in {
+    iotesters.Driver.execute(Array("--backend-name", "treadle"), () => new FixedIsWhole(15)) { c =>
+      new FixedIsWholeTestBench(c)
+    } should be (true)
+  }
+}
