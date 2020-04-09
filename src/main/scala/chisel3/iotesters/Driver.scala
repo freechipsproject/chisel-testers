@@ -213,7 +213,7 @@ object Driver {
     *
 
     * @param dutGen      This is the device under test.
-    * @param backendType The default backend is "firrtl" which uses the firrtl interperter. Other options
+    * @param backendType The default backend is "firrtl" which uses the firrtl interpreter. Other options
     *                    "verilator" will use the verilator c++ simulation generator
     *                    "ivl" will use the Icarus Verilog simulation
     *                    "vcs" will use the VCS simulation
