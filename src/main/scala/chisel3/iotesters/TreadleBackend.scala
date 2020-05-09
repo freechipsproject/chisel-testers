@@ -2,19 +2,19 @@
 
 package chisel3.iotesters
 
-import chisel3.{ChiselExecutionSuccess, Element, Mem, MemBase, MultiIOModule, SyncReadMem, assert}
 import chisel3.internal.InstanceId
-import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess, LowForm}
-import treadle.TreadleTester
+import chisel3.stage.{ChiselCircuitAnnotation, ChiselStage}
+import chisel3.{Element, MemBase, MultiIOModule, assert}
+import firrtl.{AnnotationSeq, LowForm}
+import treadle.stage.TreadleTesterPhase
+import treadle.{TreadleFirrtlFormHint, TreadleTester, TreadleTesterAnnotation}
 
 private[iotesters] class TreadleBackend(
   dut: MultiIOModule,
-  firrtlIR: String,
-  optionsManager: TesterOptionsManager = new TesterOptionsManager
+  treadleTester: TreadleTester
 )
 extends Backend(_seed = System.currentTimeMillis()) {
 
-  val treadleTester = new TreadleTester(firrtlIR, optionsManager, LowForm)
   reset(5) // reset firrtl treadle on construction
 
   private val portNames = dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(id, dir) =>
@@ -123,34 +123,42 @@ private[iotesters] object setupTreadleBackend {
     dutGen: () => T,
     optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
 
-    // the backend must be treadle if we are here, therefore we want the firrtl compiler
-    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
-    // Workaround to propagate Annotations generated from command-line options to second Firrtl
-    // invocation, run after updating compilerName so we only get one emitCircuit annotation
-    val annos = Driver.filterAnnotations(firrtl.Driver.getAnnotations(optionsManager))
-    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
+    // get the chisel generator
+    val generatorAnnotation = chisel3.stage.ChiselGeneratorAnnotation(dutGen)
 
-    // generate VcdOutput overrides setting of writeVcd
+    // This provides an opportunity to translate from top level generic flags to backend specific annos
+    var annotationSeq: AnnotationSeq = optionsManager.toAnnotationSeq
+
     if(optionsManager.testerOptions.generateVcdOutput == "on") {
-      optionsManager.treadleOptions = optionsManager.treadleOptions.copy(writeVCD = true)
+      annotationSeq = annotationSeq :+ treadle.WriteVcdAnnotation
     }
 
-    chisel3.Driver.execute(optionsManager, dutGen) match {
-      case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
-        val dut = getTopModule(circuit).asInstanceOf[T]
-        firrtlExecutionResult match {
-          case success: FirrtlExecutionSuccess =>
-            val compiledFirrtl = success.emitted
-            optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(
-              annotations = success.circuitState.annotations.toList
-            )
-            (dut, new TreadleBackend(dut, compiledFirrtl, optionsManager = optionsManager))
-          case FirrtlExecutionFailure(message) =>
-            throw new Exception(s"FirrtlBackend: failed firrtl compile message: $message")
-        }
-      case _ =>
-        throw new Exception("Problem with compilation")
+    annotationSeq = annotationSeq.flatMap {
+      case _: firrtl.stage.CompilerAnnotation => None
+      case a => Some(a)
     }
+
+    // This produces a chisel circuit annotation, a later pass will generate a firrtl circuit
+    // Can't do both at once currently because generating the latter deletes the former
+    annotationSeq = (new chisel3.stage.phases.Elaborate).transform(annotationSeq :+ generatorAnnotation)
+
+    val circuit = annotationSeq.collect { case x: ChiselCircuitAnnotation => x }.head.circuit
+    val dut = getTopModule(circuit).asInstanceOf[T]
+
+    // This generates the firrtl circuit needed by the TreadleTesterPhase
+    annotationSeq = (new ChiselStage).run(annotationSeq)
+
+    // This generates a TreadleTesterAnnotation with a treadle tester instance
+    annotationSeq = TreadleTesterPhase.transform(annotationSeq :+ TreadleFirrtlFormHint(LowForm))
+
+    val treadleTester = annotationSeq.collectFirst { case TreadleTesterAnnotation(t) => t }.getOrElse(
+      throw new Exception(
+        s"TreadleTesterPhase could not build a treadle tester from these annotations" +
+          annotationSeq.mkString("Annotations:\n", "\n  ", "")
+      )
+    )
+
+    (dut, new TreadleBackend(dut, treadleTester))
   }
 }
 
