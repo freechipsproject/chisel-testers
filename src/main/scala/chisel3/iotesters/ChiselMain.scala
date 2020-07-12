@@ -6,9 +6,8 @@ import java.io.{File, FileWriter, IOException}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import scala.collection.mutable.ArrayBuffer
 import scala.util.DynamicVariable
-
 import chisel3._
-
+import chisel3.iotesters.Driver.backendVar
 import firrtl.FileUtils
 
 private[iotesters] class TesterContext {
@@ -187,19 +186,22 @@ object chiselMain {
       val dut = elaborate(args, dutGen)
       if (context.isRunTest) {
         setupBackend(dut)
-        assert(try {
-          testerGen(dut).finish
-        } catch { case e: Throwable =>
-          e.printStackTrace()
-          context.backend match {
-            case Some(b: VCSBackend) =>
-              TesterProcess kill b
-            case Some(b: VerilatorBackend) =>
-              TesterProcess kill b
-            case _ =>
-          }
-          false
-        }, "Test failed")
+
+        backendVar.withValue(Some(context.backend.get)) {
+          assert(try {
+            testerGen(dut).finish
+          } catch { case e: Throwable =>
+            e.printStackTrace()
+            context.backend match {
+              case Some(b: VCSBackend) =>
+                TesterProcess kill b
+              case Some(b: VerilatorBackend) =>
+                TesterProcess kill b
+              case _ =>
+            }
+            false
+          }, "Test failed")
+        }
       }
       dut
     }
