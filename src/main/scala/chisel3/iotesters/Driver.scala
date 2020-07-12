@@ -12,7 +12,7 @@ import logger.Logger
 import scala.util.DynamicVariable
 
 object Driver {
-  private val backendVar = new DynamicVariable[Option[Backend]](None)
+  private[iotesters] val backendVar = new DynamicVariable[Option[Backend]](None)
   private[iotesters] def backend = backendVar.value
 
   private val optionsManagerVar = new DynamicVariable[Option[TesterOptionsManager]](None)
