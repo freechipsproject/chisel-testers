@@ -149,7 +149,7 @@ private[iotesters] object setupTreadleBackend {
     annotationSeq = (new ChiselStage).run(annotationSeq)
 
     // This generates a TreadleTesterAnnotation with a treadle tester instance
-    annotationSeq = TreadleTesterPhase.transform(annotationSeq :+ TreadleFirrtlFormHint(LowForm))
+    annotationSeq = (new TreadleTesterPhase).transform(annotationSeq :+ TreadleFirrtlFormHint(LowForm))
 
     val treadleTester = annotationSeq.collectFirst { case TreadleTesterAnnotation(t) => t }.getOrElse(
       throw new Exception(
