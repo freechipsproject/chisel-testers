@@ -129,7 +129,7 @@ private[iotesters] object setupTreadleBackend {
     val generatorAnnotation = chisel3.stage.ChiselGeneratorAnnotation(dutGen)
 
     // This provides an opportunity to translate from top level generic flags to backend specific annos
-    var annotationSeq: AnnotationSeq = optionsManager.toAnnotationSeq.filterNot(_.isInstanceOf[CompilerAnnotation])
+    var annotationSeq: AnnotationSeq = optionsManager.toAnnotationSeq
 
     if(optionsManager.testerOptions.generateVcdOutput == "on") {
       annotationSeq = annotationSeq :+ treadle.WriteVcdAnnotation
