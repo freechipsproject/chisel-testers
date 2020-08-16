@@ -5,9 +5,10 @@ package chisel3.iotesters
 import chisel3.internal.InstanceId
 import chisel3.stage.{ChiselCircuitAnnotation, ChiselStage}
 import chisel3.{Element, MemBase, MultiIOModule, assert}
-import firrtl.{AnnotationSeq, LowForm}
+import firrtl.stage.CompilerAnnotation
+import firrtl.{AnnotationSeq, annoSeqToSeq}
 import treadle.stage.TreadleTesterPhase
-import treadle.{TreadleFirrtlFormHint, TreadleTester, TreadleTesterAnnotation}
+import treadle.{TreadleTester, TreadleTesterAnnotation}
 
 private[iotesters] class TreadleBackend(
   dut: MultiIOModule,
@@ -70,7 +71,8 @@ extends Backend(_seed = System.currentTimeMillis()) {
         val got = treadleTester.peek(name)
         val good = got == expected
         if (verbose || !good) logger info
-          s"""EXPECT AT $stepNumber $msg  $name got ${bigIntToStr(got, base)} expected ${bigIntToStr(expected, base)}""" +
+          s"""EXPECT AT $stepNumber $msg  $name got ${bigIntToStr(got, base)}""" +
+            s""" expected ${bigIntToStr(expected, base)}""" +
             s""" ${if (good) "PASS" else "FAIL"}"""
         if(good) treadleTester.expectationsMet += 1
         good
@@ -146,10 +148,11 @@ private[iotesters] object setupTreadleBackend {
     val dut = getTopModule(circuit).asInstanceOf[T]
 
     // This generates the firrtl circuit needed by the TreadleTesterPhase
-    annotationSeq = (new ChiselStage).run(annotationSeq)
+    // Uses low compiler to avoid padWidths changing Dshl to Dshlw which blows up CheckTypes
+    annotationSeq = (new ChiselStage).execute(Array("-X", "low"), annotationSeq)
 
     // This generates a TreadleTesterAnnotation with a treadle tester instance
-    annotationSeq = (new TreadleTesterPhase).transform(annotationSeq :+ TreadleFirrtlFormHint(LowForm))
+    annotationSeq = (new TreadleTesterPhase).transform(annotationSeq)
 
     val treadleTester = annotationSeq.collectFirst { case TreadleTesterAnnotation(t) => t }.getOrElse(
       throw new Exception(
@@ -161,4 +164,3 @@ private[iotesters] object setupTreadleBackend {
     (dut, new TreadleBackend(dut, treadleTester))
   }
 }
-
