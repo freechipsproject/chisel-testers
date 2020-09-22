@@ -125,6 +125,9 @@ private[iotesters] object setupTreadleBackend {
     dutGen: () => T,
     optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
 
+    // If we are here we do not want the default (or overriden) compiler, we want "low"
+    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
+
     // get the chisel generator
     val generatorAnnotation = chisel3.stage.ChiselGeneratorAnnotation(dutGen)
 
