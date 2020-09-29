@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 package verilator
 
 // NB! Yes: we *do* want to test the Chisel._ compatibility layer, so DO NOT change to

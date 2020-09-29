@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 proc str_count {char str} {
     set count 0
     set index 0
