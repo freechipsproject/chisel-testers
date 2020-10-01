@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef __VERILATOR_API__
 #define __VERILATOR_API__
 

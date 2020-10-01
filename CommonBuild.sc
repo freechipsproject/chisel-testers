@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 def scalacOptionsVersion(scalaVersion: String): Seq[String] = {
   Seq() ++ {
     // If we're building with Scala > 2.11, enable the compile option

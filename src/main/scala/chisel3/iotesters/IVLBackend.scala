@@ -1,4 +1,4 @@
-// See LICENSE for license details.
+// SPDX-License-Identifier: Apache-2.0
 package chisel3.iotesters
 
 import java.io.{File, FileWriter, IOException, Writer}
