@@ -1,6 +1,6 @@
 package chisel3.iotesters
 
-// See LICENSE for license details.
+// SPDX-License-Identifier: Apache-2.0
 
 import chisel3._
 import org.scalatest._
