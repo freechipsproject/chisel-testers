@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 #include "vpi.h"
 
 vpi_api_t* vpi_api = NULL;
