@@ -45,10 +45,10 @@ crossScalaVersions := Seq("2.12.10", "2.11.12")
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.4-SNAPSHOT",
-  "firrtl" -> "1.4-SNAPSHOT",
-  "firrtl-interpreter" -> "1.4-SNAPSHOT",
-  "treadle" -> "1.3-SNAPSHOT"
+  "chisel3" -> "3.5-SNAPSHOT",
+  "firrtl" -> "1.5-SNAPSHOT",
+  "firrtl-interpreter" -> "1.5-SNAPSHOT",
+  "treadle" -> "1.5-SNAPSHOT"
   )
 
 libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").map { dep: String =>
