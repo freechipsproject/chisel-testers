@@ -60,11 +60,12 @@ libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").
 // An explicit dependency on junit seems to alleviate this.
 libraryDependencies ++= Seq(
   "junit" % "junit" % "4.13",
-  "org.scalatest" %% "scalatest" % "3.0.8",
+  "org.scalatest" %% "scalatest" % "3.2.2",
+  "org.scalatestplus" %% "scalacheck-1-14" % "3.1.1.1",
   "org.scalacheck" %% "scalacheck" % "1.14.3",
   "com.github.scopt" %% "scopt" % "3.7.1"
 )
-    
+
 publishMavenStyle := true
 
 publishArtifact in Test := false
