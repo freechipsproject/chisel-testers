@@ -73,10 +73,10 @@ object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
 val defaultVersions = Map(
-  "chisel3" -> "3.4-SNAPSHOT",
-  "firrtl" -> "1.4-SNAPSHOT",
-  "firrtl-interpreter" -> "1.4-SNAPSHOT",
-  "treadle" -> "1.3-SNAPSHOT"
+  "chisel3" -> "3.5-SNAPSHOT",
+  "firrtl" -> "1.5-SNAPSHOT",
+  "firrtl-interpreter" -> "1.5-SNAPSHOT",
+  "treadle" -> "1.5-SNAPSHOT"
   )
 
 def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
