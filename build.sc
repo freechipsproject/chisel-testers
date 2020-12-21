@@ -90,9 +90,10 @@ class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
   def chiselDeps = Agg("firrtl", "firrtl-interpreter", "treadle", "chisel3").map { d => getVersion(d) }
 
   override def ivyDeps = Agg(
-    ivy"org.scalatest::scalatest:3.0.8",
+    ivy"org.scalatest::scalatest:3.2.2",
+    ivy"org.scalatestplus::scalacheck-1-14:3.1.1.1",
     ivy"org.scalacheck::scalacheck:1.14.3",
-    ivy"com.github.scopt::scopt:3.7.1" 
+    ivy"com.github.scopt::scopt:3.7.1"
  ) ++ chiselDeps
 
   object test extends Tests {
