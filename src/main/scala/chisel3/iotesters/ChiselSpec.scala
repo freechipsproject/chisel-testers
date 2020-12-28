@@ -5,6 +5,10 @@ package chisel3.iotesters
 import org.scalatest._
 import org.scalatest.prop._
 import org.scalacheck._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.propspec.AnyPropSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.scalacheck.{ScalaCheckPropertyChecks}
 import chisel3._
 import chisel3.testers._
 import sys.process.{stringSeqToProcess, BasicIO}
@@ -23,10 +27,10 @@ trait ChiselRunners extends Assertions {
 }
 
 /** Spec base class for BDD-style testers. */
-class ChiselFlatSpec extends FlatSpec with ChiselRunners with Matchers
+class ChiselFlatSpec extends AnyFlatSpec with ChiselRunners with Matchers
 
 /** Spec base class for property-based testers. */
-class ChiselPropSpec extends PropSpec with ChiselRunners with PropertyChecks {
+class ChiselPropSpec extends AnyPropSpec with ChiselRunners with ScalaCheckPropertyChecks {
 
   // Constrain the default number of instances generated for every use of forAll.
   implicit override val generatorDrivenConfig =
