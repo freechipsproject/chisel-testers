@@ -5,7 +5,6 @@ package chisel3.iotesters
 import java.io.File
 
 import chisel3._
-import chisel3.core.ActualDirection
 import chisel3.experimental._
 import chisel3.internal.InstanceId
 import chisel3.internal.firrtl.Circuit

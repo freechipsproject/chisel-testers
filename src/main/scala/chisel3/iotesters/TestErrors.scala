@@ -4,8 +4,6 @@ package chisel3.iotesters
 
 import scala.collection.mutable.ArrayBuffer
 
-import chisel3.core._
-
 /** Records and reports runtime errors and warnings. */
 private[iotesters] class TestErrorLog {
   def hasErrors: Boolean = errors.exists(_.isFatal)

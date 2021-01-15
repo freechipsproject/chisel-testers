@@ -2,8 +2,9 @@
 
 package chisel3.iotesters
 
-import chisel3.Bits
-import chisel3.core.{Element, EnumType}
+import chisel3.{Bits, Element}
+import chisel3.experimental.EnumType
+
 import scala.annotation.implicitNotFound
 
 // A typeclass that defines the types we can poke, peek, or expect from

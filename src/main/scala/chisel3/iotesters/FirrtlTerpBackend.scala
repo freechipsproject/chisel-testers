@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 package chisel3.iotesters
 
-import chisel3._
+import chisel3.{ChiselExecutionFailure => _, ChiselExecutionResult => _, ChiselExecutionSuccess => _, _}
 import chisel3.internal.InstanceId
+import chisel3.iotesters.DriverCompatibility._
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
 
@@ -134,7 +135,7 @@ private[iotesters] object setupFirrtlTerpBackend {
 
     val annos = Driver.filterAnnotations(firrtl.Driver.getAnnotations(optionsManager))
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
-    chisel3.Driver.execute(optionsManager, dutGen) match {
+    DriverCompatibility.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {

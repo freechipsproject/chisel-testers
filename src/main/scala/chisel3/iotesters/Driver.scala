@@ -2,9 +2,10 @@
 
 package chisel3.iotesters
 
-import chisel3._
+import chisel3.{ChiselExecutionFailure => _, ChiselExecutionResult => _, ChiselExecutionSuccess => _, _}
 import java.io.File
 
+import chisel3.iotesters.DriverCompatibility._
 import firrtl.annotations.Annotation
 import firrtl_interpreter._
 import logger.Logger
@@ -142,7 +143,7 @@ object Driver {
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
 
     Logger.makeScope(optionsManager) {
-      val chiselResult: ChiselExecutionResult = chisel3.Driver.execute(optionsManager, dutGenerator)
+      val chiselResult: ChiselExecutionResult = DriverCompatibility.execute(optionsManager, dutGenerator)
       chiselResult match {
         case ChiselExecutionSuccess(_, emitted, _) =>
           optionsManager.replConfig = optionsManager.replConfig.copy(firrtlSource = emitted)
@@ -245,7 +246,7 @@ object Driver {
     */
   def run[T <: MultiIOModule](dutGen: () => T, cmd: Seq[String])
                       (testerGen: T => PeekPokeTester[T]): Boolean = {
-    val circuit = chisel3.Driver.elaborate(dutGen)
+    val circuit = chisel3.stage.ChiselStage.elaborate(dutGen())
     val dut = getTopModule(circuit).asInstanceOf[T]
     backendVar.withValue(Some(new VerilatorBackend(dut, cmd))) {
       try {

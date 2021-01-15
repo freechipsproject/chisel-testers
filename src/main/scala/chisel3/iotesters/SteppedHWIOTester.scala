@@ -3,7 +3,7 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.core.{ActualDirection, DataMirror}
+import chisel3.experimental.DataMirror
 import chisel3.util._
 
 import scala.collection.mutable

@@ -82,13 +82,13 @@ object chiselMain {
         // Copy API files
         copyVerilatorHeaderFiles(context.targetDir.toString)
         // Generate Verilator
-        assert(chisel3.Driver.verilogToCpp(
+        assert(firrtl.util.BackendCompilationUtilities.verilogToCpp(
           dutName,
           dir,
           Seq(),
           new File(dir, s"$dutName-harness.cpp")).! == 0)
         // Compile Verilator
-        assert(chisel3.Driver.cppToExe(dutName, dir).! == 0)
+        assert(firrtl.util.BackendCompilationUtilities.cppToExe(dutName, dir).! == 0)
       case "vcs" | "glsim" =>
         // Copy API files
         copyVpiFiles(context.targetDir.toString)
@@ -107,25 +107,25 @@ object chiselMain {
       case x: IOException =>
         System.err.format("createFile error: %s%n", x)
     }
-    val circuit = chisel3.Driver.elaborate(dutGen)
-    val dut = getTopModule(circuit).asInstanceOf[T]
-    val nodes = getChiselNodes(circuit)
+    val cir = chisel3.stage.ChiselStage.elaborate(dutGen())
+    val dut = getTopModule(cir).asInstanceOf[T]
+    val nodes = getChiselNodes(cir)
     val dir = context.targetDir
-    val name = circuit.name
+    val name = cir.name
 
-    val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(circuit))
+    val fir = chisel3.stage.ChiselStage.convert(dutGen())
     val chirrtlFile = new File(dir, s"$name.ir")
     val verilogFile = new File(dir, s"$name.v")
     context.backendType match {
       case "firrtl" =>
         val writer = new FileWriter(chirrtlFile)
-        (new firrtl.LowFirrtlEmitter).emit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), writer)
+        (new firrtl.LowFirrtlEmitter).emit(firrtl.CircuitState(fir, firrtl.ChirrtlForm), writer)
         writer.close()
       case _ if context.isGenVerilog =>
         val annotations = Seq(firrtl.passes.memlib.InferReadWriteAnnotation)
         val writer = new FileWriter(verilogFile)
         val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
-          firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm, annotations),
+          firrtl.CircuitState(fir, firrtl.ChirrtlForm, annotations),
           List(new firrtl.passes.memlib.InferReadWrite)
         )
         writer.write(compileResult.getEmittedCircuit.value)
@@ -133,7 +133,7 @@ object chiselMain {
       case _ =>
     }
 
-    if (context.isGenHarness) genHarness(dut, nodes, chirrtl)
+    if (context.isGenHarness) genHarness(dut, nodes, fir)
 
     if (context.isCompiling) compile(name)
 

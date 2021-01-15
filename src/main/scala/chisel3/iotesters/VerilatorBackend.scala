@@ -5,11 +5,11 @@ import java.io._
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 
-import chisel3._
 import chisel3.experimental.{FixedPoint, Interval}
 import chisel3.internal.InstanceId
+import chisel3.iotesters.DriverCompatibility._
+import chisel3.{ChiselExecutionFailure => _, ChiselExecutionResult => _, ChiselExecutionSuccess => _, _}
 import firrtl._
-import firrtl.annotations.CircuitName
 import firrtl.transforms._
 
 /**
@@ -219,7 +219,7 @@ private[iotesters] object setupVerilatorBackend {
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
-    chisel3.Driver.execute(optionsManager, dutGen) match {
+    DriverCompatibility.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
 
         val chirrtlSource = firrtlSourceOverride.getOrElse(emitted)
@@ -275,7 +275,7 @@ private[iotesters] object setupVerilatorBackend {
             editCommands = optionsManager.testerOptions.vcsCommandEdits
           ).! == 0
         )
-        assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
+        assert(firrtl.util.BackendCompilationUtilities.cppToExe(circuit.name, dir).! == 0)
 
         val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
