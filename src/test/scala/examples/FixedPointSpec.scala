@@ -5,7 +5,8 @@ package examples
 import chisel3._
 import chisel3.experimental.FixedPoint
 import chisel3.iotesters.PeekPokeTester
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class FixedPointReduce(val fixedType: FixedPoint, val size: Int) extends Module {
   val io = IO(new Bundle {
@@ -61,7 +62,7 @@ class FixedPointDivideTester(c: FixedPointDivide) extends PeekPokeTester(c) {
   }
 }
 
-class FixedPointSpec extends FreeSpec with Matchers {
+class FixedPointSpec extends AnyFreeSpec with Matchers {
   val useBigDecimal = true
   "fixed point reduce should work with BigDecimal" in {
     iotesters.Driver.execute(Array.empty[String], () => new FixedPointReduce(FixedPoint(70.W, 60.BP), 10)) { c =>

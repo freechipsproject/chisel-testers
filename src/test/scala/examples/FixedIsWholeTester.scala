@@ -5,7 +5,8 @@ package examples
 import chisel3._
 import chisel3.experimental.FixedPoint
 import chisel3.iotesters.PeekPokeTester
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 ///////////////////////////////////////////////////////////////////////////////
 // This test failed previously due to extra high bits being poked into inputs
@@ -33,7 +34,7 @@ class FixedIsWholeTestBench(dut: FixedIsWhole) extends PeekPokeTester(dut) {
   }
 }
 
-class FixedIsWholeTester extends FreeSpec with Matchers {
+class FixedIsWholeTester extends AnyFreeSpec with Matchers {
 
   "FixedPoint width 16 succeeds on verilator" in {
     iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new FixedIsWhole(16)) { c =>

@@ -4,7 +4,9 @@ package examples
 
 import chisel3._
 import chisel3.iotesters._
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 
 class MultiIOAdder extends MultiIOModule {
@@ -26,7 +28,7 @@ class MultiIOAdderTester(c: MultiIOAdder) extends PeekPokeTester(c) {
   }
 }
 
-class MultiIOModuleSpec extends FlatSpec with Matchers {
+class MultiIOModuleSpec extends AnyFlatSpec with Matchers {
   behavior of "MuiltiIOAdder"
 
   it should "test correctly for every i/o combination with verilator" in {

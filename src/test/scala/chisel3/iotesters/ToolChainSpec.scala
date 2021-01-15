@@ -4,9 +4,10 @@ package chisel3.iotesters
 
 import java.io.{File, PrintWriter}
 
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class ToolChainSpec extends FreeSpec with Matchers {
+class ToolChainSpec extends AnyFreeSpec with Matchers {
   case class EditableBuildCommandTest(
       name: String,
       builder: EditableBuildCSimulatorCommand,

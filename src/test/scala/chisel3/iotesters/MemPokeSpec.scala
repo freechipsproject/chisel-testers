@@ -4,8 +4,7 @@ package chisel3.iotesters
 
 import chisel3._
 import chisel3.util.log2Ceil
-import org.scalacheck.Prop._
-import org.scalatest.prop.Checkers
+import org.scalatestplus.scalacheck.Checkers
 
 /**
   * This whole test is about checking whether memory can be directly poked.

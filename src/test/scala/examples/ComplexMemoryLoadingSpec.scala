@@ -10,7 +10,8 @@ import chisel3.iotesters.PeekPokeTester
 import chisel3.util.experimental.loadMemoryFromFile
 import chisel3.util.log2Ceil
 import firrtl.FileUtils
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class MemoryShape extends Bundle {
   val a = UInt(8.W)
@@ -45,7 +46,7 @@ class HasComplexMemoryTester(c: HasComplexMemory) extends PeekPokeTester(c) {
 }
 
 
-class ComplexMemoryLoadingSpec extends  FreeSpec with Matchers {
+class ComplexMemoryLoadingSpec extends AnyFreeSpec with Matchers {
   "memory loading should be possible with complex memories" - {
 
     val targetDirName = "test_run_dir/complex_mem_test"

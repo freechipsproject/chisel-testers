@@ -2,7 +2,8 @@
 
 package chisel3.iotesters
 
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 import chisel3._
 
@@ -27,7 +28,7 @@ class VFTester(c: VF) extends PeekPokeTester(c) {
   // behavior of indexing past end of vec is undefined
 }
 
-class VecFillSpec extends FreeSpec with Matchers {
+class VecFillSpec extends AnyFreeSpec with Matchers {
   "should initialize vector" in {
     iotesters.Driver.execute(Array("-tiv"), () => new VF) { c =>
       new VFTester(c)

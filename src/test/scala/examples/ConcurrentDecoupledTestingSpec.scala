@@ -5,7 +5,8 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.mutable
 
@@ -152,7 +153,7 @@ object ConcurrentDecoupledTestingSpec {
   val numberOfSamples = 100
 }
 
-class ConcurrentDecoupledTestingSpec extends FreeSpec with Matchers {
+class ConcurrentDecoupledTestingSpec extends AnyFreeSpec with Matchers {
   "This demonstrates waiting on multiple independent decoupled interfaces" - {
     "using interpreter" in {
       chisel3.iotesters.Driver.execute(

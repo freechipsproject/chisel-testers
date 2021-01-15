@@ -10,7 +10,8 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class MyBundle extends Bundle {
   val x = UInt(8.W)
@@ -160,7 +161,7 @@ class UseMyBundleTester(c: UseMyBundle) extends PeekPokeTester(c) {
   expect(c.io.outC.y, 5)
 }
 
-class BundleInitSpec extends FreeSpec with Matchers {
+class BundleInitSpec extends AnyFreeSpec with Matchers {
   "does this work" in {
     iotesters.Driver.execute(Array(), () => new UseMyBundle) { c =>
       new UseMyBundleTester(c)

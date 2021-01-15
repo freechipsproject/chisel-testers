@@ -5,10 +5,12 @@ package examples
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
 import chisel3.util.Counter
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 
-class SecondClockDrivesRegisterSpec extends FreeSpec with Matchers {
+class SecondClockDrivesRegisterSpec extends AnyFreeSpec with Matchers {
   class SecondClock extends MultiIOModule {
     val inClock = IO(Input(Bool()))
     val out = IO(Output(UInt(8.W)))

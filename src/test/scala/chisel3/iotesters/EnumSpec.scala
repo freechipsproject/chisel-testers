@@ -3,9 +3,9 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.util._
 import chisel3.experimental.ChiselEnum
-import org.scalatest.{FlatSpec, Matchers}
+import chisel3.util._
+import org.scalatest.matchers.should.Matchers
 
 object MyEnum extends ChiselEnum {
   val e0, e1, e3, e4 = Value

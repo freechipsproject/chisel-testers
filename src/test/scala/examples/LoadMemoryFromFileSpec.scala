@@ -9,7 +9,9 @@ import chisel3._
 import chisel3.iotesters.PeekPokeTester
 import chisel3.util.experimental.loadMemoryFromFile
 import firrtl.FileUtils
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 
 class UsesMem(memoryDepth: Int, memoryType: Bits) extends Module {
@@ -54,7 +56,7 @@ class LoadMemoryFromFileTester(c: UsesMem) extends PeekPokeTester(c) {
   }
 }
 
-class LoadMemoryFromFileSpec extends FreeSpec with Matchers {
+class LoadMemoryFromFileSpec extends AnyFreeSpec with Matchers {
   "Users can specify a source file to load memory from" in {
 
     val targetDirName = "test_run_dir/load_mem_test"

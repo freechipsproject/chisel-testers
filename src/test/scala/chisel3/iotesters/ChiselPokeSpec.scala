@@ -2,9 +2,8 @@
 
 import chisel3._
 import chisel3.util._
-import chisel3.iotesters.experimental.{PokeTester, ImplicitPokeTester}
-
-import org.scalatest._
+import chisel3.iotesters.experimental.{ImplicitPokeTester, PokeTester}
+import org.scalatest.flatspec.AnyFlatSpec
 
 class MyDut extends Module {
   val io = IO(new Bundle {
@@ -14,7 +13,7 @@ class MyDut extends Module {
   io.out := io.in + 1.U
 }
 
-class PokeTesterSpec extends FlatSpec with PokeTester {
+class PokeTesterSpec extends AnyFlatSpec with PokeTester {
   "MyDut" should "properly add" in {
     test(new MyDut) {(t, c) =>
       t.poke(c.io.in, 0x41)
@@ -28,7 +27,7 @@ class PokeTesterSpec extends FlatSpec with PokeTester {
   }
 }
 
-class ImplicitPokeTesterSpec extends FlatSpec with ImplicitPokeTester {
+class ImplicitPokeTesterSpec extends AnyFlatSpec with ImplicitPokeTester {
   "MyDut with implicits" should "properly add" in {
     test(new MyDut) {implicit t => c =>
       poke(c.io.in, 0x41)

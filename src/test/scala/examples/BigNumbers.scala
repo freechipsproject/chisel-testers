@@ -4,7 +4,8 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.{PeekPokeTester, TesterOptionsManager}
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class PassOn extends Module {
   val io = IO(new Bundle {
@@ -29,7 +30,7 @@ class BigNumbersTester(c: PassOn) extends PeekPokeTester(c) {
   expect (c.io.out, 0x0000000080000000L)
 }
 
-class BigNumbersSpec extends FreeSpec with Matchers {
+class BigNumbersSpec extends AnyFreeSpec with Matchers {
   "big numbers should work with interpreter backend" in {
     iotesters.Driver.execute(() => new PassOn, new TesterOptionsManager) { c =>
       new BigNumbersTester(c)

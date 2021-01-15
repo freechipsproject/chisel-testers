@@ -7,8 +7,9 @@ import java.io.File
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
-import org.scalatest.{FlatSpec, Matchers}
 import treadle.chronometry.Timer
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 object RealGCD2 {
   val num_width = 16
@@ -90,7 +91,7 @@ class GCDPeekPokeTester(c: RealGCD2, maxX: Int = 10, maxY: Int = 10, showTiming:
   }
 }
 
-class GCDSpec extends FlatSpec with Matchers {
+class GCDSpec extends AnyFlatSpec with Matchers {
   behavior of "GCDSpec"
 
   it should "compute gcd excellently" in {
