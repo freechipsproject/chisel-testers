@@ -6,7 +6,8 @@ import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 import firrtl_interpreter.InterpreterOptions
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 object RealGCD3 {
   val num_width = 16
@@ -89,7 +90,7 @@ class GCDAdvTester(c: RealGCD3) extends AdvTester(c)  {
   }
 }
 
-class AdvTesterSpec extends FlatSpec with Matchers {
+class AdvTesterSpec extends AnyFlatSpec with Matchers {
   behavior of "GCDAdvTester"
 
   it should "compute gcd excellently" in {

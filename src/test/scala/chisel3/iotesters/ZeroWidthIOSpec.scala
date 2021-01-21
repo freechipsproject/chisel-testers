@@ -3,7 +3,7 @@ package chisel3.iotesters
 // SPDX-License-Identifier: Apache-2.0
 
 import chisel3._
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
 
 class MyZeroWidthDut extends chisel3.MultiIOModule {
   val out0 = IO(Output(UInt(1.W)))

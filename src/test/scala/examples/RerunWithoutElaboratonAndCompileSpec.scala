@@ -4,13 +4,14 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * This provides an example of how to re-run a verilator compiled simulation without re-running verilator
   * Currently this method does re-elaborate the circuit
   */
-class RerunWithoutElaboratonAndCompileSpec extends FreeSpec with Matchers {
+class RerunWithoutElaboratonAndCompileSpec extends AnyFreeSpec with Matchers {
   "Demonstrate how to re-run a given test without recompiling" - {
     "build once" in {
       iotesters.Driver.execute(

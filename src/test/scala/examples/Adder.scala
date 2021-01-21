@@ -5,7 +5,8 @@ package examples
 import chisel3._
 import chisel3.experimental.FixedPoint
 import chisel3.iotesters.{ChiselFlatSpec, Exerciser, PeekPokeTester, SteppedHWIOTester}
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class Adder(val w: Int) extends Module {
   val io = IO(new Bundle {
@@ -103,7 +104,7 @@ class SignedAdderTester(c: SignedAdder) extends PeekPokeTester(c) {
   }
 }
 
-class SignedAdderSpec extends FreeSpec with Matchers {
+class SignedAdderSpec extends AnyFreeSpec with Matchers {
   "tester should returned signed values with interpreter" in {
     iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new SignedAdder(16)) { c =>
       new SignedAdderTester(c)
@@ -144,7 +145,7 @@ class FixedPointAdderTester(c: FixedPointAdder) extends PeekPokeTester(c) {
 
 }
 
-class FixedPointAdderSpec extends FreeSpec with Matchers {
+class FixedPointAdderSpec extends AnyFreeSpec with Matchers {
   "tester should returned signed values with interpreter" in {
     iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new FixedPointAdder(16)) { c =>
       new FixedPointAdderTester(c)

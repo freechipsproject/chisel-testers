@@ -4,7 +4,8 @@ package chisel3.iotesters
 
 import chisel3._
 import chisel3.util.{HasBlackBoxInline, HasBlackBoxResource}
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class BBAddOne extends HasBlackBoxInline {
   val io = IO(new Bundle {
@@ -69,7 +70,7 @@ class UsesBBAddOneTester(c: UsesBBAddOne) extends PeekPokeTester(c) {
   step(1)
 }
 
-class BlackBoxVerilogDeliverySpec extends FreeSpec with Matchers {
+class BlackBoxVerilogDeliverySpec extends AnyFreeSpec with Matchers {
   "blackbox verilog implementation should end up accessible to verilator" in {
     iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new UsesBBAddOne) { c =>
       new UsesBBAddOneTester(c)

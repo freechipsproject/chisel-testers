@@ -2,10 +2,10 @@
 
 package examples
 
-import org.scalatest.{ Matchers, FlatSpec}
-
 import chisel3._
 import chisel3.iotesters._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class HasCycle extends Module {
   val io = IO( new Bundle {
@@ -24,7 +24,7 @@ class HasCycleTester( c:HasCycle) extends PeekPokeTester(c) {
   step(1)
 }
 
-class HasCycleTest extends FlatSpec with Matchers {
+class HasCycleTest extends AnyFlatSpec with Matchers {
   behavior of "HasCycle"
 
   it should "work in the interpreter" in {

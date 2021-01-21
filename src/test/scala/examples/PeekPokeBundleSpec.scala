@@ -5,11 +5,12 @@ package examples
 import chisel3._
 import chisel3.experimental.ChiselEnum
 import chisel3.iotesters.PeekPokeTester
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.mutable.LinkedHashMap
 
-class PeekPokeBundleSpec extends FlatSpec with Matchers {
+class PeekPokeBundleSpec extends AnyFlatSpec with Matchers {
   // Define some data types to be used in the circuit.
   class ABundle extends Bundle {
     val aBool = Bool()

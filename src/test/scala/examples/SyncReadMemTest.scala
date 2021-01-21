@@ -2,10 +2,11 @@
 
 package examples
 
-import org.scalatest.{FreeSpec, Matchers}
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import logger.LazyLogging
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
+
 
 class HasSyncReadMem extends MultiIOModule {
   val readAddr  = IO(Input(UInt(16.W)))
@@ -22,7 +23,7 @@ class HasSyncReadMem extends MultiIOModule {
   }
 }
 
-class SyncReadMemTest extends FreeSpec with Matchers {
+class SyncReadMemTest extends AnyFreeSpec with Matchers {
   "peekAt and pokeAt should work with treadle" in {
     iotesters.Driver.execute(
       Array(

@@ -3,7 +3,8 @@
 package chisel3.iotesters
 
 import chisel3._
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Passes a Vec of elements with one cycle delay
@@ -186,7 +187,7 @@ class Bundle2 extends Bundle {
   val u1 = UInt(4.W)
 }
 
-class AggregateOrderingSpec extends FreeSpec with Matchers {
+class AggregateOrderingSpec extends AnyFreeSpec with Matchers {
   "the following examples illustrate the poking Vectors and Bundles with an array of BigInt" - {
     "Poking a 5 element Vec shows" in {
       iotesters.Driver.execute(() => new AggregatePassThrough(Vec(5, UInt(4.W))), new TesterOptionsManager) { c =>

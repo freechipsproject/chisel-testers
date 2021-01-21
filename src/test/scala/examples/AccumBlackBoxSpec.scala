@@ -2,13 +2,15 @@
 
 package examples
 
-import org.scalatest.{FlatSpec, Matchers}
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 import chisel3.experimental._
 import treadle.{ScalaBlackBox, ScalaBlackBoxFactory}
 import treadle.executable.{PositiveEdge, Transition}
+
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * The Accumulator tests below illustrate the following.
@@ -138,7 +140,7 @@ class AccumulatorPeekPokeTester[T <: AccumulatorInterface](c:T) extends PeekPoke
 
 }
 
-class AccumulatorBlackBoxPeekPokeTest extends FlatSpec with Matchers {
+class AccumulatorBlackBoxPeekPokeTest extends AnyFlatSpec with Matchers {
 
   def getOptionsManager(backendName: String): TesterOptionsManager = new TesterOptionsManager {
     interpreterOptions = interpreterOptions.copy(
@@ -167,7 +169,7 @@ class AccumulatorBlackBoxPeekPokeTest extends FlatSpec with Matchers {
 
 }
 
-class AccumulatorBlackBoxPeekPokeTestVerilator extends FlatSpec with Matchers {
+class AccumulatorBlackBoxPeekPokeTestVerilator extends AnyFlatSpec with Matchers {
 
   val optionsManager: TesterOptionsManager = new TesterOptionsManager {
     interpreterOptions = interpreterOptions.copy(
@@ -187,7 +189,7 @@ class AccumulatorBlackBoxPeekPokeTestVerilator extends FlatSpec with Matchers {
 
 }
 
-class AccumulatorBlackBoxPeekPokeTestVCS extends FlatSpec with Matchers {
+class AccumulatorBlackBoxPeekPokeTestVCS extends AnyFlatSpec with Matchers {
 
   val optionsManager: TesterOptionsManager = new TesterOptionsManager {
     interpreterOptions = interpreterOptions.copy(

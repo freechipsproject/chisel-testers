@@ -5,7 +5,8 @@ package examples
 import chisel3._
 import chisel3.experimental._
 import chisel3.iotesters.PeekPokeTester
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class IntervalReduce(val intervalType: Interval, val size: Int) extends Module {
   val io = IO(new Bundle {
@@ -59,7 +60,7 @@ class IntervalDivideTester(c: IntervalDivide) extends PeekPokeTester(c) {
   }
 }
 
-class IntervalSpec extends FreeSpec with Matchers {
+class IntervalSpec extends AnyFreeSpec with Matchers {
   val useBigDecimal = true
   val flags = Array("--backend-name", "treadle")
   "interval reduce should work with BigDecimal" in {

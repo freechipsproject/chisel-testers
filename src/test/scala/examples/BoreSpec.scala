@@ -4,7 +4,8 @@ package examples
 
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class Constant extends MultiIOModule {
   val x = Reg(UInt(6.W))
@@ -25,7 +26,7 @@ class BoreTop extends MultiIOModule {
   util.experimental.BoringUtils.bore(constant.x, Seq(expect.y))
 }
 
-class BoreSpec extends FreeSpec with Matchers {
+class BoreSpec extends AnyFreeSpec with Matchers {
   "Boring utils should work in io.testers" in {
     iotesters.Driver(() => new BoreTop) { c =>
       new PeekPokeTester(c) {

@@ -4,7 +4,8 @@ package chisel3.iotesters
 
 import java.io.File
 
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 import chisel3._
 
 class DriverTest extends Module {
@@ -20,7 +21,7 @@ class DriverTestTester(c: DriverTest) extends PeekPokeTester(c) {
   expect(c.io.out, 1)
 }
 
-class DriverSpec extends FreeSpec with Matchers {
+class DriverSpec extends AnyFreeSpec with Matchers {
   /**
     * recursively delete all directories in a relative path
     * DO NOT DELETE absolute paths
