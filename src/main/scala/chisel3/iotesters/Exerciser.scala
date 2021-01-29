@@ -3,6 +3,7 @@
 package chisel3.iotesters
 
 import chisel3._
+import chisel3.experimental.DataMirror
 import chisel3.testers.BasicTester
 
 /**
@@ -48,8 +49,12 @@ abstract class Exerciser extends BasicTester {
     }
   }
   def buildState(name: String = s"$current_states")(stop_condition : StopCondition)(generator: () => Unit): Unit = {
-    //noinspection ScalaStyle
-    device_under_test.io := DontCare  // Support invalidate API.
+    // Support invalidate API.
+    DataMirror.modulePorts(device_under_test).foreach {
+      case (_, _: Clock) =>
+      case (_, port) => port := DontCare
+    }
+
     println(s"building state $current_states $name")
     when(state_number === (current_states).asUInt) {
       when(! state_locked) {

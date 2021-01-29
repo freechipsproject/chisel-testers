@@ -11,7 +11,7 @@ class BBAddOne extends HasBlackBoxInline {
   val io = IO(new Bundle {
     val in = Input(UInt(16.W))
     val out = Output(UInt(16.W))
-  })
+  }).suggestName("io")
   setInline("BBAddOne.v",
   """
     |module BBAddOne(
@@ -29,7 +29,7 @@ class BBAddTwo extends HasBlackBoxResource {
   val io = IO(new Bundle {
     val in = Input(UInt(16.W))
     val out = Output(UInt(16.W))
-  })
+  }).suggestName("io")
   addResource("/AddTwoAddThree.v")
 }
 
@@ -37,7 +37,7 @@ class BBAddThree extends HasBlackBoxResource {
   val io = IO(new Bundle {
     val in = Input(UInt(16.W))
     val out = Output(UInt(16.W))
-  })
+  }).suggestName("io")
   addResource("/AddTwoAddThree.v")
 }
 

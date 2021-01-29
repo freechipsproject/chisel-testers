@@ -391,7 +391,7 @@ abstract class OrderedDecoupledHWIOTester extends HWIOTester {
    * by either a decoupled or valid
    */
   override def finish(): Unit = {
-    io_info = new IOAccessor(device_under_test.io)
+    io_info = new IOAccessor(device_under_test)
 
     processInputEvents()
     processOutputEvents()
