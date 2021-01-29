@@ -8,7 +8,7 @@ import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
 
 private[iotesters] class FirrtlTerpBackend(
-    dut: MultiIOModule,
+    dut: Module,
     firrtlIR: String,
     optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager)
   extends Backend(_seed = System.currentTimeMillis()) {
@@ -117,7 +117,7 @@ private[iotesters] class FirrtlTerpBackend(
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply[T <: MultiIOModule](
+  def apply[T <: Module](
       dutGen: () => T,
       optionsManager: TesterOptionsManager = new TesterOptionsManager with HasInterpreterOptions,
       firrtlSourceOverride: Option[String] = None

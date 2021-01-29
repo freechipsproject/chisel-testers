@@ -12,7 +12,7 @@ import scala.sys.process.{Process, ProcessLogger}
 import java.io.{File, PrintStream}
 import java.nio.channels.FileChannel
 
-private[iotesters] class SimApiInterface(dut: MultiIOModule, cmd: Seq[String]) {
+private[iotesters] class SimApiInterface(dut: Module, cmd: Seq[String]) {
   //
   // Construct maps for the input and output
   // Remove zero length fields during the process

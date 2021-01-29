@@ -28,7 +28,7 @@ object Driver {
     * @param testerGen       A peek poke tester with tests for the dut
     * @return                Returns true if all tests in testerGen pass
     */
-  def execute[T <: MultiIOModule](
+  def execute[T <: Module](
                             dutGenerator: () => T,
                             optionsManager: TesterOptionsManager,
                             firrtlSourceOverride: Option[String] = None
@@ -94,7 +94,7 @@ object Driver {
     * @param testerGen  A peek-poke tester with test for the dey
     * @return           Returns true if all tests in testerGen pass
     */
-  def execute[T <: MultiIOModule](args: Array[String], dut: () => T)(
+  def execute[T <: Module](args: Array[String], dut: () => T)(
     testerGen: T => PeekPokeTester[T]
   ): Boolean = {
     val optionsManager = new TesterOptionsManager
@@ -126,7 +126,7 @@ object Driver {
     * @param optionsManager options
     * @return
     */
-  def executeFirrtlRepl[T <: MultiIOModule](
+  def executeFirrtlRepl[T <: Module](
                                       dutGenerator: () => T,
                                       optionsManager: ReplOptionsManager = new ReplOptionsManager): Boolean = {
 
@@ -172,7 +172,7 @@ object Driver {
     * @param args           options from the command line
     * @return
     */
-  def executeFirrtlRepl[T <: MultiIOModule](
+  def executeFirrtlRepl[T <: Module](
                                     args: Array[String],
                                       dutGenerator: () => T
                                       ): Boolean = {
@@ -226,7 +226,7 @@ object Driver {
     * @param testerGen   This is a test harness subclassing PeekPokeTester for dutGen,
     * @return            This will be true if all tests in the testerGen pass
     */
-  def apply[T <: MultiIOModule](
+  def apply[T <: Module](
       dutGen: () => T,
       backendType: String = "firrtl",
       verbose: Boolean = false,
@@ -244,7 +244,7 @@ object Driver {
     * Runs the ClassicTester using the verilator backend without doing Verilator compilation and returns a Boolean indicating success or failure
     * Requires the caller to supply path the already compile Verilator binary
     */
-  def run[T <: MultiIOModule](dutGen: () => T, cmd: Seq[String])
+  def run[T <: Module](dutGen: () => T, cmd: Seq[String])
                       (testerGen: T => PeekPokeTester[T]): Boolean = {
     val circuit = chisel3.stage.ChiselStage.elaborate(dutGen())
     val dut = getTopModule(circuit).asInstanceOf[T]
@@ -269,11 +269,11 @@ object Driver {
     }
   }
 
-  def run[T <: MultiIOModule](dutGen: () => T, binary: String, args: String*)
+  def run[T <: Module](dutGen: () => T, binary: String, args: String*)
                       (testerGen: T => PeekPokeTester[T]): Boolean =
     run(dutGen, binary +: args.toSeq)(testerGen)
 
-  def run[T <: MultiIOModule](dutGen: () => T, binary: File, waveform: Option[File] = None)
+  def run[T <: Module](dutGen: () => T, binary: File, waveform: Option[File] = None)
                       (testerGen: T => PeekPokeTester[T]): Boolean = {
     val args = waveform match {
       case None => Nil

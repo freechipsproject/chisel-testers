@@ -38,7 +38,7 @@ object copyVerilatorHeaderFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object VerilatorCppHarnessGenerator {
-  def codeGen(dut: MultiIOModule, state: CircuitState, vcdFilePath: String): String = {
+  def codeGen(dut: Module, state: CircuitState, vcdFilePath: String): String = {
     val codeBuffer = new StringBuilder
 
     def pushBack(vector: String, pathName: String, width: BigInt) {
@@ -205,7 +205,7 @@ int main(int argc, char **argv, char **env) {
 }
 
 private[iotesters] object setupVerilatorBackend {
-  def apply[T <: MultiIOModule](dutGen: () => T,
+  def apply[T <: Module](dutGen: () => T,
                                 optionsManager: TesterOptionsManager,
                                 firrtlSourceOverride: Option[String] = None): (T, Backend) = {
     import firrtl.{ChirrtlForm, CircuitState}
@@ -291,7 +291,7 @@ private[iotesters] object setupVerilatorBackend {
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: MultiIOModule,
+private[iotesters] class VerilatorBackend(dut: Module,
                                           cmd: Seq[String],
                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 

@@ -4,14 +4,13 @@ package chisel3.iotesters
 
 import chisel3.internal.InstanceId
 import chisel3.stage.{ChiselCircuitAnnotation, ChiselStage}
-import chisel3.{Element, MemBase, MultiIOModule, assert}
-import firrtl.stage.CompilerAnnotation
+import chisel3.{Element, MemBase, Module, assert}
 import firrtl.{AnnotationSeq, annoSeqToSeq}
 import treadle.stage.TreadleTesterPhase
 import treadle.{TreadleTester, TreadleTesterAnnotation}
 
 private[iotesters] class TreadleBackend(
-  dut: MultiIOModule,
+  dut: Module,
   treadleTester: TreadleTester
 )
 extends Backend(_seed = System.currentTimeMillis()) {
@@ -121,7 +120,7 @@ extends Backend(_seed = System.currentTimeMillis()) {
 }
 
 private[iotesters] object setupTreadleBackend {
-  def apply[T <: MultiIOModule](
+  def apply[T <: Module](
     dutGen: () => T,
     optionsManager: TesterOptionsManager = new TesterOptionsManager): (T, Backend) = {
 

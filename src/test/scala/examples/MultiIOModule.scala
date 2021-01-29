@@ -9,7 +9,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 
-class MultiIOAdder extends MultiIOModule {
+class MultiIOAdder extends Module {
   val a = IO(Input(UInt(4.W)))
   val b = IO(Input(UInt(4.W)))
   val c = IO(Output(UInt(5.W)))
@@ -28,7 +28,7 @@ class MultiIOAdderTester(c: MultiIOAdder) extends PeekPokeTester(c) {
   }
 }
 
-class MultiIOModuleSpec extends AnyFlatSpec with Matchers {
+class ModuleSpec extends AnyFlatSpec with Matchers {
   behavior of "MuiltiIOAdder"
 
   it should "test correctly for every i/o combination with verilator" in {
