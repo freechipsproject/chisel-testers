@@ -5,7 +5,8 @@ import java.io.{File, FileWriter, IOException, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, Element, MultiIOModule}
+import chisel3.{Element, Module}
+import chisel3.iotesters.DriverCompatibility._
 import firrtl.{ChirrtlForm, CircuitState}
 import firrtl.transforms.BlackBoxTargetDirAnno
 
@@ -45,7 +46,7 @@ object copyVsimFiles {
   * Generates the Module specific vsim harness verilog file for VSIM backend
   */
 object genVSIMVerilogHarness {
-  def apply(dut: MultiIOModule, writer: Writer) {
+  def apply(dut: Module, writer: Writer) {
     val dutName = dut.name
     // getPorts() is going to return names prefixed with the dut name.
     // These don't correspond to code currently generated for verilog modules,
@@ -117,7 +118,7 @@ object genVSIMVerilogHarness {
 }
 
 private[iotesters] object setupVSIMBackend {
-  def apply[T <: MultiIOModule](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
+  def apply[T <: Module](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
     optionsManager.makeTargetDir()
     optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
       runFirrtlCompiler = false
@@ -125,7 +126,7 @@ private[iotesters] object setupVSIMBackend {
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
-    chisel3.Driver.execute(optionsManager, dutGen) match {
+    DriverCompatibility.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
 
         val chirrtl = firrtl.Parser.parse(emitted)
@@ -189,7 +190,7 @@ private[iotesters] object setupVSIMBackend {
   }
 }
 
-private[iotesters] class VSIMBackend(dut: MultiIOModule,
+private[iotesters] class VSIMBackend(dut: Module,
                                     cmd: Seq[String],
                                     _seed: Long = System.currentTimeMillis)
            extends VerilatorBackend(dut, cmd, _seed)

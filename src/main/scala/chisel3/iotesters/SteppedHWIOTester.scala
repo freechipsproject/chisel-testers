@@ -3,7 +3,7 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.core.{ActualDirection, DataMirror}
+import chisel3.experimental.DataMirror
 import chisel3.util._
 
 import scala.collection.mutable
@@ -170,8 +170,12 @@ abstract class SteppedHWIOTester extends HWIOTester {
   }
 
   override def finish(): Unit = {
-    io_info = new IOAccessor(device_under_test.io)
-    device_under_test.io := DontCare
+
+    DataMirror.modulePorts(device_under_test).foreach {
+      case (_, _: Clock) =>
+      case (_, port) => port := DontCare
+    }
+    io_info = new IOAccessor(device_under_test)
 
     processEvents()
 

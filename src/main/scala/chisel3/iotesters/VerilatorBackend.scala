@@ -5,11 +5,11 @@ import java.io._
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 
-import chisel3._
 import chisel3.experimental.{FixedPoint, Interval}
 import chisel3.internal.InstanceId
+import chisel3.iotesters.DriverCompatibility._
+import chisel3.{ChiselExecutionFailure => _, ChiselExecutionResult => _, ChiselExecutionSuccess => _, _}
 import firrtl._
-import firrtl.annotations.CircuitName
 import firrtl.transforms._
 
 /**
@@ -38,7 +38,7 @@ object copyVerilatorHeaderFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object VerilatorCppHarnessGenerator {
-  def codeGen(dut: MultiIOModule, state: CircuitState, vcdFilePath: String): String = {
+  def codeGen(dut: Module, state: CircuitState, vcdFilePath: String): String = {
     val codeBuffer = new StringBuilder
 
     def pushBack(vector: String, pathName: String, width: BigInt) {
@@ -205,7 +205,7 @@ int main(int argc, char **argv, char **env) {
 }
 
 private[iotesters] object setupVerilatorBackend {
-  def apply[T <: MultiIOModule](dutGen: () => T,
+  def apply[T <: Module](dutGen: () => T,
                                 optionsManager: TesterOptionsManager,
                                 firrtlSourceOverride: Option[String] = None): (T, Backend) = {
     import firrtl.{ChirrtlForm, CircuitState}
@@ -219,7 +219,7 @@ private[iotesters] object setupVerilatorBackend {
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
-    chisel3.Driver.execute(optionsManager, dutGen) match {
+    DriverCompatibility.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
 
         val chirrtlSource = firrtlSourceOverride.getOrElse(emitted)
@@ -275,7 +275,7 @@ private[iotesters] object setupVerilatorBackend {
             editCommands = optionsManager.testerOptions.vcsCommandEdits
           ).! == 0
         )
-        assert(chisel3.Driver.cppToExe(circuit.name, dir).! == 0)
+        assert(firrtl.util.BackendCompilationUtilities.cppToExe(circuit.name, dir).! == 0)
 
         val command = if(optionsManager.testerOptions.testCmd.nonEmpty) {
           optionsManager.testerOptions.testCmd
@@ -291,7 +291,7 @@ private[iotesters] object setupVerilatorBackend {
   }
 }
 
-private[iotesters] class VerilatorBackend(dut: MultiIOModule,
+private[iotesters] class VerilatorBackend(dut: Module,
                                           cmd: Seq[String],
                                           _seed: Long = System.currentTimeMillis) extends Backend(_seed) {
 

@@ -3,10 +3,10 @@
 package chisel3.iotesters
 
 import chisel3._
-import chisel3.core.ActualDirection
 import chisel3.util._
 import chisel3.experimental._
 
+import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.matching.Regex
 
@@ -14,7 +14,7 @@ import scala.util.matching.Regex
  * named access and type information about the IO bundle of a module
  * used for building testing harnesses
  */
-class IOAccessor(val device_io: Record, verbose: Boolean = true) {
+class IOAccessor(val device_under_test: Module, verbose: Boolean = true) {
   val ports_referenced = new mutable.HashSet[Data]
 
   val dut_inputs                 = new mutable.HashSet[Data]()
@@ -81,7 +81,13 @@ class IOAccessor(val device_io: Record, verbose: Boolean = true) {
       }
     }
 
-    parseBundle(device_io)
+    val record = new Record {
+      override val elements: ListMap[String, Data] = ListMap(DataMirror.fullModulePorts(device_under_test):_*)
+
+      //TODO: There must be a better way, but it works ok, I don't think this will be cloned
+      override def cloneType: this.type = this
+    }
+    parseBundle(record)
     port_to_name_accumulator
   }
   val name_to_port = port_to_name.map(_.swap)

@@ -91,7 +91,7 @@ class IntervalSpec extends AnyFreeSpec with Matchers {
   "negative numbers can be read back from verilator" in {
     iotesters.Driver.execute(
       Array("--backend-name", "verilator"),
-      () => new MultiIOModule {
+      () => new Module {
         val in  = IO(Input(Interval(range"[-64.0,64.0).2")))
         val out = IO(Output(Interval(range"[-64.0,64.0).2")))
         out := in

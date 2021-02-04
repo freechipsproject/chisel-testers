@@ -8,7 +8,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 
-class HasSyncReadMem extends MultiIOModule {
+class HasSyncReadMem extends Module {
   val readAddr  = IO(Input(UInt(16.W)))
   val readData  = IO(Output(UInt(16.W)))
   val writeAddr = IO(Input(UInt(16.W)))

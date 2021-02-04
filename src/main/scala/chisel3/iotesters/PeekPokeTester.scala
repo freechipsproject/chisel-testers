@@ -5,7 +5,7 @@ package chisel3.iotesters
 import java.io.File
 
 import chisel3._
-import chisel3.{Aggregate, Element, MultiIOModule}
+import chisel3.{Aggregate, Element, Module}
 import PeekPokeTester.extractElementBits
 import chisel3.experimental.{FixedPoint, Interval}
 import chisel3.internal.firrtl.KnownBinaryPoint
@@ -88,7 +88,7 @@ object PeekPokeTester {
   }
 }
 
-abstract class PeekPokeTester[+T <: MultiIOModule](
+abstract class PeekPokeTester[+T <: Module](
     val dut: T,
     base: Int = 16,
     logFile: Option[File] = None) {
