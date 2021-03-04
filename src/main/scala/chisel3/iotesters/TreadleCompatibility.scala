@@ -9,7 +9,9 @@ import treadle.executable.{ClockInfo, TreadleException}
 
 import scala.collection.mutable
 
+
 //scalastyle:off magic.number
+@deprecated("Use Driver#execute[T <: Module](args: Array[String], dut: () => T)", since = "20210301")
 case class TreadleOptions(
                            writeVCD:           Boolean = false,
                            enableCoverage:     Boolean = false,
@@ -70,6 +72,7 @@ case class TreadleOptions(
   }
 }
 
+@deprecated("Use Driver#execute[T <: Module](args: Array[String], dut: () => T)", since = "20210301")
 trait HasTreadleOptions {
   self: ExecutionOptionsManager =>
 
@@ -233,8 +236,10 @@ trait HasTreadleOptions {
     .text("name of default reset")
 }
 
+@deprecated("Use Driver#execute[T <: Module](args: Array[String], dut: () => T)", since = "20210301")
 class TreadleOptionsManager extends ExecutionOptionsManager("engine") with HasTreadleSuite
 
+@deprecated("Use Driver#execute[T <: Module](args: Array[String], dut: () => T)", since = "20210301")
 trait HasTreadleSuite extends ExecutionOptionsManager with HasFirrtlOptions with HasTreadleOptions {
   self: ExecutionOptionsManager =>
 
