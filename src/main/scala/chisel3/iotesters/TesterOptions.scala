@@ -7,7 +7,6 @@ import java.io.File
 import chisel3.HasChiselExecutionOptions
 import firrtl.{ComposableOptions, ExecutionOptionsManager, HasFirrtlOptions}
 import firrtl_interpreter.HasInterpreterSuite
-import treadle.HasTreadleSuite
 
 import scala.util.matching.Regex
 

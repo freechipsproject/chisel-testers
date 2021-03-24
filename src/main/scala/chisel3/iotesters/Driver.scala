@@ -28,6 +28,7 @@ object Driver {
     * @param testerGen       A peek poke tester with tests for the dut
     * @return                Returns true if all tests in testerGen pass
     */
+  @deprecated("Use Driver#execute[T <: Module](args: Array[String], dut: () => T)", since = "20210301")
   def execute[T <: Module](
                             dutGenerator: () => T,
                             optionsManager: TesterOptionsManager,
@@ -126,6 +127,7 @@ object Driver {
     * @param optionsManager options
     * @return
     */
+  @deprecated("Use Driver#def executeFirrtlRepl[T <: Module](args: Array[String], dutGenerator: () => T)", since = "20210301")
   def executeFirrtlRepl[T <: Module](
                                       dutGenerator: () => T,
                                       optionsManager: ReplOptionsManager = new ReplOptionsManager): Boolean = {
