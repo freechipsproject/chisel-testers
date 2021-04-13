@@ -5,6 +5,7 @@ import ammonite.ops.ImplicitWd._
 import mill._
 import mill.scalalib._
 import mill.scalalib.publish._
+import coursier.maven.MavenRepository
 import mill.eval.Evaluator
 
 import $file.CommonBuild
@@ -28,6 +29,11 @@ trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
     )
   )
 
+  override def repositories = super.repositories ++ Seq(
+    MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
+    MavenRepository("https://oss.sonatype.org/content/repositories/releases")
+  )
+
   override def scalacOptions = Seq(
     "-deprecation",
     "-explaintypes",
@@ -41,7 +47,7 @@ trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
   override def javacOptions = CommonBuild.javacOptionsVersion(crossScalaVersion)
 }
 
-val crossVersions = Seq("2.12.10", "2.11.12")
+val crossVersions = Seq("2.12.13")
 
 // Make this available to external tools.
 object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
