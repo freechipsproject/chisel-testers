@@ -144,8 +144,10 @@ private[iotesters] object setupFirrtlTerpBackend {
           case FirrtlExecutionFailure(message) =>
             throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
         }
-      case _ =>
-        throw new Exception("Problem with compilation")
+      case ChiselExecutionFailure(message) =>
+        throw new Exception(s"Problem with compilation in Firrtl Interpreter: $message")
+      case badResult =>
+        throw new Exception(s"Unknown problem with compilation in Firrtl Interpreter, result: ${badResult.toString}")
     }
   }
 }
