@@ -51,7 +51,7 @@ val defaultVersions = Map(
 //  "treadle" -> "1.5-SNAPSHOT"
   )
 
-libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").map { dep: String =>
+libraryDependencies ++= Seq("chisel3").map { dep: String =>
     "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
 }
 
