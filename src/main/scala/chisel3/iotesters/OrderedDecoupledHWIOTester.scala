@@ -249,7 +249,7 @@ abstract class OrderedDecoupledHWIOTester extends HWIOTester {
                                             events           : ArrayBuffer[TestingEvent]
                                           ): Map[Data, Vec[UInt]] = {
     val port_vector_events = referenced_ports.map { port =>
-      port -> VecInit(events.map { event => (event.port_values.getOrElse(port, BigInt(0))).asUInt } ++ List(0.U)) //0 added to end
+      port -> VecInit((events.map { event => (event.port_values.getOrElse(port, BigInt(0))).asUInt } ++ List(0.U)).toSeq) //0 added to end
     }.toMap
 
     logScalaDebug(s"Input controller ${io_info.port_to_name(io_interface)} : ports " +

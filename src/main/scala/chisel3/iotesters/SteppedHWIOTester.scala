@@ -125,7 +125,7 @@ abstract class SteppedHWIOTester extends HWIOTester {
       test_actions.map { step =>
         default_value = step.input_map.getOrElse(input_port, default_value)
         (default_value).asUInt(input_port.getWidth.W)
-      }
+      }.toSeq
     )
     input_port := input_values(counter.value)
   }
@@ -134,12 +134,12 @@ abstract class SteppedHWIOTester extends HWIOTester {
     val output_values = VecInit(
       test_actions.map { step =>
         step.output_map.getOrElse(output_port, BigInt(0)).asUInt.asTypeOf(output_port.cloneType )
-      }
+      }.toSeq
     )
     val ok_to_test_output_values = VecInit(
       test_actions.map { step =>
         (step.output_map.contains(output_port)).asBool
-      }
+      }.toSeq
     )
 
     when(ok_to_test_output_values(counter.value)) {
