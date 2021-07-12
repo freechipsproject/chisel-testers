@@ -163,7 +163,7 @@ private[iotesters] object setupVCSBackend {
 
         val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
           CircuitState(chirrtl, ChirrtlForm, annotations),
-          customTransforms = transforms
+          customTransforms = transforms.toSeq
         )
         val compiledStuff = compileResult.getEmittedCircuit
         verilogWriter.write(compiledStuff.value)

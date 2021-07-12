@@ -246,8 +246,8 @@ private[iotesters] object setupVerilatorBackend {
         val verilogWriter = new FileWriter(verilogFile)
 
         val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
-          CircuitState(chirrtl, ChirrtlForm, annotations),
-          customTransforms = transforms
+          CircuitState(chirrtl, ChirrtlForm, annotations.toSeq),
+          customTransforms = transforms.toSeq
         )
         val compiledStuff = compileResult.getEmittedCircuit
         verilogWriter.write(compiledStuff.value)
@@ -259,7 +259,7 @@ private[iotesters] object setupVerilatorBackend {
         val cppHarnessWriter = new FileWriter(cppHarnessFile)
         val vcdFile = new File(dir, s"${circuit.name}.vcd")
         val emittedStuff = VerilatorCppHarnessGenerator.codeGen(
-          dut, CircuitState(chirrtl, ChirrtlForm, annotations), vcdFile.toString
+          dut, CircuitState(chirrtl, ChirrtlForm, annotations.toSeq), vcdFile.toString
         )
         cppHarnessWriter.append(emittedStuff)
         cppHarnessWriter.close()

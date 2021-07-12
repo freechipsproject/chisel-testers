@@ -51,7 +51,8 @@ class FixedPointDivide(val fixedType: FixedPoint, val shiftAmount: Int) extends 
 }
 
 class FixedPointDivideTester(c: FixedPointDivide) extends PeekPokeTester(c) {
-  for(d <- 0.0 to 15.0 by (1.0 / 3.0)) {
+  for(bd <- BigDecimal(0.0) to 15.0 by (1.0 / 3.0)) {
+    val d = bd.toDouble
     pokeFixedPoint(c.io.in, d)
 
 

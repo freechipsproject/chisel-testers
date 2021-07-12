@@ -133,7 +133,7 @@ private[iotesters] object setupFirrtlTerpBackend {
       optionsManager.interpreterOptions = optionsManager.interpreterOptions.copy(writeVCD = true)
     }
 
-    val annos = Driver.filterAnnotations(firrtl.Driver.getAnnotations(optionsManager))
+    val annos = chisel3.iotesters.Driver.filterAnnotations(firrtl.Driver.getAnnotations(optionsManager).toSeq)
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
     DriverCompatibility.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>

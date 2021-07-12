@@ -29,8 +29,8 @@ class FixedIsWholeTestBench(dut: FixedIsWhole) extends PeekPokeTester(dut) {
     pokeFixedPoint(dut.io.in, i.toDouble)
     step(1)
     val result = peek(dut.io.out)
-    println(s"input $i expecting ${i.isWhole()} got $result")
-    expect(dut.io.out, i.isWhole())
+    println(s"input $i expecting ${i.isWhole} got $result")
+    expect(dut.io.out, i.isWhole)
   }
 }
 

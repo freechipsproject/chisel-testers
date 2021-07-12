@@ -224,7 +224,9 @@ abstract class PeekPokeTester[+T <: Module](
   private def getBundleElement(path: List[String], bundle: ListMap[String, Data]): Element = {
     (path, bundle(path.head)) match {
       case (head :: Nil, element: Element) => element
-      case (head :: tail, b: Bundle) => getBundleElement(tail, b.elements)
+      case (head :: tail, b: Bundle) =>
+        val listMap = new ListMap[String, Data] ++ b.elements
+        getBundleElement(tail, listMap)
       case _ => throw new Exception(s"peek/poke bundle element mismatch $path")
     }
   }
@@ -238,7 +240,8 @@ abstract class PeekPokeTester[+T <: Module](
     val circuitElements = signal.elements
     for ( (key, value) <- map) {
       val subKeys = key.split('.').toList
-      val element = getBundleElement(subKeys, circuitElements)
+      val listMap = new ListMap[String, Data] ++ circuitElements
+      val element = getBundleElement(subKeys, listMap)
       element match {
         case Pokeable(e) => poke(e, value)
         case _ => throw new Exception(s"Cannot poke type ${element.getClass.getName}")
