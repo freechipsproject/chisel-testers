@@ -47,7 +47,7 @@ trait CommonModule extends CrossUnRootedSbtModule with PublishModule {
   override def javacOptions = CommonBuild.javacOptionsVersion(crossScalaVersion)
 }
 
-val crossVersions = Seq("2.12.13")
+val crossVersions = Seq("2.12.14", "2.13.6")
 
 // Make this available to external tools.
 object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
