@@ -58,7 +58,6 @@ private[iotesters] object getChiselNodes {
       case m: DefModule =>
         m.commands flatMap {
           case x: DefReg => flatten(x.id)
-          case x: DefRegInit => flatten(x.id)
           case mem: DefMemory => mem.t match {
             case _: Element => Seq(mem.id)
             case _ => Nil // Do not support aggregate type memories
