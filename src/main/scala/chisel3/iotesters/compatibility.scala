@@ -2,8 +2,9 @@
 
 package Chisel
 
-import chisel3.{ iotesters => ciot }
 import java.io.File
+
+import chisel3.{iotesters => ciot}
 
 /**
   * Provide "Chisel" interface to specific chisel3 internals.

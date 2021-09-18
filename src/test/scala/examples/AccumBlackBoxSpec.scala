@@ -30,7 +30,7 @@ trait AccumulatorAbstractInterface extends BaseModule {
       val data = Output(UInt(16.W))
       val clock = Input(Clock())
     }
-  }
+  }.suggestName("io")
 }
 
 class AccumulatorInterface extends Module with AccumulatorAbstractInterface

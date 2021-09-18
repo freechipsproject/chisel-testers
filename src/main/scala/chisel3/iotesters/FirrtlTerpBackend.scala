@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 package chisel3.iotesters
 
-import chisel3._
+import chisel3.{ChiselExecutionFailure => _, ChiselExecutionResult => _, ChiselExecutionSuccess => _, _}
 import chisel3.internal.InstanceId
+import chisel3.iotesters.DriverCompatibility._
 import firrtl.{FirrtlExecutionFailure, FirrtlExecutionSuccess}
 import firrtl_interpreter._
 
 private[iotesters] class FirrtlTerpBackend(
-    dut: MultiIOModule,
+    dut: Module,
     firrtlIR: String,
     optionsManager: TesterOptionsManager with HasInterpreterSuite = new TesterOptionsManager)
   extends Backend(_seed = System.currentTimeMillis()) {
@@ -116,7 +117,7 @@ private[iotesters] class FirrtlTerpBackend(
 }
 
 private[iotesters] object setupFirrtlTerpBackend {
-  def apply[T <: MultiIOModule](
+  def apply[T <: Module](
       dutGen: () => T,
       optionsManager: TesterOptionsManager = new TesterOptionsManager with HasInterpreterOptions,
       firrtlSourceOverride: Option[String] = None
@@ -132,9 +133,9 @@ private[iotesters] object setupFirrtlTerpBackend {
       optionsManager.interpreterOptions = optionsManager.interpreterOptions.copy(writeVCD = true)
     }
 
-    val annos = Driver.filterAnnotations(firrtl.Driver.getAnnotations(optionsManager))
+    val annos = chisel3.iotesters.Driver.filterAnnotations(firrtl.Driver.getAnnotations(optionsManager).toSeq)
     optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(annotations = annos.toList)
-    chisel3.Driver.execute(optionsManager, dutGen) match {
+    DriverCompatibility.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), _, Some(firrtlExecutionResult)) =>
         val dut = getTopModule(circuit).asInstanceOf[T]
         firrtlExecutionResult match {
@@ -142,10 +143,12 @@ private[iotesters] object setupFirrtlTerpBackend {
             val firrtlText = firrtlSourceOverride.getOrElse(compiledFirrtl)
             (dut, new FirrtlTerpBackend(dut, firrtlText, optionsManager = optionsManager))
           case FirrtlExecutionFailure(message) =>
-            throw new Exception(s"FirrtlBackend: failed firrlt compile message: $message")
+            throw new Exception(s"FirrtlBackend: failed firrtl compile message: $message")
         }
-      case _ =>
-        throw new Exception("Problem with compilation")
+      case ChiselExecutionFailure(message) =>
+        throw new Exception(s"Problem with compilation in Firrtl Interpreter: $message")
+      case badResult =>
+        throw new Exception(s"Unknown problem with compilation in Firrtl Interpreter, result: ${badResult.toString}")
     }
   }
 }

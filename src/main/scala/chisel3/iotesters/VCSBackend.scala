@@ -5,7 +5,8 @@ import java.io.{File, FileWriter, IOException, Writer}
 import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
-import chisel3.{ChiselExecutionFailure, ChiselExecutionSuccess, Element, MultiIOModule}
+import chisel3.{Element, Module}
+import chisel3.iotesters.DriverCompatibility._
 import firrtl.{ChirrtlForm, CircuitState}
 import firrtl.transforms.BlackBoxTargetDirAnno
 
@@ -42,7 +43,7 @@ object copyVpiFiles {
   * Generates the Module specific verilator harness cpp file for verilator compilation
   */
 object genVCSVerilogHarness {
-  def apply(dut: MultiIOModule, writer: Writer, waveFilePath: String, isGateLevel: Boolean = false, generateFsdb: Boolean) {
+  def apply(dut: Module, writer: Writer, waveFilePath: String, isGateLevel: Boolean = false, generateFsdb: Boolean) {
     val dutName = dut.name
 
     // getPorts() is going to return names prefixed with the dut name.
@@ -133,7 +134,7 @@ object genVCSVerilogHarness {
 }
 
 private[iotesters] object setupVCSBackend {
-  def apply[T <: MultiIOModule](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
+  def apply[T <: Module](dutGen: () => T, optionsManager: TesterOptionsManager): (T, Backend) = {
     optionsManager.makeTargetDir()
     optionsManager.chiselOptions = optionsManager.chiselOptions.copy(
       runFirrtlCompiler = false
@@ -141,7 +142,7 @@ private[iotesters] object setupVCSBackend {
     val dir = new File(optionsManager.targetDirName)
 
     // Generate CHIRRTL
-    chisel3.Driver.execute(optionsManager, dutGen) match {
+    DriverCompatibility.execute(optionsManager, dutGen) match {
       case ChiselExecutionSuccess(Some(circuit), emitted, _) =>
 
         val chirrtl = firrtl.Parser.parse(emitted)
@@ -162,7 +163,7 @@ private[iotesters] object setupVCSBackend {
 
         val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(
           CircuitState(chirrtl, ChirrtlForm, annotations),
-          customTransforms = transforms
+          customTransforms = transforms.toSeq
         )
         val compiledStuff = compileResult.getEmittedCircuit
         verilogWriter.write(compiledStuff.value)
@@ -200,7 +201,7 @@ private[iotesters] object setupVCSBackend {
   }
 }
 
-private[iotesters] class VCSBackend(dut: MultiIOModule,
+private[iotesters] class VCSBackend(dut: Module,
                                     cmd: Seq[String],
                                     _seed: Long = System.currentTimeMillis)
   extends VerilatorBackend(dut, cmd, _seed)

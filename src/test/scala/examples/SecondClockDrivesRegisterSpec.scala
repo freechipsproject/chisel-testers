@@ -11,7 +11,7 @@ import org.scalatest.matchers.should.Matchers
 
 
 class SecondClockDrivesRegisterSpec extends AnyFreeSpec with Matchers {
-  class SecondClock extends MultiIOModule {
+  class SecondClock extends Module {
     val inClock = IO(Input(Bool()))
     val out = IO(Output(UInt(8.W)))
 

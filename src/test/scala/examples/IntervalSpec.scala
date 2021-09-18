@@ -49,7 +49,8 @@ class IntervalDivide(val intervalType: Interval, val shiftAmount: Int) extends M
 }
 
 class IntervalDivideTester(c: IntervalDivide) extends PeekPokeTester(c) {
-  for(d <- 0.0 to 15.0 by (1.0 / 3.0)) {
+  for(bd <- BigDecimal(0.0) to 15.0 by (1.0 / 3.0)) {
+    val d = bd.toDouble
     pokeInterval(c.io.in, d)
 
 
@@ -91,7 +92,7 @@ class IntervalSpec extends AnyFreeSpec with Matchers {
   "negative numbers can be read back from verilator" in {
     iotesters.Driver.execute(
       Array("--backend-name", "verilator"),
-      () => new MultiIOModule {
+      () => new Module {
         val in  = IO(Input(Interval(range"[-64.0,64.0).2")))
         val out = IO(Output(Interval(range"[-64.0,64.0).2")))
         out := in

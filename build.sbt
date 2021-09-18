@@ -8,23 +8,9 @@ enablePlugins(GhpagesPlugin)
 
 git.remoteRepo := "git@github.com:freechipsproject/chisel-testers.git"
 
-def scalacOptionsVersion(scalaVersion: String): Seq[String] = {
-  Seq() ++ {
-    // If we're building with Scala > 2.11, enable the compile option
-    //  switch to support our anonymous Bundle definitions:
-    //  https://github.com/scala/bug/issues/10047
-    CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, scalaMajor: Long)) if scalaMajor < 12 => Seq()
-      case _ => Seq("-Xsource:2.11")
-    }
-  }
-}
-
 def javacOptionsVersion(scalaVersion: String): Seq[String] = {
   Seq() ++ {
     // Scala 2.12 requires Java 8. We continue to generate
-    //  Java 7 compatible code for Scala 2.11
-    //  for compatibility with old clients.
     CrossVersion.partialVersion(scalaVersion) match {
       case Some((2, scalaMajor: Long)) if scalaMajor < 12 =>
         Seq("-source", "1.7", "-target", "1.7")
@@ -38,9 +24,9 @@ organization := "edu.berkeley.cs"
 version := "2.5-SNAPSHOT"
 name := "chisel-iotesters"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.12.14"
 
-crossScalaVersions := Seq("2.12.10", "2.11.12")
+crossScalaVersions := Seq("2.12.14", "2.13.6")
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // The following are the default development versions, not the "release" versions.
@@ -106,8 +92,6 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("releases")
 )
 
-scalacOptions := Seq("-deprecation") ++ scalacOptionsVersion(scalaVersion.value)
-
 scalacOptions in (Compile, doc) ++= Seq(
   "-diagrams",
   "-diagrams-max-classes", "25",
@@ -115,4 +99,4 @@ scalacOptions in (Compile, doc) ++= Seq(
   "-doc-source-url", "https://github.com/ucb-bar/chisel-testers/tree/master/€{FILE_PATH}.scala"
 )
 
-javacOptions ++= javacOptionsVersion(scalaVersion.value)
+javacOptions ++= Seq("-source", "1.8", "-target", "1.8")

@@ -5,7 +5,6 @@ package chisel3.iotesters
 import java.io.File
 
 import chisel3._
-import chisel3.core.ActualDirection
 import chisel3.experimental._
 import chisel3.internal.InstanceId
 import chisel3.internal.firrtl.Circuit
@@ -25,7 +24,7 @@ private[iotesters] object getDataNames {
     case b: Record => b.elements.toSeq flatMap {case (n, e) => apply(s"${name}_$n", e)}
     case v: Vec[_] => v.zipWithIndex flatMap {case (e, i) => apply(s"${name}_$i", e)}
   }
-  def apply(dut: MultiIOModule, separator: String = "."): Seq[(Element, String)] =
+  def apply(dut: Module, separator: String = "."): Seq[(Element, String)] =
     dut.getPorts.flatMap { case chisel3.internal.firrtl.Port(data, _) =>
       apply(data.pathName replace (".", separator), data)
     }
@@ -33,7 +32,7 @@ private[iotesters] object getDataNames {
 }
 
 private[iotesters] object getPorts {
-  def apply(dut: MultiIOModule, separator: String = "."): (Seq[(Element, String)], Seq[(Element, String)]) =
+  def apply(dut: Module, separator: String = "."): (Seq[(Element, String)], Seq[(Element, String)]) =
     getDataNames(dut, separator) partition { case (e, _) => DataMirror.directionOf(e) == ActualDirection.Input }
 }
 

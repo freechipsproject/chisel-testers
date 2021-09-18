@@ -5,7 +5,7 @@ package chisel3.iotesters
 import java.io.File
 
 import chisel3._
-import chisel3.{Aggregate, Element, MultiIOModule}
+import chisel3.{Aggregate, Element, Module}
 import PeekPokeTester.extractElementBits
 import chisel3.experimental.{FixedPoint, Interval}
 import chisel3.internal.firrtl.KnownBinaryPoint
@@ -88,7 +88,7 @@ object PeekPokeTester {
   }
 }
 
-abstract class PeekPokeTester[+T <: MultiIOModule](
+abstract class PeekPokeTester[+T <: Module](
     val dut: T,
     base: Int = 16,
     logFile: Option[File] = None) {
@@ -224,7 +224,9 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
   private def getBundleElement(path: List[String], bundle: ListMap[String, Data]): Element = {
     (path, bundle(path.head)) match {
       case (head :: Nil, element: Element) => element
-      case (head :: tail, b: Bundle) => getBundleElement(tail, b.elements)
+      case (head :: tail, b: Bundle) =>
+        val listMap = new ListMap[String, Data] ++ b.elements
+        getBundleElement(tail, listMap)
       case _ => throw new Exception(s"peek/poke bundle element mismatch $path")
     }
   }
@@ -238,7 +240,8 @@ abstract class PeekPokeTester[+T <: MultiIOModule](
     val circuitElements = signal.elements
     for ( (key, value) <- map) {
       val subKeys = key.split('.').toList
-      val element = getBundleElement(subKeys, circuitElements)
+      val listMap = new ListMap[String, Data] ++ circuitElements
+      val element = getBundleElement(subKeys, listMap)
       element match {
         case Pokeable(e) => poke(e, value)
         case _ => throw new Exception(s"Cannot poke type ${element.getClass.getName}")
