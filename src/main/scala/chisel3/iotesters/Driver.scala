@@ -8,7 +8,7 @@ import java.io.File
 import chisel3.iotesters.DriverCompatibility._
 import firrtl.annotations.Annotation
 import firrtl_interpreter._
-import logger.Logger
+import logger.{LoggerCompatibility => Logger}
 
 import scala.util.DynamicVariable
 
