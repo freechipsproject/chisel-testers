@@ -35,7 +35,6 @@ class Packet extends Bundle {
   * @param n is number of fanned outputs for the routed packet
   */
 class RouterIO(n: Int) extends Bundle {
-//  override def cloneType           = new RouterIO(n).asInstanceOf[this.type]
   val read_routing_table_request   = DeqIO(new ReadCmd())
   val read_routing_table_response  = EnqIO(UInt(Router.addressWidth.W))
   val load_routing_table_request   = DeqIO(new WriteCmd())
