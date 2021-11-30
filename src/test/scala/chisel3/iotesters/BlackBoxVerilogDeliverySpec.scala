@@ -86,6 +86,6 @@ class BlackBoxVerilogDeliverySpec extends AnyFreeSpec with Matchers {
       new UsesBBAddOneTester(c)
     } should be(true)
     new java.io.File(
-        manager.targetDirName, firrtl.transforms.BlackBoxSourceHelper.fileListName).exists() should be (true)
+        manager.targetDirName, firrtl.transforms.BlackBoxSourceHelper.defaultFileListName).exists() should be (true)
   }
 }
