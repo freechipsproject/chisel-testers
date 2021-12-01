@@ -155,15 +155,6 @@ object ConcurrentDecoupledTestingSpec {
 
 class ConcurrentDecoupledTestingSpec extends AnyFreeSpec with Matchers {
   "This demonstrates waiting on multiple independent decoupled interfaces" - {
-    "using interpreter" in {
-      chisel3.iotesters.Driver.execute(
-        Array("--backend-name", "firrtl"),
-        () => new MultiGcdCalculator(ConcurrentDecoupledTestingSpec.parallelEngines)
-      ) { c =>
-        new MultiGcdCalculatorTester(c)
-      } should be(true)
-    }
-
     "using verilator" in {
       chisel3.iotesters.Driver.execute(
         Array("--backend-name", "verilator"),

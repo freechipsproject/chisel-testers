@@ -6,7 +6,6 @@ import java.io.File
 
 import chisel3.HasChiselExecutionOptions
 import firrtl.{ComposableOptions, ExecutionOptionsManager, HasFirrtlOptions}
-import firrtl_interpreter.HasInterpreterSuite
 
 import scala.util.matching.Regex
 
@@ -14,7 +13,7 @@ case class TesterOptions(
   isGenVerilog:         Boolean = false,
   isGenHarness:         Boolean = false,
   isCompiling:          Boolean = false,
-  isRunTest:            Boolean = false,
+  isRunTestc:            Boolean = false,
   isVerbose:            Boolean = false,
   displayBase:          Int     = 10,
   testerSeed:           Long    = System.currentTimeMillis,
@@ -189,7 +188,6 @@ trait HasTesterOptions {
 class TesterOptionsManager
   extends ExecutionOptionsManager("chisel-testers")
     with HasTesterOptions
-    with HasInterpreterSuite
     with HasChiselExecutionOptions
     with HasFirrtlOptions
     with HasTreadleSuite {

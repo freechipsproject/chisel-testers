@@ -37,10 +37,4 @@ class ModuleSpec extends AnyFlatSpec with Matchers {
       new MultiIOAdderTester(c)
     } should be (true)
   }
-  it should "test correctly for every i/o combination with firrtl" in {
-    val args = Array("--backend-name", "firrtl")
-    iotesters.Driver.execute(args, () => new MultiIOAdder) { c =>
-      new MultiIOAdderTester(c)
-    } should be (true)
-  }
 }

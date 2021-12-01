@@ -96,7 +96,6 @@ class DriverSpec extends AnyFreeSpec with Matchers {
       val manager = new TesterOptionsManager {
         testerOptions = testerOptions.copy(backendName = "verilator", testCmd = Seq("foo2/VDriverTest"))
         commonOptions = commonOptions.copy(targetDirName = "foo2", topName = "DriverTest")
-        interpreterOptions = interpreterOptions.copy(setVerbose = false, writeVCD = true)
       }
       iotesters.Driver.execute(() => new DriverTest, manager) { c =>
         new DriverTestTester(c)

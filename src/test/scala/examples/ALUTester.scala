@@ -201,7 +201,7 @@ class ALUBizarreInputTester (c: ALU) extends PeekPokeTester (c) {
 class ALUTester extends ChiselFlatSpec {
   behavior of "ALU"
 
-  private val backendNames = Array[String] ("firrtl", "verilator")
+  private val backendNames = Array[String] ("verilator")
   for (backendName <- backendNames) {
     it should s"compute data output according to alu_opcode (with  $backendName)" in {
       Driver(() => new ALU, backendName) {

@@ -36,14 +36,13 @@ trait AccumulatorAbstractInterface extends BaseModule {
 class AccumulatorInterface extends Module with AccumulatorAbstractInterface
 
 import firrtl.ir.Type
-import firrtl_interpreter._
 
 /**
   * This is an implementation of a black box whose verilog is contained inline in AccumulatorBlackBox, an instance of this
   * class will be placed into a black box factory so that it can be passed properly to the firrtl interpreter
   * @param name black box name
   */
-class AccumulatorFirrtlInterpreterBlackBox( val name : String) extends BlackBoxImplementation with ScalaBlackBox {
+class AccumulatorFirrtlInterpreterBlackBox( val name : String) extends ScalaBlackBox {
 
   var ns : BigInt = 0
   var ps : BigInt = 0
@@ -69,27 +68,9 @@ class AccumulatorFirrtlInterpreterBlackBox( val name : String) extends BlackBoxI
         println(s"not positive edge, no action for cycle in $name")
     }
   }
-  def execute(inputValues: Seq[Concrete], tpe: Type, outputName: String): Concrete = {
-    ns = ps + 1
-    TypeInstanceFactory(tpe, ps)
-  }
 
   override def getOutput(inputValues: Seq[BigInt], tpe: Type, outputName: String): BigInt = {
     ps
-  }
-}
-
-/**
-  * The factor that will provide firrtl access to the implementations
-  */
-class AccumulatorBlackBoxFactory extends BlackBoxFactory {
-
-  def createInstance(instanceName: String, blackBoxName: String): Option[BlackBoxImplementation] = {
-    println( s"createInstance: $instanceName $blackBoxName")
-    blackBoxName match {
-      case "AccumulatorBlackBox" => Some(add(new AccumulatorFirrtlInterpreterBlackBox(instanceName)))
-      case _               => None
-    }
   }
 }
 
@@ -143,9 +124,6 @@ class AccumulatorPeekPokeTester[T <: AccumulatorInterface](c:T) extends PeekPoke
 class AccumulatorBlackBoxPeekPokeTest extends AnyFlatSpec with Matchers {
 
   def getOptionsManager(backendName: String): TesterOptionsManager = new TesterOptionsManager {
-    interpreterOptions = interpreterOptions.copy(
-      blackBoxFactories = interpreterOptions.blackBoxFactories :+ new AccumulatorBlackBoxFactory
-    )
     treadleOptions = treadleOptions.copy(
       blackBoxFactories = treadleOptions.blackBoxFactories :+ new AccumulatorScalaBlackBoxFactory,
       setVerbose = false
@@ -161,19 +139,11 @@ class AccumulatorBlackBoxPeekPokeTest extends AnyFlatSpec with Matchers {
     } should be (true)
   }
 
-  it should "work with firrtl" in {
-    chisel3.iotesters.Driver.execute( () => new AccumulatorBlackBoxWrapper, getOptionsManager("firrtl")){ c =>
-      new AccumulatorPeekPokeTester(c)
-    } should be (true)
-  }
-
 }
 
 class AccumulatorBlackBoxPeekPokeTestVerilator extends AnyFlatSpec with Matchers {
 
   val optionsManager: TesterOptionsManager = new TesterOptionsManager {
-    interpreterOptions = interpreterOptions.copy(
-      blackBoxFactories = interpreterOptions.blackBoxFactories :+ new AccumulatorBlackBoxFactory)
     treadleOptions = treadleOptions.copy(
       blackBoxFactories = treadleOptions.blackBoxFactories :+ new AccumulatorScalaBlackBoxFactory
     )
@@ -192,9 +162,6 @@ class AccumulatorBlackBoxPeekPokeTestVerilator extends AnyFlatSpec with Matchers
 class AccumulatorBlackBoxPeekPokeTestVCS extends AnyFlatSpec with Matchers {
 
   val optionsManager: TesterOptionsManager = new TesterOptionsManager {
-    interpreterOptions = interpreterOptions.copy(
-      blackBoxFactories = interpreterOptions.blackBoxFactories :+ new AccumulatorBlackBoxFactory
-    )
     treadleOptions = treadleOptions.copy(
       blackBoxFactories = treadleOptions.blackBoxFactories :+ new AccumulatorScalaBlackBoxFactory
     )

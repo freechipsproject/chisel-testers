@@ -32,10 +32,6 @@ class ZeroWidthIOSpec extends ChiselFlatSpec with Matchers {
       c => new ZeroWidthIOTester(c)
     }
 
-  it should "work with firrtl backend" in {
-    test(Array("-tbn", "firrtl")) should be (true)
-  }
-
   it should "work with treadle backend" in {
     test(Array("-tbn", "treadle")) should be (true)
   }

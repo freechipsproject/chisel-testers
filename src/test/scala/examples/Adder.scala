@@ -105,12 +105,6 @@ class SignedAdderTester(c: SignedAdder) extends PeekPokeTester(c) {
 }
 
 class SignedAdderSpec extends AnyFreeSpec with Matchers {
-  "tester should returned signed values with interpreter" in {
-    iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new SignedAdder(16)) { c =>
-      new SignedAdderTester(c)
-    } should be (true)
-  }
-
   "tester should returned signed values with verilator" in {
     iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"), () => new SignedAdder(16)) { c =>
       new SignedAdderTester(c)
@@ -146,12 +140,6 @@ class FixedPointAdderTester(c: FixedPointAdder) extends PeekPokeTester(c) {
 }
 
 class FixedPointAdderSpec extends AnyFreeSpec with Matchers {
-  "tester should returned signed values with interpreter" in {
-    iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new FixedPointAdder(16)) { c =>
-      new FixedPointAdderTester(c)
-    } should be (true)
-  }
-
   //TODO: make this work
   "tester should returned signed values" ignore {
     iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"), () => new FixedPointAdder(16)) { c =>

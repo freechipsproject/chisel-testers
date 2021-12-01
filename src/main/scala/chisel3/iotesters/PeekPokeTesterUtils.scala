@@ -473,7 +473,7 @@ private[iotesters] object verilogToVerilator extends EditableBuildCSimulatorComm
 }
 
 private[iotesters] case class BackendException(b: String)
-  extends Exception(s"Unknown backend: $b. Backend should be firrtl, verilator, ivl, vsim, vcs, or glsim")
+  extends Exception(s"Unknown backend: $b. Backend should be verilator, ivl, vsim, vcs, or glsim")
 
 private[iotesters] case class TestApplicationException(exitVal: Int, lastMessage: String)
   extends RuntimeException(lastMessage)
@@ -500,7 +500,5 @@ private[iotesters] object TesterProcess {
   }
   def kill(p: VSIMBackend) {
     kill(p.simApiInterface)
-  }
-  def kill(p: FirrtlTerpBackend) {
   }
 }

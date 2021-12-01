@@ -10,9 +10,9 @@ import chisel3.iotesters._
 sealed trait TesterBackend {
   def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend)
 }
-case object FirrtlInterpreterBackend extends TesterBackend {
+case object TreadleBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
-    setupFirrtlTerpBackend(dutGen, options)
+    setupTreadleBackend(dutGen, options)
   }
 }
 case object VerilatorBackend extends TesterBackend {
@@ -120,7 +120,7 @@ trait PokeTester extends ChiselPokeTesterUtils {
     runTester(dutGen, testerBackend, options) { (tester, dut) => block(tester, dut) }
   }
 
-  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: (InnerTester, T) => Unit) {
+  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=TreadleBackend)(block: (InnerTester, T) => Unit) {
     val options = new TesterOptionsManager
     test(dutGen, testerBackend, options)(block)
   }
@@ -200,7 +200,7 @@ trait ImplicitPokeTester extends ChiselPokeTesterUtils {
     * }
     * }}}
     */
-  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=FirrtlInterpreterBackend)(block: InnerTester => (T => Unit)) {
+  def test[T <: Module](dutGen: => T, testerBackend: TesterBackend=TreadleBackend)(block: InnerTester => (T => Unit)) {
     val options = new TesterOptionsManager
     test(dutGen, testerBackend, options)(block)
   }

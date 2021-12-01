@@ -108,24 +108,6 @@ class GCDSpec extends AnyFlatSpec with Matchers {
     } should be (true)
   }
 
-  it should "run firrtl-interpreter via command line arguments" in {
-    // val args = Array.empty[String]
-    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
-    iotesters.Driver.execute(args, () => new RealGCD2) { c =>
-      new GCDPeekPokeTester(c)
-    } should be (true)
-  }
-
-  it should "run firrtl via direct options configuration" in {
-    val manager = new TesterOptionsManager {
-      testerOptions = testerOptions.copy(backendName = "firrtl", testerSeed = 7L)
-      interpreterOptions = interpreterOptions.copy(setVerbose = false, writeVCD = true)
-    }
-    iotesters.Driver.execute(() => new RealGCD2, manager) { c =>
-      new GCDPeekPokeTester(c)
-    } should be (true)
-  }
-
   "using verilator backend with suppress-verilator-backend" should "not create a vcd" in {
     iotesters.Driver.execute(
       Array("--backend-name", "verilator", "--generate-vcd-output", "off",

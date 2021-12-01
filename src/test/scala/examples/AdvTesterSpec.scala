@@ -5,7 +5,6 @@ package examples
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
-import firrtl_interpreter.InterpreterOptions
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -101,23 +100,6 @@ class AdvTesterSpec extends AnyFlatSpec with Matchers {
 
   it should "run verilator via command line arguments" in {
     val args = Array("--backend-name", "verilator")
-    iotesters.Driver.execute(args, () => new RealGCD3) { c =>
-      new GCDAdvTester(c)
-    } should be (true)
-  }
-  it should "run firrtl via command line arguments" in {
-    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
-    iotesters.Driver.execute(args, () => new RealGCD3) { c =>
-      new GCDAdvTester(c)
-    } should be (true)
-  }
-
-  it should "run firrtl via direct options configuration" in {
-    val manager = new TesterOptionsManager {
-      testerOptions = TesterOptions(backendName = "firrtl")
-      interpreterOptions = InterpreterOptions(writeVCD = true)
-    }
-    val args = Array("--backend-name", "firrtl", "--fint-write-vcd")
     iotesters.Driver.execute(args, () => new RealGCD3) { c =>
       new GCDAdvTester(c)
     } should be (true)

@@ -146,10 +146,6 @@ class EnumSpec extends ChiselFlatSpec with Matchers {
 
   behavior of "Enum PeekPokeTesters"
 
-  it should "work with a firrtl backend" in {
-    testPeekPoke(Array("--backend-name", "firrtl")) should be(true)
-  }
-
   it should "work with a treadle backend" in {
     testPeekPoke(Array("--backend-name", "treadle")) should be(true)
   }
@@ -160,12 +156,6 @@ class EnumSpec extends ChiselFlatSpec with Matchers {
   }
 
   behavior of "Enum AdvTester"
-
-  it should "work with a firrtl backend" in {
-    iotesters.Driver.execute(Array("--backend-name", "firrtl"), () => new ReadyValidEnumShifter(4)) { c =>
-      new EnumAdvTester(c)
-    } should be(true)
-  }
 
   it should "work with a treadle backend" in {
     iotesters.Driver.execute(Array("--backend-name", "treadle"), () => new ReadyValidEnumShifter(4)) { c =>

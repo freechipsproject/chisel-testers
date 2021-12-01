@@ -3,11 +3,11 @@
 package chisel3.iotesters
 
 import chisel3.{ChiselExecutionFailure => _, ChiselExecutionResult => _, ChiselExecutionSuccess => _, _}
-import java.io.File
 
+import java.io.File
 import chisel3.iotesters.DriverCompatibility._
+import firrtl.ExecutionOptionsManager
 import firrtl.annotations.Annotation
-import firrtl_interpreter._
 import logger.{LoggerCompatibility => Logger}
 
 import scala.util.DynamicVariable
@@ -51,7 +51,7 @@ object Driver {
 
         val (dut, backend) = testerOptions.backendName match {
           case "firrtl" =>
-            setupFirrtlTerpBackend(dutGenerator, optionsManager, firrtlSourceOverride)
+            throw new Exception("firrtl interpreter has been deprecated")
           case "treadle" =>
             setupTreadleBackend(dutGenerator, optionsManager)
           case "verilator" =>
@@ -109,85 +109,6 @@ object Driver {
   }
 
   /**
-    * Start up the interpreter repl with the given circuit
-    * To test a `class X extends Module {}`, add the following code to the end
-    * of the file that defines
-    *
-    * @example {{{
-    *           object XRepl {
-    *             def main(args: Array[String]) {
-    *               val optionsManager = new ReplOptionsManager
-    *               if(optionsManager.parse(args)) {
-    *                 iotesters.Driver.executeFirrtlRepl(() => new X, optionsManager)
-    *               }
-    *             }
-    * }}}
-    * running main will place users in the repl with the circuit X loaded into the repl
-    * @param dutGenerator   Module to run in interpreter
-    * @param optionsManager options
-    * @return
-    */
-  @deprecated("Use Driver#def executeFirrtlRepl[T <: Module](args: Array[String], dutGenerator: () => T)", since = "20210301")
-  def executeFirrtlRepl[T <: Module](
-                                      dutGenerator: () => T,
-                                      optionsManager: ReplOptionsManager = new ReplOptionsManager): Boolean = {
-
-    if (optionsManager.topName.isEmpty) {
-      if (optionsManager.targetDirName == ".") {
-        optionsManager.setTargetDirName("test_run_dir")
-      }
-      val genClassName = dutGenerator.getClass.getName
-      val testerName = genClassName.split("""\$\$""").headOption.getOrElse("") + genClassName.hashCode.abs
-      optionsManager.setTargetDirName(s"${optionsManager.targetDirName}/$testerName")
-    }
-
-    optionsManager.chiselOptions = optionsManager.chiselOptions.copy(runFirrtlCompiler = false)
-    optionsManager.firrtlOptions = optionsManager.firrtlOptions.copy(compilerName = "low")
-
-    Logger.makeScope(optionsManager) {
-      val chiselResult: ChiselExecutionResult = DriverCompatibility.execute(optionsManager, dutGenerator)
-      chiselResult match {
-        case ChiselExecutionSuccess(_, emitted, _) =>
-          optionsManager.replConfig = optionsManager.replConfig.copy(firrtlSource = emitted)
-          FirrtlRepl.execute(optionsManager)
-          true
-        case ChiselExecutionFailure(message) =>
-          println("Failed to compile circuit")
-          false
-      }
-    }
-  }
-  /**
-    * Start up the interpreter repl with the given circuit
-    * To test a `class X extends Module {}`, add the following code to the end
-    * of the file that defines
-    * @example {{{
-    *           object XRepl {
-    *             def main(args: Array[String]) {
-    *               iotesters.Driver.executeFirrtlRepl(args, () => new X)
-    *             }
-    *           }
-    * }}}
-    * running main will place users in the repl with the circuit X loaded into the repl
-    *
-    * @param dutGenerator   Module to run in interpreter
-    * @param args           options from the command line
-    * @return
-    */
-  def executeFirrtlRepl[T <: Module](
-                                    args: Array[String],
-                                      dutGenerator: () => T
-                                      ): Boolean = {
-    val optionsManager = new ReplOptionsManager
-
-    if(optionsManager.parse(args)) {
-      executeFirrtlRepl(dutGenerator, optionsManager)
-    }
-    else {
-      false
-    }
-  }
-  /**
     * This is just here as command line way to see what the options are
     * It will not successfully run
     * TODO: Look into dynamic class loading as way to make this main useful
@@ -230,7 +151,7 @@ object Driver {
     */
   def apply[T <: Module](
       dutGen: () => T,
-      backendType: String = "firrtl",
+      backendType: String = "treadle",
       verbose: Boolean = false,
       testerSeed: Long = System.currentTimeMillis())(
       testerGen: T => PeekPokeTester[T]): Boolean = {
@@ -298,9 +219,3 @@ object Driver {
     }
   }
 }
-
-class ReplOptionsManager
-  extends InterpreterOptionsManager
-    with HasChiselExecutionOptions
-    with HasReplConfig
-

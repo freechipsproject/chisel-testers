@@ -161,9 +161,7 @@ object chiselMain {
 
     context.backend = Some(context.backendType match {
       case "firrtl" =>
-        val file = new java.io.File(context.targetDir, s"${dut.name}.ir")
-        val ir = FileUtils.getText(file)
-        new FirrtlTerpBackend(dut, ir)
+       throw new Exception(s"firrtl backend is no longer valid after Chisel 3.5, please switch to other backends.")
       case "verilator" =>
         new VerilatorBackend(dut, context.testCmd.toList, context.testerSeed)
       case "vcs" | "glsim" =>

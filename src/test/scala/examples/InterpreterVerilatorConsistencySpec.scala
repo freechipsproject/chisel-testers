@@ -61,12 +61,6 @@ class ExampleTester(dut: ExampleModule) extends AdvTester(dut){
 }
 
 class InterpreterVerilatorConsistencySpec extends ChiselFlatSpec {
-  "Example" should "show decoupled port controls correctly with interpreter" in {
-    chisel3.iotesters.Driver(() => new ExampleModule,"firrtl"){ c =>
-      new ExampleTester(c)
-    }should be(true)
-  }
-
   "Example" should "show decoupled port controls correctly" in {
     chisel3.iotesters.Driver(() => new ExampleModule,"verilator"){ c =>
       new ExampleTester(c)

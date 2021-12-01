@@ -81,7 +81,6 @@ object chiselTesters extends Cross[ChiselTestersModule](crossVersions: _*) {
 val defaultVersions = Map(
   "chisel3" -> "3.5-SNAPSHOT",
   "firrtl" -> "1.5-SNAPSHOT",
-  "firrtl-interpreter" -> "1.5-SNAPSHOT",
   "treadle" -> "1.5-SNAPSHOT"
   )
 
@@ -93,7 +92,7 @@ def getVersion(dep: String, org: String = "edu.berkeley.cs") = {
 class ChiselTestersModule(val crossScalaVersion: String) extends CommonModule {
   override def artifactName = "chisel-iotesters"
 
-  def chiselDeps = Agg("firrtl", "firrtl-interpreter", "treadle", "chisel3").map { d => getVersion(d) }
+  def chiselDeps = Agg("firrtl", "treadle", "chisel3").map { d => getVersion(d) }
 
   override def ivyDeps = Agg(
     ivy"org.scalatest::scalatest:3.2.2",
