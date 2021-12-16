@@ -10,6 +10,7 @@ import firrtl_interpreter.HasInterpreterSuite
 
 import scala.util.matching.Regex
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 case class TesterOptions(
   isGenVerilog:         Boolean = false,
   isGenHarness:         Boolean = false,
@@ -42,6 +43,7 @@ object TesterOptions {
   val IvlFileCommands: Regex = """file:(.+)""".r
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 trait HasTesterOptions {
   self: ExecutionOptionsManager =>
 
@@ -186,6 +188,7 @@ trait HasTesterOptions {
     .text(s"""set this flag to "on" or "off", otherwise it defaults to off""")
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 class TesterOptionsManager
   extends ExecutionOptionsManager("chisel-testers")
     with HasTesterOptions

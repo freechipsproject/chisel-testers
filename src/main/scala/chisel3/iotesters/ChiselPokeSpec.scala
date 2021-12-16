@@ -7,35 +7,42 @@ import org.scalatest._
 import chisel3._
 import chisel3.iotesters._
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 sealed trait TesterBackend {
   def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend)
 }
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 case object FirrtlInterpreterBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
     setupFirrtlTerpBackend(dutGen, options)
   }
 }
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 case object VerilatorBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
     setupVerilatorBackend(dutGen, options)
   }
 }
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 case object IvlBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
     setupIVLBackend(dutGen, options)
   }
 }
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 case object VcsBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
     setupVCSBackend(dutGen, options)
   }
 }
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 case object VsimBackend extends TesterBackend {
   override def create[T <: Module](dutGen: () => T, options: TesterOptionsManager): (T, Backend) = {
     setupVSIMBackend(dutGen, options)
   }
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 trait ChiselPokeTesterUtils extends Assertions {
   class InnerTester(val backend: Backend, val options: TesterOptionsManager) {
     // Implicit configuration options for backend
@@ -115,6 +122,7 @@ trait ChiselPokeTesterUtils extends Assertions {
 
 /** Basic peek-poke test system where failures are handled and reported within ScalaTest.
   */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 trait PokeTester extends ChiselPokeTesterUtils {
   def test[T <: Module](dutGen: => T, testerBackend: TesterBackend, options: TesterOptionsManager)(block: (InnerTester, T) => Unit) {
     runTester(dutGen, testerBackend, options) { (tester, dut) => block(tester, dut) }
@@ -131,6 +139,7 @@ trait PokeTester extends ChiselPokeTesterUtils {
   *
   * API very subject to change.
   */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 trait ImplicitPokeTester extends ChiselPokeTesterUtils {
   /** Pokes a value into the circuit.
     */

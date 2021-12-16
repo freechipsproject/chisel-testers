@@ -10,6 +10,7 @@ import scala.util.Random
 /**
   * provide common facilities for step based testing and decoupled interface testing
   */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 abstract class HWIOTester extends BasicTester {
   val device_under_test:     Module
   var io_info:               IOAccessor = null

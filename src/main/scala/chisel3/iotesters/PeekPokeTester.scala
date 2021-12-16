@@ -16,6 +16,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
 
 // Provides a template to define tester transactions
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 trait PeekPokeTests {
   /** Get the actual step value (simTime)
     * @return simTime - number of steps since begining of simulation
@@ -73,6 +74,7 @@ trait PeekPokeTests {
   def finish: Boolean
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 object PeekPokeTester {
   /** Old "flatten" functionality.
     *
@@ -88,6 +90,7 @@ object PeekPokeTester {
   }
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 abstract class PeekPokeTester[+T <: Module](
     val dut: T,
     base: Int = 16,

@@ -17,12 +17,14 @@ package object iotesters {
   type SteppedHWIOTester = ciot.SteppedHWIOTester
   type OrderedDecoupledHWIOTester = ciot.OrderedDecoupledHWIOTester
 
+  @deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
   object chiselMainTest {
     def apply[T <: Module](args: Array[String], dutGen: () => T)(testerGen: T => ciot.PeekPokeTester[T]) = {
       ciot.chiselMain(args, dutGen, testerGen)
     }
   }
 
+  @deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
   object Driver {
     /**
       * Runs the ClassicTester and returns a Boolean indicating test success or failure
