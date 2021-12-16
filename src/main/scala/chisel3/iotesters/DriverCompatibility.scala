@@ -10,6 +10,7 @@ import firrtl.options.Viewer.view
 import firrtl.options.phases.DeletedWrapper
 import firrtl.options.{Dependency, OptionsException, OptionsView, OutputAnnotationFileAnnotation, Phase, PhaseManager, StageError, Unserializable}
 import firrtl.stage.phases.DriverCompatibility.TopNameAnnotation
+import firrtl.stage.phases.DriverCompatibilityExtensions
 import firrtl.stage.{FirrtlCircuitAnnotation, RunFirrtlTransformAnnotation}
 import firrtl.{AnnotationSeq, ExecutionOptionsManager, FirrtlExecutionResult, HasFirrtlOptions}
 
