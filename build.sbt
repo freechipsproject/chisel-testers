@@ -41,6 +41,8 @@ libraryDependencies ++= Seq("chisel3","firrtl","firrtl-interpreter", "treadle").
     "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
 }
 
+addCompilerPlugin("edu.berkeley.cs" %% "chisel3-plugin" % defaultVersions("chisel3") cross CrossVersion.full)
+
 // sbt 1.2.6 fails with `Symbol 'term org.junit' is missing from the classpath`
 // when compiling tests under 2.11.12
 // An explicit dependency on junit seems to alleviate this.
