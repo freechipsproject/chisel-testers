@@ -22,8 +22,10 @@ jobs:
           verilator --version
       - name: Setup Scala
         uses: olafurpg/setup-scala@v10
-      - name: Cache
-        uses: coursier/cache-action@v5
+      # Commented out because cached dependency SNAPSHOTs were stale
+      # This can be uncommented in the future
+      #- name: Cache
+      #  uses: coursier/cache-action@v5
       - name: Setup Mill
         uses: jodersky/setup-mill@v0.2.3
       - name: Mill sanity check
