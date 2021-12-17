@@ -25,6 +25,7 @@ private[iotesters] class TesterContext {
   var waveform: Option[File] = None
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 object chiselMain {
   private val contextVar = new DynamicVariable[Option[TesterContext]](None)
   private[iotesters] def context = contextVar.value.getOrElse(new TesterContext)
@@ -206,6 +207,7 @@ object chiselMain {
   }
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 object chiselMainTest {
   def apply[T <: Module](args: Array[String], dutGen: () => T)(testerGen: T => PeekPokeTester[T]): Unit = {
     chiselMain(args, dutGen, testerGen)

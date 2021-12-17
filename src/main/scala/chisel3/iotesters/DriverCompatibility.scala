@@ -19,6 +19,7 @@ import firrtl.{AnnotationSeq, ExecutionOptionsManager, FirrtlExecutionResult, Ha
   * Primarily, this object includes [[firrtl.options.Phase Phase]]s that generate [[firrtl.annotations.Annotation]]s
   * derived from the deprecated [[firrtl.stage.phases.DriverCompatibility.TopNameAnnotation]].
   */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 object DriverCompatibility {
 
   private[chisel3] implicit object ChiselExecutionResultView extends OptionsView[ChiselExecutionResult] {

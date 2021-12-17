@@ -9,6 +9,8 @@ import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
 import java.io.{PrintWriter, StringWriter}
 // Provides a template to define advanced tester transactions
+//
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 trait AdvTests extends PeekPokeTests {
   def cycles: Long
   def wire_poke[T <: Element: Pokeable](port: T, target: BigInt):  Unit
@@ -20,6 +22,7 @@ trait AdvTests extends PeekPokeTests {
   def do_until(work: =>Unit)(pred: =>Boolean, maxCycles: Long = 0L): Boolean
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 abstract class AdvTester[+T <: Module](dut: T,
                                        base: Int = 16,
                                        logFile: Option[java.io.File] = chiselMain.context.logFile)
