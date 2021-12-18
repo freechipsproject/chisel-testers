@@ -39,6 +39,7 @@ import scala.collection.mutable.ArrayBuffer
   * }
   * }}}
   */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 abstract class SteppedHWIOTester extends HWIOTester {
   case class Step(input_map: mutable.HashMap[Data,BigInt], output_map: mutable.HashMap[Data,BigInt])
 

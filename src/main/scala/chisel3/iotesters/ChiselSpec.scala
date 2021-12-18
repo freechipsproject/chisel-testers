@@ -15,6 +15,7 @@ import sys.process.{stringSeqToProcess, BasicIO}
 import scala.util.Properties.envOrElse
 
 /** Common utility functions for Chisel unit tests. */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 trait ChiselRunners extends Assertions {
   val backends = envOrElse("TESTER_BACKENDS", "firrtl") split " "
   def runTester(t: => BasicTester, additionalVResources: Seq[String] = Seq()): Boolean = {
@@ -27,9 +28,11 @@ trait ChiselRunners extends Assertions {
 }
 
 /** Spec base class for BDD-style testers. */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 class ChiselFlatSpec extends AnyFlatSpec with ChiselRunners with Matchers
 
 /** Spec base class for property-based testers. */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 class ChiselPropSpec extends AnyPropSpec with ChiselRunners with ScalaCheckPropertyChecks {
 
   // Constrain the default number of instances generated for every use of forAll.

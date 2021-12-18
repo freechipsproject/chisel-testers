@@ -8,10 +8,11 @@ import java.io.File
 import chisel3.iotesters.DriverCompatibility._
 import firrtl.annotations.Annotation
 import firrtl_interpreter._
-import logger.Logger
+import logger.{LoggerCompatibility => Logger}
 
 import scala.util.DynamicVariable
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 object Driver {
   private val backendVar = new DynamicVariable[Option[Backend]](None)
   private[iotesters] def backend = backendVar.value
@@ -299,6 +300,7 @@ object Driver {
   }
 }
 
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 class ReplOptionsManager
   extends InterpreterOptionsManager
     with HasChiselExecutionOptions

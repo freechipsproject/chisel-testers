@@ -39,6 +39,7 @@ import scala.collection.mutable.ArrayBuffer
   * likewise,
   * all outputs regardless of which interface are tested in the same order that they were created
   */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 abstract class OrderedDecoupledHWIOTester extends HWIOTester {
   val input_event_list  = new ArrayBuffer[Seq[(Data, BigInt)]]()
   val output_event_list = new ArrayBuffer[Seq[(Data, BigInt)]]()

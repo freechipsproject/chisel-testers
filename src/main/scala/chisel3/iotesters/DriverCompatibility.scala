@@ -10,6 +10,7 @@ import firrtl.options.Viewer.view
 import firrtl.options.phases.DeletedWrapper
 import firrtl.options.{Dependency, OptionsException, OptionsView, OutputAnnotationFileAnnotation, Phase, PhaseManager, StageError, Unserializable}
 import firrtl.stage.phases.DriverCompatibility.TopNameAnnotation
+import firrtl.stage.phases.DriverCompatibilityExtensions
 import firrtl.stage.{FirrtlCircuitAnnotation, RunFirrtlTransformAnnotation}
 import firrtl.{AnnotationSeq, ExecutionOptionsManager, FirrtlExecutionResult, HasFirrtlOptions}
 
@@ -18,6 +19,7 @@ import firrtl.{AnnotationSeq, ExecutionOptionsManager, FirrtlExecutionResult, Ha
   * Primarily, this object includes [[firrtl.options.Phase Phase]]s that generate [[firrtl.annotations.Annotation]]s
   * derived from the deprecated [[firrtl.stage.phases.DriverCompatibility.TopNameAnnotation]].
   */
+@deprecated("chisel-iotesters is end-of-life. Use chiseltest instead, see https://www.chisel-lang.org/chiseltest/migrating-from-iotesters.", "chisel-iotesters 2.5.0")
 object DriverCompatibility {
 
   private[chisel3] implicit object ChiselExecutionResultView extends OptionsView[ChiselExecutionResult] {
