@@ -48,7 +48,7 @@ addCompilerPlugin("edu.berkeley.cs" %% "chisel3-plugin" % defaultVersions("chise
 // An explicit dependency on junit seems to alleviate this.
 libraryDependencies ++= Seq(
   "junit" % "junit" % "4.13",
-  "org.scalatest" %% "scalatest" % "3.2.2",
+  "org.scalatest" %% "scalatest" % "3.1.4",
   "org.scalatestplus" %% "scalacheck-1-14" % "3.1.1.1",
   "org.scalacheck" %% "scalacheck" % "1.14.3",
   "com.github.scopt" %% "scopt" % "3.7.1"
